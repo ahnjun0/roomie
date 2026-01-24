@@ -1,0 +1,59 @@
+name: Docker CI/CD with GHCR
+
+on:
+  push:
+    branches: [ main ] # 메인 브랜치 푸시 시 작동
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Images
+        run: |
+          # yml에 적힌 image 이름을 기준으로 빌드하고 푸시합니다.
+          docker compose build
+          docker compose push
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into EC2 and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/app
+            
+            # 1. GHCR 로그인 (이미지를 가져오기 위해 필수)
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # 2. 환경 변수 설정
+            echo "${{ secrets.ENV_FILE }}" > .env
+            
+            # 3. 배포 (서버에 코드가 없으므로 --no-build 옵션 사용)
+            docker-compose pull
+            docker-compose up -d --no-build
+            
+            # 4. 정리
+            docker image prune -f
