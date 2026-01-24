@@ -19,4 +19,4 @@ COPY . .
 
 # 6. FastAPI 실행 (8000 포트)
 # --host 0.0.0.0은 외부 접속을 허용하기 위해 필수입니다.
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
