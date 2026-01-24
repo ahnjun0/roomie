@@ -1,0 +1,57 @@
+name: Docker CI/CD with GHCR
+
+on:
+  push:
+    branches: [ main ] # 메인 브랜치 푸시 시 작동
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker Images
+        run: |
+          # docker-compose를 이용해 빌드하고 푸시합니다.
+          docker-compose build
+          docker-compose push
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into EC2 and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # 1. 작업 디렉토리 이동
+            cd ~/app
+            
+            # 2. GitHub Secrets에 저장한 .env 파일 생성
+            echo "${{ secrets.ENV_FILE }}" > .env
+            
+            # 3. 최신 이미지 가져오기 및 실행
+            docker-compose pull
+            docker-compose up -d
+            
+            # 4. 사용하지 않는 이미지 정리 (용량 확보)
+            docker image prune -f
