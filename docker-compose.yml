@@ -2,14 +2,50 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:15  # 최신 안정 버전인 15 버전을 사용
+    image: postgres:15
     container_name: roomie-postgres
     restart: always
     ports:
-      - "5432:5432"     # Postgres 기본 포트
+      - "5432:5432"
     environment:
-      POSTGRES_USER: roomie_user      # 아이디
-      POSTGRES_PASSWORD: roomie_pass  # 비밀번호
-      POSTGRES_DB: roomie_db          # DB 이름
+      POSTGRES_USER: ${POSTGRES_USER:-roomie_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-roomie_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-roomie_db}
     volumes:
-      - ./pg_data:/var/lib/postgresql/data # 데이터 저장 폴더 이름도 변경
+      - ./pg_data:/var/lib/postgresql/data
+    networks:
+      - roomie-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-roomie_user} -d ${POSTGRES_DB:-roomie_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    # [중요] GHCR 경로를 명시합니다.
+    # github.repository가 'ahnjun0/roomie'라면 아래와 같이 설정됩니다.
+    image: ghcr.io/ahnjun0/roomie/api:latest
+    # build:
+    #   context: ./apps/api
+    #   dockerfile: Dockerfile
+    container_name: roomie-api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-roomie_user}:${POSTGRES_PASSWORD:-roomie_pass}@db:5432/${POSTGRES_DB:-roomie_db}?schema=public"
+      SECRET_KEY: ${SECRET_KEY}
+      ALGORITHM: "HS256"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      DEBUG: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - roomie-network
+    # volumes:
+    #   - ./apps/api:/app  <— 서버에 코드가 없으므로 배포 시에는 주석 처리하거나 제거하세요.
+
+networks:
+  roomie-network:
+    driver: bridge
