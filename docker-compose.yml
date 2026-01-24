@@ -38,6 +38,15 @@ services:
       ALGORITHM: "HS256"
       ACCESS_TOKEN_EXPIRE_MINUTES: "30"
       DEBUG: ${DEBUG}
+
+      # [추가] 이메일 관련 변수들을 매핑합니다.
+      # ${VAR} 문법은 호스트의 .env 파일에 있는 값을 읽어오라는 뜻입니다.
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_SERVER: ${MAIL_SERVER}
+
     depends_on:
       db:
         condition: service_healthy
