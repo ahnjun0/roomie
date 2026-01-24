@@ -14,6 +14,11 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# [추가] 5. Prisma 스키마 복사 및 클라이언트 생성
+# 보통 prisma 폴더가 apps/api/prisma 에 있다고 가정합니다.
+COPY prisma ./prisma
+RUN prisma generate
+
 # 5. 소스 코드 복사
 COPY . .
 
