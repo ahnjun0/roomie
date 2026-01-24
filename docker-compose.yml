@@ -25,9 +25,9 @@ services:
     # [중요] GHCR 경로를 명시합니다.
     # github.repository가 'ahnjun0/roomie'라면 아래와 같이 설정됩니다.
     image: ghcr.io/ahnjun0/roomie/api:latest
-    # build:
-    #   context: ./apps/api
-    #   dockerfile: Dockerfile
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
     container_name: roomie-api
     restart: always
     ports:
