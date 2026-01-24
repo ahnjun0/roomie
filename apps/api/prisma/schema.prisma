@@ -1,0 +1,101 @@
+// 1. 설정 영역
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+}
+
+// --------------------------------------
+
+// 2. 사용자 모델 (Screen 1, 2)
+model User {
+  id          Int      @id @default(autoincrement()) // 고유 ID
+  email       String   @unique                       // 학교 이메일
+  nickname    String?
+  password    String   // (간단 구현을 위해 평문 저장 or 해시)
+  
+  gender      Gender   // 성별 (Enum)
+  studentId   Int      // 학번 (23, 24)
+  age         Int
+  nationality Nationality
+  
+  // 관계 설정 (1:1, 1:N)
+  lifestyle   UserLifestyle?   // 나의 생활 패턴
+  preference  UserPreference?  // 나의 선호 조건
+  
+  // 내가 쓴 리뷰들
+  writtenReviews Review[] @relation("WrittenReviews")
+  // 내가 받은 리뷰들
+  receivedReviews Review[] @relation("ReceivedReviews")
+
+  createdAt   DateTime @default(now())
+}
+
+// 3. 나의 생활 패턴 (Fact) - (Screen 3, 4, 5)
+model UserLifestyle {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int     @unique
+  
+  dormName  String  // 기숙사 이름 (성실관, 진리관...)
+  isSmoker  Boolean // 흡연 여부
+  
+  // 수면 습관 (슬라이더 -> 숫자)
+  sleepStart Int    // 0~30 (예: 23=밤11시, 26=새벽2시)
+  sleepEnd   Int    // 기상 시간
+  sensitivity Int   // 잠귀 밝기 (1~5)
+  
+  // 태그 (이갈이, 코골이 등) -> 콤마로 구분된 문자열로 저장하거나 JSON 사용
+  sleepHabits String? // 예: "SNORING,GRINDING"
+  
+  cleaningHabit String? // 청소 습관
+}
+
+// 4. 선호 조건 & 5만원 게임 가중치 (Preference) - (Screen 6, 7, 8)
+model UserPreference {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    Int     @unique
+  
+  // 기본 선호
+  prefNationality Nationality? // 선호 국적 (null이면 무관)
+  prefStudentId   String?      // SAME, SENIOR, JUNIOR, ANY
+  
+  // 5만원 게임 가중치 (0.0 ~ 3.0)
+  weightCleanliness Float @default(1.0)
+  weightNoise       Float @default(1.0)
+  weightSmoking     Float @default(1.0)
+  weightSleep       Float @default(1.0)
+}
+
+// 5. 리뷰 및 평가 (Screen 10)
+model Review {
+  id        Int      @id @default(autoincrement())
+  
+  reviewer    User @relation("WrittenReviews", fields: [reviewerId], references: [id])
+  reviewerId  Int
+  
+  target      User @relation("ReceivedReviews", fields: [targetId], references: [id])
+  targetId    Int
+  
+  content   String   // "청소를 잘해요"
+  score     Int      // 1~5점
+  
+  createdAt DateTime @default(now())
+}
+
+// Enum 정의 (고정된 값들)
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Nationality {
+  KOREAN
+  FOREIGNER
+}
