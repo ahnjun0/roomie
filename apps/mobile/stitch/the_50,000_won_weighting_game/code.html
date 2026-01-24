@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The 50,000 Won Game</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "primary-dark": "#0ea5d6",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#16262d",
+                        "surface-dark-highlight": "#1f333c",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/5 px-4 pt-4 pb-3">
+<div class="flex items-center justify-between">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight">The 50k Game</h1>
+<button class="flex h-10 w-auto items-center justify-center px-2 rounded-full text-primary font-bold text-sm hover:bg-primary/10 transition-colors">
+                    Reset
+                </button>
+</div>
+</header>
+<!-- Balance Hero Section -->
+<section class="relative z-10 px-6 py-6 text-center">
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Remaining Budget</p>
+<div class="flex items-center justify-center gap-2">
+<span class="text-4xl sm:text-5xl font-extrabold text-primary tracking-tight tabular-nums">10,000</span>
+<span class="text-2xl font-bold text-slate-400 dark:text-slate-600">₩</span>
+</div>
+<div class="mt-4 flex justify-center">
+<!-- Visual Budget Bar -->
+<div class="h-2 w-full max-w-[200px] bg-slate-200 dark:bg-surface-dark-highlight rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[20%] rounded-full shadow-[0_0_10px_rgba(19,182,236,0.5)]"></div>
+</div>
+</div>
+<p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+                Allocate your 50,000 ₩ to the habits that matter most.
+            </p>
+</section>
+<!-- Main Content List -->
+<main class="flex-1 px-4 pb-28 space-y-4">
+<!-- Card 1: Smoking -->
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/5 p-4 shadow-sm transition-all active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-surface-dark-highlight text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">smoking_rooms</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold leading-tight truncate">Smoking Frequency</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Non-smoker preferred</p>
+</div>
+<div class="text-right">
+<span class="block text-lg font-bold text-slate-300 dark:text-slate-600 tabular-nums">0</span>
+<span class="text-[10px] font-medium text-slate-400 uppercase">KRW</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-4">
+<!-- Progress/Weight Visual -->
+<div class="flex-1 h-1.5 bg-slate-100 dark:bg-surface-dark-highlight rounded-full overflow-hidden">
+<div class="h-full w-0 bg-primary"></div>
+</div>
+<!-- Controls -->
+<div class="flex items-center gap-3 shrink-0">
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark-highlight text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 active:translate-y-0.5 transition-all hover:bg-primary-dark">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2: Sleep Habits -->
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-primary/30 p-4 shadow-sm transition-all active:scale-[0.98]">
+<!-- Active Indicator Glow -->
+<div class="absolute inset-0 bg-primary/5 pointer-events-none"></div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-[28px]">bed</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold leading-tight truncate">Sleep Habits</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Light sensitivity</p>
+</div>
+<div class="text-right">
+<span class="block text-lg font-bold text-primary tabular-nums">10,000</span>
+<span class="text-[10px] font-medium text-primary/70 uppercase">KRW</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-4 relative z-10">
+<div class="flex-1 h-1.5 bg-slate-100 dark:bg-surface-dark-highlight rounded-full overflow-hidden">
+<div class="h-full w-[20%] bg-primary"></div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark-highlight text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 active:translate-y-0.5 transition-all hover:bg-primary-dark">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3: Cleaning -->
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-primary/50 p-4 shadow-md transition-all active:scale-[0.98]">
+<!-- Stronger Active Indicator -->
+<div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent pointer-events-none"></div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[28px]">cleaning_services</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold leading-tight truncate">Cleaning Standards</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daily vs Weekly</p>
+</div>
+<div class="text-right">
+<span class="block text-lg font-bold text-primary tabular-nums">20,000</span>
+<span class="text-[10px] font-medium text-primary/70 uppercase">KRW</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-4 relative z-10">
+<div class="flex-1 h-1.5 bg-slate-100 dark:bg-surface-dark-highlight rounded-full overflow-hidden">
+<div class="h-full w-[40%] bg-primary"></div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark-highlight text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 active:translate-y-0.5 transition-all hover:bg-primary-dark">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 4: Noise -->
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/5 p-4 shadow-sm transition-all active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-surface-dark-highlight text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">volume_up</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold leading-tight truncate">Noise Tolerance</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Quiet hours</p>
+</div>
+<div class="text-right">
+<span class="block text-lg font-bold text-slate-300 dark:text-slate-600 tabular-nums">0</span>
+<span class="text-[10px] font-medium text-slate-400 uppercase">KRW</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-4">
+<div class="flex-1 h-1.5 bg-slate-100 dark:bg-surface-dark-highlight rounded-full overflow-hidden">
+<div class="h-full w-0 bg-primary"></div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark-highlight text-slate-400 dark:text-slate-500 hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 active:translate-y-0.5 transition-all hover:bg-primary-dark">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 5: Indoor Eating -->
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-primary/30 p-4 shadow-sm transition-all active:scale-[0.98]">
+<div class="absolute inset-0 bg-primary/5 pointer-events-none"></div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-[28px]">restaurant</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold leading-tight truncate">Indoor Eating</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Delivery &amp; Smell</p>
+</div>
+<div class="text-right">
+<span class="block text-lg font-bold text-primary tabular-nums">10,000</span>
+<span class="text-[10px] font-medium text-primary/70 uppercase">KRW</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-4 relative z-10">
+<div class="flex-1 h-1.5 bg-slate-100 dark:bg-surface-dark-highlight rounded-full overflow-hidden">
+<div class="h-full w-[20%] bg-primary"></div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark-highlight text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30 active:translate-y-0.5 transition-all hover:bg-primary-dark">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 6: Sleep Time -->
+<div class="group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/5 p-4 shadow-sm transition-all active:scale-[0.98]">
+<div class="flex items-center gap-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-surface-dark-highlight text-slate-500 dark:text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[28px]">schedule</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="text-base font-bold leading-tight truncate">Sleep Time</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Early bird vs Owl</p>
+</div>
+<div class="text-right">
+<span class="block text-lg font-bold text-primary tabular-nums">10,000</span>
+<span class="text-[10px] font-medium text-primary/70 uppercase">KRW</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between gap-4">
+<div class="flex-1 h-1.5 bg-slate-100 dark:bg-surface-dark-highlight rounded-full overflow-hidden">
+<div class="h-full w-[20%] bg-primary"></div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 dark:bg-surface-dark-highlight text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10">
+<span class="material-symbols-outlined text-[20px]">remove</span>
+</button>
+<button class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-300 dark:bg-white/10 text-slate-500 dark:text-slate-400 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+</div>
+<!-- Error Hint -->
+<p class="text-[10px] text-red-400 text-center mt-2 font-medium">Insufficient funds</p>
+</div>
+</main>
+<!-- Bottom Actions -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent pt-8">
+<div class="max-w-md mx-auto w-full">
+<div class="flex justify-between items-center px-2 mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+<span>Total Allocated</span>
+<span class="text-primary">40,000 / 50,000</span>
+</div>
+<button class="w-full rounded-2xl bg-primary py-4 px-6 text-base font-bold text-white shadow-xl shadow-primary/25 transition-transform active:scale-[0.98] flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">check_circle</span>
+                    Find Match
+                </button>
+</div>
+</div>
+</div>
+</body></html>

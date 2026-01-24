@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Basic Profile Setup</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#1a2c32", // Derived slightly lighter for cards/inputs
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"],
+                        "body": ["Spline Sans", "Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+<button class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Basic Profile</h2>
+</div>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-3 px-6 pt-2 pb-6">
+<div class="flex gap-6 justify-between items-end">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium leading-normal">Step 1 of 4</p>
+<p class="text-primary text-xs font-semibold">25%</p>
+</div>
+<div class="h-1.5 w-full rounded-full bg-slate-200 dark:bg-[#325a67]">
+<div class="h-1.5 rounded-full bg-primary transition-all duration-500" style="width: 25%;"></div>
+</div>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col px-6 pb-24">
+<!-- Headline -->
+<div class="mb-6">
+<h2 class="text-slate-900 dark:text-white tracking-tight text-[28px] font-bold leading-tight text-left pb-2">Let's get to know you</h2>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-relaxed">Help us find your perfect roommate match by answering a few basic questions.</p>
+</div>
+<!-- Form -->
+<div class="flex flex-col gap-6">
+<!-- Gender Section -->
+<div class="flex flex-col gap-3">
+<label class="text-slate-500 dark:text-[#92bbc9] text-sm font-medium leading-normal">Gender</label>
+<div class="grid grid-cols-2 gap-4">
+<!-- Male - Selected State Example -->
+<button class="group relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-primary bg-primary/10 p-4 transition-all hover:bg-primary/20">
+<div class="flex size-10 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined">male</span>
+</div>
+<span class="text-base font-semibold text-primary">Male</span>
+<div class="absolute top-3 right-3 text-primary">
+<span class="material-symbols-outlined text-[20px] fill-1">check_circle</span>
+</div>
+</button>
+<!-- Female - Default State Example -->
+<button class="group relative flex flex-col items-center justify-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-surface-light dark:bg-surface-dark p-4 transition-all hover:border-primary/50 hover:bg-slate-50 dark:hover:bg-white/5">
+<div class="flex size-10 items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">female</span>
+</div>
+<span class="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Female</span>
+</button>
+</div>
+</div>
+<!-- Nationality -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-500 dark:text-[#92bbc9] text-sm font-medium leading-normal">Nationality</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined">public</span>
+</div>
+<select class="w-full appearance-none rounded-xl bg-surface-light dark:bg-surface-dark border-none ring-1 ring-slate-200 dark:ring-slate-700 py-4 pl-12 pr-10 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-shadow">
+<option disabled="" selected="" value="">Select your nationality</option>
+<option value="korean">South Korean</option>
+<option value="international">International Student</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Age & Student ID Row -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Age -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-500 dark:text-[#92bbc9] text-sm font-medium leading-normal">Age</label>
+<div class="relative">
+<input class="w-full rounded-xl bg-surface-light dark:bg-surface-dark border-none ring-1 ring-slate-200 dark:ring-slate-700 py-4 px-4 text-center text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary outline-none transition-shadow text-lg font-medium" placeholder="20" type="number"/>
+</div>
+</div>
+<!-- Student ID -->
+<div class="flex flex-col gap-2">
+<label class="text-slate-500 dark:text-[#92bbc9] text-sm font-medium leading-normal">Entry Year</label>
+<div class="relative">
+<select class="w-full appearance-none rounded-xl bg-surface-light dark:bg-surface-dark border-none ring-1 ring-slate-200 dark:ring-slate-700 py-4 pl-4 pr-10 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-shadow text-lg font-medium">
+<option selected="" value="24">'24</option>
+<option value="23">'23</option>
+<option value="22">'22</option>
+<option value="21">'21</option>
+<option value="20">'20</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Button -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-t border-slate-200 dark:border-white/5 z-20">
+<button class="w-full rounded-xl bg-primary py-4 text-white text-base font-bold shadow-lg shadow-primary/25 hover:bg-primary/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                Select Dormitory
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

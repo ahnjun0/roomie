@@ -9,9 +9,10 @@ export const API_TIMEOUT = 10000;
 export const ENDPOINTS = {
   // Auth
   AUTH: {
+    SEND_CODE: '/auth/send-code',
+    VERIFY_CODE: '/auth/verify-code',
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
-    VERIFY_EMAIL: '/auth/verify-email',
     REFRESH: '/auth/refresh',
   },
 
@@ -20,18 +21,29 @@ export const ENDPOINTS = {
     ME: '/users/me',
     PROFILE: '/users/me/profile',
     LIFESTYLE: '/users/me/lifestyle',
-    PREFERENCES: '/users/me/preferences',
-    WEIGHTS: '/users/me/weights',
+    PREFERENCES: '/users/me/preference',
+    REVIEWS_WRITTEN: '/users/me/reviews/written',
+    REVIEWS_RECEIVED: '/users/me/reviews/received',
     GET: (id: number) => `/users/${id}`,
+    REVIEWS: (id: number) => `/users/${id}/reviews`,
   },
 
   // Matching
   MATCHING: {
-    RECOMMENDATIONS: '/matching/recommendations',
-    REQUEST: (id: number) => `/matching/request/${id}`,
-    ACCEPT: (id: number) => `/matching/accept/${id}`,
-    REJECT: (id: number) => `/matching/reject/${id}`,
-    HISTORY: '/matching/history',
+    RECOMMENDATIONS: '/matching',
+    DETAIL: (userId: number) => `/matching/${userId}`,
+  },
+
+  // Chats
+  CHATS: {
+    CREATE: '/chats',
+    LIST: '/chats',
+    MESSAGES: (chatRoomId: string) => `/chats/${chatRoomId}/messages`,
+  },
+
+  // Reviews
+  REVIEWS: {
+    CREATE: '/reviews',
   },
 
   // Dormitories

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Core Habits Selection</title>
+<!-- Material Symbols Link -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#1a2c32",
+                        "surface-active": "#233f48"
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"],
+                        "body": ["Spline Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Spline Sans', sans-serif;
+        }
+        /* Custom scrollbar hide for clean mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white antialiased transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full max-w-md mx-auto flex-col overflow-hidden bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Top App Bar -->
+<header class="flex items-center p-4 pb-2 justify-between z-10">
+<button class="text-gray-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-surface-active transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<div class="text-sm font-medium text-gray-500 dark:text-gray-400">Profile Setup</div>
+<div class="w-10"></div> <!-- Spacer for center alignment -->
+</header>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-3 px-6 py-2">
+<div class="flex gap-6 justify-between items-end">
+<p class="text-primary text-sm font-semibold tracking-wider uppercase">Step 4 of 11</p>
+<span class="text-xs text-gray-400 dark:text-gray-500">36% Completed</span>
+</div>
+<div class="h-1.5 w-full rounded-full bg-gray-200 dark:bg-surface-active overflow-hidden">
+<div class="h-full rounded-full bg-primary transition-all duration-500 ease-out" style="width: 36%;"></div>
+</div>
+</div>
+<!-- Scrollable Content -->
+<main class="flex-1 flex flex-col px-6 pt-6 pb-24 overflow-y-auto no-scrollbar">
+<!-- Headline -->
+<div class="mb-8">
+<h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white mb-2">Core Habits</h1>
+<p class="text-gray-500 dark:text-gray-400 text-base leading-relaxed">Let's find you a roommate with a compatible lifestyle. Be honest!</p>
+</div>
+<!-- Smoking Section -->
+<section class="mb-8">
+<h2 class="text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white mb-4">Smoking Preference</h2>
+<div class="grid grid-cols-2 gap-4">
+<!-- Non-Smoker Option (Selected State Example) -->
+<label class="group relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-transparent bg-primary p-4 shadow-lg transition-all active:scale-95">
+<input checked="" class="peer sr-only" name="smoking" type="radio" value="non-smoker"/>
+<div class="flex size-12 items-center justify-center rounded-full bg-white/20 text-white">
+<span class="material-symbols-outlined text-3xl">eco</span>
+</div>
+<span class="text-sm font-bold text-white">Non-smoker</span>
+<!-- Checkmark Indicator -->
+<div class="absolute top-3 right-3 flex size-5 items-center justify-center rounded-full bg-white text-primary">
+<span class="material-symbols-outlined text-sm font-bold">check</span>
+</div>
+</label>
+<!-- Smoker Option (Unselected State Example) -->
+<label class="group relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-transparent bg-white dark:bg-surface-active p-4 hover:bg-gray-50 dark:hover:bg-[#2a454f] transition-all active:scale-95">
+<input class="peer sr-only" name="smoking" type="radio" value="smoker"/>
+<div class="flex size-12 items-center justify-center rounded-full bg-gray-100 dark:bg-black/20 text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-3xl">smoking_rooms</span>
+</div>
+<span class="text-sm font-medium text-gray-600 dark:text-gray-300 group-hover:text-primary transition-colors">Smoker</span>
+</label>
+</div>
+</section>
+<!-- Sleeping Habits Section -->
+<section class="mb-6">
+<div class="flex items-baseline justify-between mb-4">
+<h2 class="text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white">Sleeping Habits</h2>
+<span class="text-xs font-medium text-gray-400">Select all that apply</span>
+</div>
+<div class="flex flex-wrap gap-3">
+<!-- Selected Chip -->
+<label class="group cursor-pointer">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="flex h-10 items-center gap-2 rounded-lg bg-white dark:bg-surface-active px-4 border border-transparent peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-gray-600 dark:text-gray-300 transition-all active:scale-95 hover:bg-gray-50 dark:hover:bg-[#2a454f]">
+<span class="material-symbols-outlined text-[20px]">nightlight</span>
+<span class="text-sm font-medium">None / Quiet</span>
+</div>
+</label>
+<!-- Unselected Chip -->
+<label class="group cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex h-10 items-center gap-2 rounded-lg bg-white dark:bg-surface-active px-4 border border-transparent peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-gray-600 dark:text-gray-300 transition-all active:scale-95 hover:bg-gray-50 dark:hover:bg-[#2a454f]">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+<span class="text-sm font-medium">Snoring</span>
+</div>
+</label>
+<!-- Unselected Chip -->
+<label class="group cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex h-10 items-center gap-2 rounded-lg bg-white dark:bg-surface-active px-4 border border-transparent peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-gray-600 dark:text-gray-300 transition-all active:scale-95 hover:bg-gray-50 dark:hover:bg-[#2a454f]">
+<span class="material-symbols-outlined text-[20px]">record_voice_over</span>
+<span class="text-sm font-medium">Sleep talking</span>
+</div>
+</label>
+<!-- Selected Chip -->
+<label class="group cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex h-10 items-center gap-2 rounded-lg bg-white dark:bg-surface-active px-4 border border-transparent peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-gray-600 dark:text-gray-300 transition-all active:scale-95 hover:bg-gray-50 dark:hover:bg-[#2a454f]">
+<span class="material-symbols-outlined text-[20px]">hotel_class</span>
+<span class="text-sm font-medium">Grinding teeth</span>
+</div>
+</label>
+<!-- Unselected Chip -->
+<label class="group cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex h-10 items-center gap-2 rounded-lg bg-white dark:bg-surface-active px-4 border border-transparent peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary text-gray-600 dark:text-gray-300 transition-all active:scale-95 hover:bg-gray-50 dark:hover:bg-[#2a454f]">
+<span class="material-symbols-outlined text-[20px]">rotate_right</span>
+<span class="text-sm font-medium">Tossing</span>
+</div>
+</label>
+</div>
+<div class="mt-6 p-4 rounded-xl bg-primary/5 border border-primary/10 flex gap-3 items-start">
+<span class="material-symbols-outlined text-primary text-xl shrink-0 mt-0.5">info</span>
+<p class="text-xs text-gray-500 dark:text-gray-400 leading-normal">
+                        Matching with someone who has similar sleeping patterns increases roommate satisfaction by <span class="text-primary font-bold">45%</span>.
+                    </p>
+</div>
+</section>
+</main>
+<!-- Sticky Footer -->
+<footer class="absolute bottom-0 w-full bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md p-6 border-t border-gray-200 dark:border-white/5">
+<button class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary py-4 text-center text-white font-bold text-lg shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40 active:scale-[0.98] transition-all duration-200">
+                Next Step
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</footer>
+</div>
+</body></html>

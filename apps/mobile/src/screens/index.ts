@@ -1,13 +1,20 @@
 // Auth Screens
-// export { LoginScreen } from './auth/LoginScreen';
-// export { RegisterScreen } from './auth/RegisterScreen';
+export { LoginScreen } from './auth/LoginScreen';
+export { VerifyEmailScreen } from './auth/VerifyEmailScreen';
+export { RegisterScreen } from './auth/RegisterScreen';
 
 // Onboarding Screens
-// export { BasicInfoScreen } from './onboarding/BasicInfoScreen';
-// export { LifestyleChecklistScreen } from './onboarding/LifestyleChecklistScreen';
+export { BasicInfoScreen } from './onboarding/BasicInfoScreen';
+export { DormitorySelectScreen } from './onboarding/DormitorySelectScreen';
+export { CoreHabitsScreen } from './onboarding/CoreHabitsScreen';
+export { LifestyleScaleScreen } from './onboarding/LifestyleScaleScreen';
+export { RoommatePreferencesScreen } from './onboarding/RoommatePreferencesScreen';
+export { SleepPatternsScreen } from './onboarding/SleepPatternsScreen';
+export { WeightGameScreen } from './onboarding/WeightGameScreen';
 
 // Main Screens
-// export { HomeScreen } from './main/HomeScreen';
-// export { MatchingScreen } from './main/MatchingScreen';
-
-// TODO: 각 스크린 컴포넌트 구현 예정
+export { MatchingDashboardScreen } from './main/MatchingDashboardScreen';
+export { ChatScreen } from './main/ChatScreen';
+export { ChatListScreen } from './main/ChatListScreen';
+export { MatchDetailScreen } from './main/MatchDetailScreen';
+export { MyPageScreen } from './main/MyPageScreen';

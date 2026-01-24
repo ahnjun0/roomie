@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Roommate Matching Dashboard</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "card-dark": "#16262c", 
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"],
+                        "body": ["Spline Sans", "Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen flex flex-col overflow-hidden text-slate-900 dark:text-white selection:bg-primary selection:text-white">
+<!-- Top Navigation Bar -->
+<header class="flex items-center px-4 py-3 justify-between shrink-0 bg-background-light dark:bg-background-dark z-20">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-2">Matches</h1>
+<div class="flex items-center justify-end">
+<button class="relative flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border border-background-light dark:border-background-dark"></span>
+</button>
+</div>
+</header>
+<!-- Dormitory Filter Bar -->
+<div class="shrink-0 px-4 py-2 border-b border-black/5 dark:border-white/5">
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary px-4 transition-colors">
+<p class="text-white text-sm font-bold leading-normal">All Dorms</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-black/5 dark:bg-white/5 px-4 hover:bg-black/10 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/10">
+<p class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">North Hall</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-black/5 dark:bg-white/5 px-4 hover:bg-black/10 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/10">
+<p class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">Global House</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-black/5 dark:bg-white/5 px-4 hover:bg-black/10 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/10">
+<p class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">Mirae Hall</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-black/5 dark:bg-white/5 px-4 hover:bg-black/10 dark:hover:bg-white/10 transition-colors border border-transparent dark:border-white/10">
+<p class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">Sejong Hall</p>
+</button>
+</div>
+</div>
+<!-- Match List Feed -->
+<main class="flex-1 overflow-y-auto p-4 space-y-4 pb-24 scroll-smooth">
+<h2 class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Top Recommendations</h2>
+<!-- Card 1: Top Match -->
+<article class="relative flex flex-col bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-white/10 shadow-sm p-4 gap-4">
+<div class="flex justify-between items-start gap-4">
+<!-- Avatar -->
+<div class="relative shrink-0">
+<div class="size-[72px] rounded-full bg-cover bg-center border-2 border-primary" data-alt="Portrait of a young student wearing headphones and smiling" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAPeSu8NYWyuFxG0yGbPv_ooZ6efH5tAcTC73J9yS0tH8KT7HtWISnU4BZ181yQbccOIT_f2Lqqf-h4nM1r6QTBhNAwTLt8A14ECBSCz_-t0e66fMDkkLDDeFOErudwhasmIUOtxwpfLBb6K-afnIXifAul51sZOzBEdcOV_S_X2MDGut80HKfyhbSwLw8g-Q1_5I4WPBKHwU3FRgM8FQqp0Kamw1_2T_TTVFeczoW-JmdT6Is_xVdQr_fHLk5Ol347GkCFGMZQikM');"></div>
+<div class="absolute bottom-0 right-0 size-4 bg-green-500 rounded-full border-2 border-white dark:border-card-dark"></div>
+</div>
+<!-- Info -->
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-2 mb-0.5">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white truncate">NightOwl99</h3>
+<span class="inline-flex items-center rounded-md bg-green-400/10 px-2 py-0.5 text-xs font-medium text-green-500 dark:text-green-400 ring-1 ring-inset ring-green-500/20">Online</span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal truncate">Computer Science · Sophomore</p>
+<!-- Tags -->
+<div class="flex flex-wrap gap-1.5 mt-2">
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/10 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">#Gamer</span>
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/10 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">#LateSleeper</span>
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/10 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">#CleanFreak</span>
+</div>
+</div>
+<!-- Match Score -->
+<div class="shrink-0 flex flex-col items-center justify-start pt-1">
+<div class="relative flex items-center justify-center size-14">
+<svg class="size-full -rotate-90 transform" viewbox="0 0 36 36">
+<path class="text-slate-200 dark:text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-primary drop-shadow-[0_0_4px_rgba(19,182,236,0.5)]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="98, 100" stroke-width="3"></path>
+</svg>
+<span class="absolute text-sm font-bold text-primary">98%</span>
+</div>
+<span class="text-[10px] font-medium text-primary mt-1 bg-primary/10 px-1.5 py-0.5 rounded">Value Match</span>
+</div>
+</div>
+<!-- Actions Row -->
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3 mt-1">
+<span class="text-xs text-slate-400">Aligned Budget: ₩500k</span>
+<div class="flex gap-2">
+<button class="size-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+</button>
+<button class="size-9 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2 -->
+<article class="relative flex flex-col bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-white/10 shadow-sm p-4 gap-4">
+<div class="flex justify-between items-start gap-4">
+<!-- Avatar -->
+<div class="relative shrink-0">
+<div class="size-[72px] rounded-full bg-cover bg-center" data-alt="Portrait of a student in athletic wear outdoors" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSFTeJL5yDVtlQdX0roJ2ASxQWC77PDqlNGFG_RwBrAJek8CzdGFIOWdExcpXDiYoE1P7xi6bL57TKUr94x4NCp_X2wnnTZ3GLxFRa28S83odvID2t2RjLUVI1S20FgtaqMz-e0MLI6ivSl0dzq8HIjoULAgS4GqTsTduWhs56z_BiyKhZOKl-qZEKsitENWmKN9CvGq74XBGdF9RNBuU6jzNRwJ6GsveXsIFZRMlpJZifSrWS94zj7s411os0ZDeStZnYBd-il4I');"></div>
+<div class="absolute bottom-0 right-0 size-4 bg-slate-400 rounded-full border-2 border-white dark:border-card-dark"></div>
+</div>
+<!-- Info -->
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-2 mb-0.5">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white truncate">MorningRun</h3>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal truncate">Sports Science · Junior</p>
+<!-- Tags -->
+<div class="flex flex-wrap gap-1.5 mt-2">
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/10 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">#EarlyBird</span>
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/10 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">#NonSmoker</span>
+</div>
+</div>
+<!-- Match Score -->
+<div class="shrink-0 flex flex-col items-center justify-start pt-1">
+<div class="relative flex items-center justify-center size-14">
+<svg class="size-full -rotate-90 transform" viewbox="0 0 36 36">
+<path class="text-slate-200 dark:text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-[#3b82f6]" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="94, 100" stroke-width="3"></path>
+</svg>
+<span class="absolute text-sm font-bold text-[#3b82f6]">94%</span>
+</div>
+</div>
+</div>
+<!-- Actions Row -->
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3 mt-1">
+<span class="text-xs text-slate-400">Last active: 2h ago</span>
+<div class="flex gap-2">
+<button class="size-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+<button class="size-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat_bubble_outline</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 3 -->
+<article class="relative flex flex-col bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-white/10 shadow-sm p-4 gap-4">
+<div class="flex justify-between items-start gap-4">
+<!-- Avatar -->
+<div class="relative shrink-0">
+<div class="size-[72px] rounded-full bg-cover bg-center" data-alt="Portrait of a serious student reading a book" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCL49CxaQdL_97tjgfZJBTf61_y1-9bT8FVHDVE6F5T1TdixtTQ43Vj7QZiDjZfi3j-CfY8aTzXTvhmPy6GvT_CtntkSUlAAm3EGUk16woqoE3XKXd3EpbFKFWZJ2prHoWU6_1HF0D1FBhW9H5oF4C7lqeDq_G54U5Mm2YpSr0JC1_2ruYSeZGdrn65wtjyHRMmHw5qV9SXg0o76h4k2qu9HuyMCmTh8iAeuXvpfNlM4Nye0vBKai1hXlIGrOMkt4ZliuXmre6aC3U');"></div>
+</div>
+<!-- Info -->
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-2 mb-0.5">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white truncate">QuietStudy</h3>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal truncate">Literature · Freshman</p>
+<!-- Tags -->
+<div class="flex flex-wrap gap-1.5 mt-2">
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/10 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">#NoGuests</span>
+<span class="inline-flex items-center rounded-md bg-slate-100 dark:bg-white/10 px-2 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">#Silence</span>
+</div>
+</div>
+<!-- Match Score -->
+<div class="shrink-0 flex flex-col items-center justify-start pt-1">
+<div class="relative flex items-center justify-center size-14">
+<svg class="size-full -rotate-90 transform" viewbox="0 0 36 36">
+<path class="text-slate-200 dark:text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3"></path>
+<path class="text-slate-500" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="89, 100" stroke-width="3"></path>
+</svg>
+<span class="absolute text-sm font-bold text-slate-500 dark:text-slate-400">89%</span>
+</div>
+</div>
+</div>
+<!-- Actions Row -->
+<div class="flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3 mt-1">
+<span class="text-xs text-slate-400">Aligned Budget: ₩450k</span>
+<div class="flex gap-2">
+<button class="size-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+<button class="size-9 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">chat_bubble_outline</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Bottom padding spacer -->
+<div class="h-8"></div>
+</main>
+<!-- Floating Action Button (FAB) -->
+<button class="absolute bottom-24 right-5 size-14 rounded-full bg-primary text-white shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 transition z-30">
+<span class="material-symbols-outlined text-2xl">tune</span>
+</button>
+<!-- Bottom Navigation -->
+<nav class="absolute bottom-0 w-full bg-white dark:bg-[#0d161a] border-t border-slate-200 dark:border-white/5 pb-5 pt-3 px-6 z-40">
+<ul class="flex justify-between items-center">
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined filled text-primary text-[28px]">handshake</span>
+<span class="text-[10px] font-medium text-primary">Match</span>
+</li>
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-[28px]">chat_bubble</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Chat</span>
+</li>
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-[28px]">explore</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Explore</span>
+</li>
+<li class="flex flex-col items-center gap-1 cursor-pointer group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors text-[28px]">person</span>
+<span class="text-[10px] font-medium text-slate-400 group-hover:text-primary transition-colors">Profile</span>
+</li>
+</ul>
+</nav>
+</body></html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Roommate Detailed Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#1a2c32",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scrolling sections */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111e22] dark:text-white font-display min-h-screen relative pb-24">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-gray-200 dark:border-gray-800">
+<button class="text-[#111e22] dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-[#111e22] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Detailed Profile</h2>
+</div>
+<!-- Profile Header -->
+<div class="p-4 pt-6">
+<div class="flex flex-col gap-6">
+<div class="flex gap-5 items-center">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-24 w-24 ring-4 ring-surface-light dark:ring-surface-dark shadow-xl" data-alt="Portrait of a young male student named Ji-hoon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6oP4Uv5y8LQeTQugjkjoQRwcRQ_mrjP54UZxk60tjbZoxFLYlQwpr0UXBIIvvrtW48m_HqJS8IQwttzR6NsJACynpWNeUpvSrbGtwJ2upNCv8H5SxmKcbQ3IwkAdXcGPJLC0WqJ6jr9qftBKdDv2Q48uFVUBRG_w0cDlHmjXknTJ7FethErjFHi5s5J2VFouLXHAe5eC2VhqroHTacn2pQf0PFGDXXbwagxFUfu8lxKlnOcgxHR9Te23-ZkPfZts_tlGL7s440JA");'>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full border-2 border-background-light dark:border-background-dark shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                        95%
+                    </div>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<h1 class="text-[#111e22] dark:text-white text-2xl font-bold leading-tight tracking-tight">Ji-hoon Kim</h1>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="text-slate-500 dark:text-[#92bbc9] text-sm font-medium bg-gray-200 dark:bg-surface-dark px-2 py-0.5 rounded">Computer Science</span>
+<span class="text-slate-500 dark:text-[#92bbc9] text-sm font-medium bg-gray-200 dark:bg-surface-dark px-2 py-0.5 rounded">22 yrs</span>
+</div>
+</div>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                "Ideally looking for a quiet place to study. I enjoy gaming on weekends but respect quiet hours. Let's win the roommate game!"
+            </p>
+</div>
+</div>
+<div class="h-px w-full bg-gray-200 dark:bg-gray-800 my-2"></div>
+<!-- Compatibility Radar Chart Section -->
+<div class="px-4 py-4">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-[#111e22] dark:text-white text-xl font-bold leading-tight">Compatibility Radar</h2>
+<button class="text-primary text-sm font-semibold flex items-center gap-1">
+                View Details <span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+<div class="bg-white dark:bg-surface-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
+<!-- Legend -->
+<div class="absolute top-4 right-4 flex flex-col gap-2 text-xs">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="text-slate-600 dark:text-slate-300">You</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-600"></div>
+<span class="text-slate-600 dark:text-slate-300">Ji-hoon</span>
+</div>
+</div>
+<!-- SVG Radar Chart -->
+<div class="flex justify-center items-center py-2" data-alt="Radar chart showing high compatibility overlap between user and roommate">
+<svg class="overflow-visible" height="220" viewbox="0 0 260 220" width="260">
+<!-- Background Grid (Pentagon) -->
+<g transform="translate(130, 110)">
+<!-- Grid Lines -->
+<path class="text-gray-200 dark:text-gray-700" d="M0 -100 L95 -31 L59 81 L-59 81 L-95 -31 Z" fill="none" stroke="currentColor" stroke-width="1"></path>
+<path class="text-gray-200 dark:text-gray-700" d="M0 -75 L71 -23 L44 60 L-44 60 L-71 -23 Z" fill="none" stroke="currentColor" stroke-width="1"></path>
+<path class="text-gray-200 dark:text-gray-700" d="M0 -50 L47 -15 L29 40 L-29 40 L-47 -15 Z" fill="none" stroke="currentColor" stroke-width="1"></path>
+<path class="text-gray-200 dark:text-gray-700" d="M0 -25 L23 -7 L14 20 L-14 20 L-23 -7 Z" fill="none" stroke="currentColor" stroke-width="1"></path>
+<!-- Axes -->
+<line class="text-gray-200 dark:text-gray-700" stroke="currentColor" stroke-width="1" x1="0" x2="0" y1="0" y2="-100"></line>
+<line class="text-gray-200 dark:text-gray-700" stroke="currentColor" stroke-width="1" x1="0" x2="95" y1="0" y2="-31"></line>
+<line class="text-gray-200 dark:text-gray-700" stroke="currentColor" stroke-width="1" x1="0" x2="59" y1="0" y2="81"></line>
+<line class="text-gray-200 dark:text-gray-700" stroke="currentColor" stroke-width="1" x1="0" x2="-59" y1="0" y2="81"></line>
+<line class="text-gray-200 dark:text-gray-700" stroke="currentColor" stroke-width="1" x1="0" x2="-95" y1="0" y2="-31"></line>
+<!-- Data 1: User (Primary Color) -->
+<path d="M0 -80 L85 -28 L20 65 L-40 65 L-70 -25 Z" fill="rgba(19, 182, 236, 0.4)" stroke="#13b6ec" stroke-width="2"></path>
+<!-- Data 2: Match (Grey) -->
+<path class="text-gray-400 dark:text-gray-500" d="M0 -90 L75 -25 L35 70 L-50 70 L-85 -28 Z" fill="none" stroke="currentColor" stroke-dasharray="4 2" stroke-width="2"></path>
+<!-- Labels -->
+<text class="text-[10px] font-bold fill-slate-500 dark:fill-slate-400 uppercase" text-anchor="middle" x="0" y="-110">Cleanliness</text>
+<text class="text-[10px] font-bold fill-slate-500 dark:fill-slate-400 uppercase" text-anchor="middle" x="110" y="-30">Sleep</text>
+<text class="text-[10px] font-bold fill-slate-500 dark:fill-slate-400 uppercase" text-anchor="middle" x="70" y="100">Guests</text>
+<text class="text-[10px] font-bold fill-slate-500 dark:fill-slate-400 uppercase" text-anchor="middle" x="-70" y="100">Sharing</text>
+<text class="text-[10px] font-bold fill-slate-500 dark:fill-slate-400 uppercase" text-anchor="middle" x="-110" y="-30">Noise</text>
+</g>
+</svg>
+</div>
+<div class="mt-4 flex justify-between items-center text-sm border-t border-gray-100 dark:border-gray-800 pt-3">
+<span class="text-slate-500 dark:text-slate-400">Overall Synergy</span>
+<span class="text-primary font-bold">Excellent</span>
+</div>
+</div>
+</div>
+<!-- Detailed Habit Answers -->
+<div class="px-4 py-2">
+<h2 class="text-[#111e22] dark:text-white text-xl font-bold leading-tight mb-4">Detailed Habits</h2>
+<div class="space-y-3">
+<!-- Habit Item 1 -->
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm">
+<div class="bg-primary/10 rounded-full p-2 text-primary shrink-0">
+<span class="material-symbols-outlined">bedtime</span>
+</div>
+<div class="flex-1">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Sleep Schedule</p>
+<p class="text-[#111e22] dark:text-white font-medium">Lights out usually around 1 AM.</p>
+</div>
+<span class="material-symbols-outlined text-primary text-lg" title="Match">check_circle</span>
+</div>
+<!-- Habit Item 2 -->
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm">
+<div class="bg-primary/10 rounded-full p-2 text-primary shrink-0">
+<span class="material-symbols-outlined">cleaning_services</span>
+</div>
+<div class="flex-1">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Cleanliness</p>
+<p class="text-[#111e22] dark:text-white font-medium">Daily quick tidy, deep clean weekly.</p>
+</div>
+<span class="material-symbols-outlined text-primary text-lg" title="Match">check_circle</span>
+</div>
+<!-- Habit Item 3 -->
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm">
+<div class="bg-orange-500/10 rounded-full p-2 text-orange-500 shrink-0">
+<span class="material-symbols-outlined">volume_up</span>
+</div>
+<div class="flex-1">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Noise Tolerance</p>
+<p class="text-[#111e22] dark:text-white font-medium">I listen to music without headphones.</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-lg" title="Partial Match">remove_circle_outline</span>
+</div>
+<!-- Habit Item 4 -->
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm">
+<div class="bg-primary/10 rounded-full p-2 text-primary shrink-0">
+<span class="material-symbols-outlined">smoke_free</span>
+</div>
+<div class="flex-1">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1">Smoking</p>
+<p class="text-[#111e22] dark:text-white font-medium">Non-smoker, prefer non-smokers.</p>
+</div>
+<span class="material-symbols-outlined text-primary text-lg" title="Match">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Past Roommate Feedback -->
+<div class="pt-6 pb-20">
+<div class="px-4 mb-3 flex items-center justify-between">
+<h2 class="text-[#111e22] dark:text-white text-xl font-bold leading-tight">Past Feedback</h2>
+<span class="text-xs font-medium bg-gray-200 dark:bg-surface-dark text-slate-600 dark:text-slate-300 px-2 py-1 rounded">3 Reviews</span>
+</div>
+<!-- Horizontal Scroll Container -->
+<div class="flex overflow-x-auto hide-scrollbar gap-4 px-4 pb-4 snap-x">
+<!-- Review Card 1 (Positive) -->
+<div class="snap-center min-w-[280px] bg-white dark:bg-surface-dark rounded-xl p-4 border-l-4 border-l-green-500 border-y border-r border-r-gray-100 border-y-gray-100 dark:border-r-gray-800 dark:border-y-gray-800 shadow-sm">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center text-white text-xs font-bold">
+                        A
+                    </div>
+<div>
+<p class="text-sm font-bold dark:text-white">Anonymous</p>
+<p class="text-xs text-slate-400">Last Semester</p>
+</div>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-300 italic mb-3">"Super quiet in the mornings, which was great because I sleep in. Very respectful of personal space."</p>
+<div class="flex gap-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-md">Respectful</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-md">Quiet</span>
+</div>
+</div>
+<!-- Review Card 2 (Neutral/Negative) -->
+<div class="snap-center min-w-[280px] bg-white dark:bg-surface-dark rounded-xl p-4 border-l-4 border-l-yellow-500 border-y border-r border-r-gray-100 border-y-gray-100 dark:border-r-gray-800 dark:border-y-gray-800 shadow-sm">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 flex items-center justify-center text-white text-xs font-bold">
+                        K
+                    </div>
+<div>
+<p class="text-sm font-bold dark:text-white">Kim M.</p>
+<p class="text-xs text-slate-400">2022 Fall</p>
+</div>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-300 italic mb-3">"Overall a good roommate, but sometimes forgets to take out the trash when it's his turn."</p>
+<div class="flex gap-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded-md">Trash Duty</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-md">Friendly</span>
+</div>
+</div>
+<!-- Review Card 3 (Positive) -->
+<div class="snap-center min-w-[280px] bg-white dark:bg-surface-dark rounded-xl p-4 border-l-4 border-l-green-500 border-y border-r border-r-gray-100 border-y-gray-100 dark:border-r-gray-800 dark:border-y-gray-800 shadow-sm">
+<div class="flex items-center gap-3 mb-3">
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-rose-400 flex items-center justify-center text-white text-xs font-bold">
+                        J
+                    </div>
+<div>
+<p class="text-sm font-bold dark:text-white">Anonymous</p>
+<p class="text-xs text-slate-400">2022 Spring</p>
+</div>
+</div>
+<p class="text-sm text-slate-600 dark:text-slate-300 italic mb-3">"We gamed together a lot. Best roommate I've had at uni."</p>
+<div class="flex gap-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-md">Gamer</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-md">Social</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Action Button -->
+<div class="fixed bottom-6 right-6 z-50">
+<button class="flex items-center gap-2 bg-primary hover:bg-[#0ea5d6] text-white px-6 py-4 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="font-bold text-base">Start Chat</span>
+</button>
+</div>
+</body></html>

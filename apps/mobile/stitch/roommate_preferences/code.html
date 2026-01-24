@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Roommate Preferences</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&amp;family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13b6ec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#101d22",
+                        "surface-dark": "#1a2c32",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "Noto Sans", "sans-serif"],
+                        "body": ["Spline Sans", "Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Radio Styles for cleaner look without JS */
+        .radio-card-input:checked + .radio-card {
+            border-color: #13b6ec;
+            background-color: rgba(19, 182, 236, 0.1);
+        }
+        
+        .radio-card-input:checked + .radio-card .radio-icon {
+            color: #13b6ec;
+            font-variation-settings: 'FILL' 1;
+        }
+
+        .radio-card-input:checked + .radio-card .check-circle {
+            border-color: #13b6ec;
+            background-color: #13b6ec;
+        }
+
+        .radio-card-input:checked + .radio-card .check-circle::after {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            background-color: white;
+            border-radius: 50%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-white">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto overflow-hidden shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- TopAppBar -->
+<header class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight tracking-wide uppercase opacity-80">Preferences 6/11</h2>
+<div class="size-10"></div> <!-- Spacer for alignment -->
+</header>
+<!-- Progress Bar -->
+<div class="px-4 pb-6">
+<div class="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[54%] rounded-full"></div>
+</div>
+</div>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto px-5 pb-24">
+<!-- Headline -->
+<div class="mb-8">
+<h1 class="text-3xl font-bold leading-tight mb-2">What kind of roommate are you looking for?</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Select your preferences to help us find your perfect match.</p>
+</div>
+<!-- Nationality Section -->
+<section class="mb-8">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-xl">public</span>
+<h3 class="text-lg font-bold tracking-tight">Nationality Preference</h3>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Option 1 -->
+<label class="cursor-pointer group">
+<input checked="" class="radio-card-input peer sr-only" name="nationality" type="radio"/>
+<div class="radio-card flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark transition-all duration-200 group-hover:border-primary/50">
+<div class="flex flex-col">
+<span class="font-medium text-base">Same Nationality</span>
+</div>
+<div class="check-circle size-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center transition-colors"></div>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="cursor-pointer group">
+<input class="radio-card-input peer sr-only" name="nationality" type="radio"/>
+<div class="radio-card flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark transition-all duration-200 group-hover:border-primary/50">
+<div class="flex flex-col">
+<span class="font-medium text-base">Any Nationality is fine</span>
+</div>
+<div class="check-circle size-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center transition-colors"></div>
+</div>
+</label>
+</div>
+</section>
+<!-- Separator -->
+<div class="h-px w-full bg-slate-200 dark:bg-slate-800 mb-8"></div>
+<!-- School Year Section -->
+<section class="mb-6">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-xl">school</span>
+<h3 class="text-lg font-bold tracking-tight">School Year Preference</h3>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Option 1 -->
+<label class="cursor-pointer group">
+<input class="radio-card-input peer sr-only" name="year" type="radio"/>
+<div class="radio-card flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark transition-all duration-200 group-hover:border-primary/50">
+<div class="flex flex-col">
+<span class="font-medium text-base">Same Year</span>
+</div>
+<div class="check-circle size-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center transition-colors"></div>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="cursor-pointer group">
+<input class="radio-card-input peer sr-only" name="year" type="radio"/>
+<div class="radio-card flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark transition-all duration-200 group-hover:border-primary/50">
+<div class="flex flex-col">
+<span class="font-medium text-base">Senior (Sunbae)</span>
+</div>
+<div class="check-circle size-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center transition-colors"></div>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="cursor-pointer group">
+<input class="radio-card-input peer sr-only" name="year" type="radio"/>
+<div class="radio-card flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark transition-all duration-200 group-hover:border-primary/50">
+<div class="flex flex-col">
+<span class="font-medium text-base">Junior (Hoobae)</span>
+</div>
+<div class="check-circle size-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center transition-colors"></div>
+</div>
+</label>
+<!-- Option 4 -->
+<label class="cursor-pointer group">
+<input checked="" class="radio-card-input peer sr-only" name="year" type="radio"/>
+<div class="radio-card flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-dark transition-all duration-200 group-hover:border-primary/50">
+<div class="flex flex-col">
+<span class="font-medium text-base">Doesn't Matter</span>
+</div>
+<div class="check-circle size-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center transition-colors"></div>
+</div>
+</label>
+</div>
+</section>
+</main>
+<!-- Footer Navigation -->
+<div class="fixed bottom-0 left-0 right-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-4 max-w-md mx-auto">
+<div class="flex gap-4">
+<button class="flex-1 py-3.5 px-6 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                    Back
+                </button>
+<button class="flex-[2] py-3.5 px-6 rounded-xl font-bold text-white bg-primary hover:bg-sky-400 transition-colors shadow-lg shadow-primary/25">
+                    Next
+                </button>
+</div>
+</div>
+</div>
+</body></html>
