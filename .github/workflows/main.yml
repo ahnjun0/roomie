@@ -28,7 +28,7 @@ jobs:
 
       - name: Build and Push Docker Images
         run: |
-          # 1. GitHub 환경에서는 최신 명령어 사용
+          # yml에 적힌 image 이름을 기준으로 빌드하고 푸시합니다.
           docker compose build
           docker compose push
 
@@ -44,9 +44,16 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/app
+            
+            # 1. GHCR 로그인 (이미지를 가져오기 위해 필수)
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # 2. 환경 변수 설정
             echo "${{ secrets.ENV_FILE }}" > .env
             
-            # 2. EC2 서버 환경에서는 작동하는 구형 명령어 사용
+            # 3. 배포 (서버에 코드가 없으므로 --no-build 옵션 사용)
             docker-compose pull
-            docker-compose up -d
-            docker-compose ps # 확인용
+            docker-compose up -d --no-build
+            
+            # 4. 정리
+            docker image prune -f
