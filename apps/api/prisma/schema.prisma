@@ -33,6 +33,10 @@ model User {
   // 내가 받은 리뷰들
   receivedReviews Review[] @relation("ReceivedReviews")
 
+  // 채팅
+  chatParticipants ChatParticipant[]
+  chatMessages     ChatMessage[]
+
   createdAt   DateTime @default(now())
 }
 
@@ -87,6 +91,52 @@ model Review {
   score     Int      // 1~5점
   
   createdAt DateTime @default(now())
+}
+
+// 6. 채팅방
+model ChatRoom {
+  id        String   @id @default(uuid())
+
+  participants ChatParticipant[]
+  messages     ChatMessage[]
+
+  createdAt DateTime @default(now())
+}
+
+model ChatParticipant {
+  id         Int      @id @default(autoincrement())
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId String
+
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+
+  joinedAt   DateTime @default(now())
+
+  @@unique([chatRoomId, userId])
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId String
+
+  sender     User     @relation(fields: [senderId], references: [id])
+  senderId   Int
+
+  content    String
+
+  createdAt  DateTime @default(now())
+}
+
+// 7. 기숙사 정보
+model Dormitory {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique
+  gender   Gender  // 입사 가능 성별
+  capacity Int?
 }
 
 // Enum 정의 (고정된 값들)

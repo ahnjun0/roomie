@@ -1,7 +1,2 @@
-from app.models.user import User
-from app.models.dormitory import Dormitory
-from app.models.lifestyle import UserLifestyle
-from app.models.preference import UserPreference
-from app.models.matching import MatchRequest
-
-__all__ = ["User", "Dormitory", "UserLifestyle", "UserPreference", "MatchRequest"]
+# Prisma models are auto-generated
+# See prisma/schema.prisma for model definitions

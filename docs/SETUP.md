@@ -41,11 +41,14 @@ pip install -r requirements.txt
 cp .env.example .env
 # .env 파일을 열어 DATABASE_URL 등 설정
 
-# 데이터베이스 생성 (PostgreSQL)
-createdb roomie
+# Prisma 클라이언트 생성
+prisma generate
 
-# 마이그레이션 실행
-alembic upgrade head
+# 데이터베이스 마이그레이션 (테이블 생성)
+prisma db push
+
+# 초기 데이터 시드 (기숙사 정보)
+python -m scripts.seed
 
 # 개발 서버 실행
 uvicorn app.main:app --reload
@@ -90,6 +93,21 @@ npx react-native run-android
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
+### Prisma 관리
+
+```bash
+cd apps/api
+
+# Prisma Studio (데이터 GUI 관리)
+prisma studio
+
+# 스키마 변경 후 마이그레이션
+prisma db push
+
+# 클라이언트 재생성
+prisma generate
+```
+
 ### 코드 품질
 
 **백엔드:**
@@ -129,4 +147,17 @@ rm -rf venv
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+```
+
+### Prisma 연결 오류
+```bash
+# DATABASE_URL이 올바른지 확인
+# PostgreSQL 서버가 실행 중인지 확인
+# 데이터베이스가 생성되어 있는지 확인
+
+# Windows에서 PostgreSQL 서비스 시작
+net start postgresql-x64-15
+
+# 또는 Docker 사용
+docker run -d --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 postgres:15
 ```
