@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8081"]
 
+    # Email (SMTP)
+    MAIL_USERNAME: str = ""
+    MAIL_PASSWORD: str = ""
+    MAIL_FROM: str = ""
+    MAIL_PORT: int = 587
+    MAIL_SERVER: str = "smtp.gmail.com"
+
     class Config:
         env_file = ".env"
         extra = "ignore"

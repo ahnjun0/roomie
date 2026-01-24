@@ -26,6 +26,7 @@ from app.schemas.user import (
     TokenRefreshRequest,
     TokenResponse,
 )
+from app.services.email import send_verification_email
 
 router = APIRouter()
 
@@ -50,8 +51,13 @@ async def send_verification_code(request: EmailSendRequest):
         "expires_at": datetime.utcnow() + timedelta(seconds=300),
     }
 
-    # TODO: 실제 이메일 발송 로직 (현재는 콘솔 출력)
-    print(f"[DEBUG] 인증 코드 for {email}: {code}")
+    # 이메일 발송
+    email_sent = await send_verification_email(email, code)
+    if not email_sent:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "EMAIL_SEND_FAILED", "message": "이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요."},
+        )
 
     return EmailSendResponse(message="인증번호가 발송되었습니다.", expiresIn=300)
 
