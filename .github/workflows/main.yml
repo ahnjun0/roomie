@@ -28,9 +28,9 @@ jobs:
 
       - name: Build and Push Docker Images
         run: |
-          # docker-compose를 이용해 빌드하고 푸시합니다.
-          docker-compose build
-          docker-compose push
+          # 1. GitHub 환경에서는 최신 명령어 사용
+          docker compose build
+          docker compose push
 
   deploy:
     needs: build-and-push
@@ -43,15 +43,10 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # 1. 작업 디렉토리 이동
             cd ~/app
-            
-            # 2. GitHub Secrets에 저장한 .env 파일 생성
             echo "${{ secrets.ENV_FILE }}" > .env
             
-            # 3. 최신 이미지 가져오기 및 실행
+            # 2. EC2 서버 환경에서는 작동하는 구형 명령어 사용
             docker-compose pull
             docker-compose up -d
-            
-            # 4. 사용하지 않는 이미지 정리 (용량 확보)
-            docker image prune -f
+            docker-compose ps # 확인용
