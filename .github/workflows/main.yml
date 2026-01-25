@@ -3,6 +3,10 @@ name: Docker CI/CD with GHCR
 on:
   push:
     branches: [ main ] # 메인 브랜치 푸시 시 작동
+    paths:
+      - 'apps/api/**'          # apps/api 폴더 하위의 모든 변경사항
+      - 'docker-compose.yml'   # 배포 설정이 바뀌었을 때도 동작해야 함
+      - '.github/workflows/**' # CI/CD 스크립트 자체가 바뀌었을 때도 동작 권장
 
 env:
   REGISTRY: ghcr.io
