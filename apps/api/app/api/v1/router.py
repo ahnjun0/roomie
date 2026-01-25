@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, chats, dormitories, matching, reviews, users
+from app.api.v1.endpoints import auth, chats, dormitories, matching, reviews, users, ws_chat
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router.include_router(matching.router, prefix="/matching", tags=["매칭"])
 api_router.include_router(reviews.router, prefix="/reviews", tags=["리뷰"])
 api_router.include_router(chats.router, prefix="/chats", tags=["채팅"])
 api_router.include_router(dormitories.router, prefix="/dormitories", tags=["기숙사"])
+api_router.include_router(ws_chat.router, tags=["WebSocket 채팅"])

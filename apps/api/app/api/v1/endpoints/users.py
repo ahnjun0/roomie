@@ -150,10 +150,14 @@ async def get_received_reviews(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """내가 받은 리뷰 조회"""
+    """
+    내가 받은 리뷰 통계 조회 (내용은 비공개)
+
+    본인은 자신에 대한 리뷰 내용을 볼 수 없습니다.
+    총 개수와 평균 점수만 확인 가능합니다.
+    """
     reviews = await db.review.find_many(
         where={"targetId": current_user.id},
-        order={"createdAt": "desc"},
     )
 
     # 평균 점수 계산
@@ -161,7 +165,12 @@ async def get_received_reviews(
     if reviews:
         avg_score = sum(r.score for r in reviews) / len(reviews)
 
-    return {"total": len(reviews), "averageScore": round(avg_score, 1), "data": reviews}
+    # 리뷰 내용은 공개하지 않음 (본인 보호)
+    return {
+        "total": len(reviews),
+        "averageScore": round(avg_score, 1),
+        "message": "본인에 대한 리뷰 내용은 열람할 수 없습니다."
+    }
 
 
 @router.get("/{user_id}/reviews")
@@ -169,9 +178,25 @@ async def get_user_reviews(
     user_id: int,
     page: int = 1,
     limit: int = 20,
+    current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """특정 사용자의 리뷰 조회"""
+    """
+    특정 사용자의 리뷰 조회
+
+    본인에 대한 리뷰는 조회할 수 없습니다.
+    다른 사용자의 리뷰만 열람 가능합니다.
+    """
+    # 본인 리뷰 조회 차단
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "FORBIDDEN",
+                "message": "본인에 대한 리뷰는 열람할 수 없습니다."
+            },
+        )
+
     # 사용자 존재 확인
     user = await db.user.find_unique(where={"id": user_id})
     if not user:
@@ -187,6 +212,7 @@ async def get_user_reviews(
         order={"createdAt": "desc"},
         skip=skip,
         take=limit,
+        include={"reviewer": True},  # 리뷰 작성자 정보 포함
     )
 
     # 전체 개수
@@ -198,8 +224,24 @@ async def get_user_reviews(
     if all_reviews:
         avg_score = sum(r.score for r in all_reviews) / len(all_reviews)
 
+    # 리뷰 데이터 가공 (작성자 익명 처리 옵션)
+    review_data = []
+    for r in reviews:
+        review_data.append({
+            "id": r.id,
+            "content": r.content,
+            "score": r.score,
+            "createdAt": r.createdAt,
+            "reviewer": {
+                "id": r.reviewer.id if r.reviewer else None,
+                "nickname": r.reviewer.nickname if r.reviewer else "익명",
+            } if r.reviewer else None
+        })
+
     return {
         "total": total,
         "averageScore": round(avg_score, 1),
-        "data": reviews,
+        "page": page,
+        "limit": limit,
+        "data": review_data,
     }
