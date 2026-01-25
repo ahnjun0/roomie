@@ -95,7 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken),
       ]);
       api.setAccessToken(accessToken);
-      setState(prev => ({ ...prev, accessToken, refreshToken }));
+      // 토큰이 설정되면 인증된 상태로 간주
+      setState(prev => ({ ...prev, accessToken, refreshToken, isAuthenticated: true }));
     },
     [],
   );

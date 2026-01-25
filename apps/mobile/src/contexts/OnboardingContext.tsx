@@ -60,6 +60,7 @@ interface RegisterResponse {
   nickname: string | null;
   accessToken: string;
   refreshToken: string;
+  isProfileComplete: boolean;
 }
 
 interface OnboardingContextType {
@@ -73,13 +74,17 @@ interface OnboardingContextType {
 }
 
 const initialData: OnboardingData = {
-  email: null,
-  password: null,
-  tempToken: null,
-  gender: null,
-  nationality: null,
-  age: null,
-  studentId: null,
+  // [DEV] 개발 및 UI 테스트를 위해 초기값을 설정합니다.
+  // 이렇게 하면 앱을 새로고침해도 이메일 인증 단계를 건너뛰고 가입/온보딩 화면을 테스트할 수 있습니다.
+  email: 'test@univ.ac.kr',
+  password: 'password123',
+  tempToken: 'mock-temp-token-dev', 
+
+  gender: 'male',
+  nationality: 'korean',
+  age: 24,
+  studentId: '2020',
+  
   selectedDormitories: [],
   isSmoker: null,
   sleepHabits: [],
@@ -116,6 +121,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const submitRegistration = useCallback(async (): Promise<RegisterResponse> => {
+    // 필수 데이터 확인
     if (!data.email || !data.password || !data.tempToken) {
       throw new Error('이메일, 비밀번호, 인증 토큰이 필요합니다.');
     }
@@ -128,9 +134,15 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       password: data.password,
       tempToken: data.tempToken,
       gender: data.gender.toUpperCase(),
-      nationality: data.nationality,
+      
+      // API 요구사항에 맞게 데이터 변환
+      // nationality: 'korean' -> 'KOREAN', 그 외 -> 'FOREIGNER'
+      nationality: data.nationality === 'korean' ? 'KOREAN' : 'FOREIGNER',
+      
       age: data.age,
-      studentId: parseInt(data.studentId, 10),
+      
+      // studentId: '2024' -> 24 (입학년도 뒤 2자리)
+      studentId: parseInt(data.studentId, 10) % 100,
     });
 
     return response;
