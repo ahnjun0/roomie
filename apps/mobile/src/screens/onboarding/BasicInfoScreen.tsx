@@ -126,7 +126,9 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
               { value: 'female', label: '여성' },
             ]}
             value={localData.gender}
-            onChange={value => setLocalData(prev => ({ ...prev, gender: value }))}
+            onChange={value =>
+              setLocalData(prev => ({ ...prev, gender: value as 'male' | 'female' }))
+            }
             horizontal
           />
 

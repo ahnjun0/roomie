@@ -48,7 +48,17 @@ class ApiService {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new ApiError(response.status, error.detail || 'Request failed');
+        let message = error.detail || 'Request failed';
+
+        if (Array.isArray(message)) {
+          message = message
+            .map((item: any) => (item.msg ? item.msg : JSON.stringify(item)))
+            .join('\n');
+        } else if (typeof message === 'object') {
+          message = JSON.stringify(message);
+        }
+
+        throw new ApiError(response.status, message);
       }
 
       return response.json();
