@@ -8,9 +8,9 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, useAuth } from '../../contexts';
+import { useTheme, useOnboarding } from '../../contexts';
 import { Button, Input, Header } from '../../components';
-import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
+import { spacing, fontSize, fontWeight } from '../../constants/theme';
 
 interface RegisterScreenProps {
   route: {
@@ -25,16 +25,14 @@ interface RegisterScreenProps {
 export function RegisterScreen({ route, navigation }: RegisterScreenProps) {
   const { email, tempToken } = route.params;
   const { colors } = useTheme();
-  const { register } = useAuth();
+  const { updateData } = useOnboarding();
   const insets = useSafeAreaInsets();
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
     password?: string;
     confirmPassword?: string;
-    general?: string;
   }>({});
 
   const validate = () => {
@@ -56,20 +54,18 @@ export function RegisterScreen({ route, navigation }: RegisterScreenProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegister = async () => {
+  const handleNext = () => {
     if (!validate()) return;
 
-    setIsLoading(true);
-    setErrors({});
+    // OnboardingContext에 회원가입 정보 저장
+    updateData({
+      email,
+      password,
+      tempToken,
+    });
 
-    try {
-      await register({ email, password, tempToken });
-      // 회원가입 성공 후 온보딩으로 이동 (AuthContext에서 자동 처리)
-    } catch (err: any) {
-      setErrors({ general: err.message || '회원가입에 실패했습니다.' });
-    } finally {
-      setIsLoading(false);
-    }
+    // BasicInfoScreen으로 이동
+    navigation.navigate('BasicInfo');
   };
 
   return (
@@ -98,14 +94,6 @@ export function RegisterScreen({ route, navigation }: RegisterScreenProps) {
         </View>
 
         <View style={styles.form}>
-          {errors.general && (
-            <View style={[styles.errorBanner, { backgroundColor: themeColors.error + '20' }]}>
-              <Text style={[styles.errorBannerText, { color: themeColors.error }]}>
-                {errors.general}
-              </Text>
-            </View>
-          )}
-
           <Input
             label="비밀번호"
             placeholder="8자 이상 입력"
@@ -131,9 +119,8 @@ export function RegisterScreen({ route, navigation }: RegisterScreenProps) {
           />
 
           <Button
-            title="가입 완료"
-            onPress={handleRegister}
-            loading={isLoading}
+            title="다음"
+            onPress={handleNext}
             fullWidth
           />
         </View>
@@ -165,14 +152,5 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: spacing.sm,
-  },
-  errorBanner: {
-    padding: spacing.md,
-    borderRadius: 8,
-    marginBottom: spacing.md,
-  },
-  errorBannerText: {
-    fontSize: fontSize.sm,
-    textAlign: 'center',
   },
 });

@@ -15,7 +15,7 @@ interface CodeInputProps {
   error?: boolean;
 }
 
-export function CodeInput({ length = 4, onComplete, error }: CodeInputProps) {
+export function CodeInput({ length = 6, onComplete, error }: CodeInputProps) {
   const { colors } = useTheme();
   const [code, setCode] = useState<string[]>(Array(length).fill(''));
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -88,11 +88,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   input: {
-    width: 56,
-    height: 64,
+    width: 48,
+    height: 56,
     borderWidth: 2,
     borderRadius: borderRadius.lg,
-    fontSize: fontSize.xxl,
+    fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
   },
 });

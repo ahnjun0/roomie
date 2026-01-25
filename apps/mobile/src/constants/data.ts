@@ -96,3 +96,13 @@ export const ENTRANCE_YEARS = [
   { value: '2024', label: '24학번' },
   { value: '2025', label: '25학번' },
 ] as const;
+
+export const ONBOARDING_STEPS = {
+  BASIC_INFO: { current: 1, total: 7, label: '기본 정보' },
+  DORMITORY_SELECT: { current: 2, total: 7, label: '기숙사 선택' },
+  CORE_HABITS: { current: 3, total: 7, label: '핵심 습관' },
+  LIFESTYLE_SCALE: { current: 4, total: 7, label: '생활 스타일' },
+  ROOMMATE_PREFERENCES: { current: 5, total: 7, label: '룸메이트 선호' },
+  SLEEP_PATTERNS: { current: 6, total: 7, label: '수면 패턴' },
+  WEIGHT_GAME: { current: 7, total: 7, label: '가중치 설정' },
+} as const;

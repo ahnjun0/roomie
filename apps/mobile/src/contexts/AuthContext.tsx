@@ -106,11 +106,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const verifyCode = useCallback(
     async (email: string, code: string): Promise<string> => {
-      const response = await api.post<{ temp_token: string }>(
+      const response = await api.post<{ verified: boolean; tempToken: string }>(
         ENDPOINTS.AUTH.VERIFY_CODE,
         { email, code },
       );
-      return response.temp_token;
+      return response.tempToken;
     },
     [],
   );
@@ -118,30 +118,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (data: RegisterData) => {
       const response = await api.post<{
-        access_token: string;
-        refresh_token: string;
-        user: User;
+        id: number;
+        email: string;
+        nickname: string | null;
+        accessToken: string;
+        refreshToken: string;
       }>(ENDPOINTS.AUTH.REGISTER, {
         email: data.email,
         password: data.password,
-        temp_token: data.tempToken,
+        tempToken: data.tempToken,
       });
 
+      // 백엔드 응답으로부터 User 객체 구성 (nickname -> name 매핑)
+      const user: User = {
+        id: response.id,
+        email: response.email,
+        name: response.nickname,
+        gender: null,
+        nationality: null,
+        birthYear: null,
+        studentId: null,
+        persona: null,
+        isEmailVerified: true,
+        isProfileComplete: false, // 회원가입 직후이므로 프로필 미완성
+      };
+
       await Promise.all([
-        AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.access_token),
-        AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token),
-        AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user)),
+        AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken),
+        AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken),
+        AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
       ]);
 
-      api.setAccessToken(response.access_token);
+      api.setAccessToken(response.accessToken);
 
       setState({
-        user: response.user,
-        accessToken: response.access_token,
-        refreshToken: response.refresh_token,
+        user,
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
         isLoading: false,
         isAuthenticated: true,
-        isOnboardingComplete: response.user.isProfileComplete,
+        isOnboardingComplete: false,
       });
     },
     [],
@@ -149,26 +165,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await api.post<{
-      access_token: string;
-      refresh_token: string;
-      user: User;
+      id: number;
+      email: string;
+      nickname: string | null;
+      accessToken: string;
+      refreshToken: string;
     }>(ENDPOINTS.AUTH.LOGIN, { email, password });
 
+    // 로그인 후 사용자 상세 정보 가져오기
+    api.setAccessToken(response.accessToken);
+
+    let user: User;
+    let isOnboardingComplete = false;
+
+    try {
+      // 전체 사용자 정보 가져오기
+      user = await api.get<User>(ENDPOINTS.USERS.ME);
+      isOnboardingComplete = user.isProfileComplete;
+    } catch {
+      // 실패 시 기본 정보 사용 (nickname -> name 매핑)
+      user = {
+        id: response.id,
+        email: response.email,
+        name: response.nickname,
+        gender: null,
+        nationality: null,
+        birthYear: null,
+        studentId: null,
+        persona: null,
+        isEmailVerified: true,
+        isProfileComplete: false,
+      };
+    }
+
     await Promise.all([
-      AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.access_token),
-      AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refresh_token),
-      AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(response.user)),
+      AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken),
+      AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken),
+      AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
     ]);
 
-    api.setAccessToken(response.access_token);
-
     setState({
-      user: response.user,
-      accessToken: response.access_token,
-      refreshToken: response.refresh_token,
+      user,
+      accessToken: response.accessToken,
+      refreshToken: response.refreshToken,
       isLoading: false,
       isAuthenticated: true,
-      isOnboardingComplete: response.user.isProfileComplete,
+      isOnboardingComplete,
     });
   }, []);
 

@@ -48,7 +48,17 @@ class ApiService {
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
-        throw new ApiError(response.status, error.detail || 'Request failed');
+        let message = error.detail || 'Request failed';
+
+        if (Array.isArray(message)) {
+          message = message
+            .map((item: any) => (item.msg ? item.msg : JSON.stringify(item)))
+            .join('\n');
+        } else if (typeof message === 'object') {
+          message = JSON.stringify(message);
+        }
+
+        throw new ApiError(response.status, message);
       }
 
       return response.json();
@@ -57,7 +67,16 @@ class ApiService {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(0, 'Network error');
+      // 상세 오류 로깅 (개발 환경)
+      if (__DEV__) {
+        console.error('API Error:', error);
+        console.error('URL:', `${this.baseUrl}${endpoint}`);
+      }
+      // AbortError는 타임아웃
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new ApiError(0, '요청 시간이 초과되었습니다.');
+      }
+      throw new ApiError(0, '네트워크 오류가 발생했습니다. 서버 연결을 확인해주세요.');
     }
   }
 

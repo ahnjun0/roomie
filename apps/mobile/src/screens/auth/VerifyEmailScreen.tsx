@@ -82,13 +82,13 @@ export function VerifyEmailScreen({ route, navigation }: VerifyEmailScreenProps)
             인증 코드 입력
           </Text>
           <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-            {email}로 전송된 4자리 코드를 입력하세요
+            {email}로 전송된 6자리 코드를 입력하세요
           </Text>
         </View>
 
         <View style={styles.codeContainer}>
           <CodeInput
-            length={4}
+            length={6}
             onComplete={handleCodeComplete}
             error={!!error}
           />

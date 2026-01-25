@@ -1,7 +1,5 @@
 // API 기본 설정
-export const API_BASE_URL = __DEV__
-  ? 'http://localhost:8000/api/v1'
-  : 'https://api.roomie.app/api/v1';
+export const API_BASE_URL = 'http://hjxarchive.cloud:8000/api/v1';
 
 export const API_TIMEOUT = 10000;
 

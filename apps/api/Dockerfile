@@ -22,6 +22,6 @@ RUN prisma generate
 # 5. 소스 코드 복사
 COPY . .
 
-# 6. FastAPI 실행 (8000 포트)
-# --host 0.0.0.0은 외부 접속을 허용하기 위해 필수입니다.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 6. 마이그레이션 실행 후 FastAPI 실행 (8000 포트)
+# sh -c를 사용하여 마이그레이션이 성공한 경우에만 서버를 실행하도록 설정합니다.
+CMD ["sh", "-c", "prisma migrate deploy && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

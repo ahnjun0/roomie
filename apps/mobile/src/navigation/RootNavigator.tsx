@@ -89,16 +89,16 @@ export function RootNavigator() {
         contentStyle: { backgroundColor: themeColors.background },
       }}>
       {!isAuthenticated ? (
-        // Auth Flow
+        // Auth Flow (회원가입 + 기본 정보 입력)
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="BasicInfo" component={BasicInfoScreen} />
         </>
       ) : !isOnboardingComplete ? (
-        // Onboarding Flow
+        // Onboarding Flow (추가 정보 입력)
         <>
-          <Stack.Screen name="BasicInfo" component={BasicInfoScreen} />
           <Stack.Screen name="DormitorySelect" component={DormitorySelectScreen} />
           <Stack.Screen name="CoreHabits" component={CoreHabitsScreen} />
           <Stack.Screen name="LifestyleScale" component={LifestyleScaleScreen} />
