@@ -1,17 +1,5 @@
-import { Platform } from 'react-native';
-
 // API 기본 설정
-// Android 에뮬레이터에서는 10.0.2.2가 호스트 머신의 localhost를 가리킴
-const getDevBaseUrl = () => {
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8000/api/v1';
-  }
-  return 'http://localhost:8000/api/v1';
-};
-
-export const API_BASE_URL = __DEV__
-  ? getDevBaseUrl()
-  : 'https://api.roomie.app/api/v1';
+export const API_BASE_URL = 'http://hjxarchive.cloud:8000/api/v1';
 
 export const API_TIMEOUT = 10000;
 
