@@ -11,6 +11,11 @@ import { UserLifestyle, UserPreference } from '../types';
 
 // 온보딩 데이터 타입
 interface OnboardingData {
+  // Registration (이메일 인증 후 저장)
+  email: string | null;
+  password: string | null;
+  tempToken: string | null;
+
   // Basic Info
   gender: 'male' | 'female' | null;
   nationality: string | null;
@@ -48,9 +53,19 @@ interface OnboardingData {
   weightNoise: number;
 }
 
+// 회원가입 응답 타입
+interface RegisterResponse {
+  id: number;
+  email: string;
+  nickname: string | null;
+  accessToken: string;
+  refreshToken: string;
+}
+
 interface OnboardingContextType {
   data: OnboardingData;
   updateData: (updates: Partial<OnboardingData>) => void;
+  submitRegistration: () => Promise<RegisterResponse>;
   submitBasicInfo: () => Promise<void>;
   submitLifestyle: () => Promise<void>;
   submitPreferences: () => Promise<void>;
@@ -58,6 +73,9 @@ interface OnboardingContextType {
 }
 
 const initialData: OnboardingData = {
+  email: null,
+  password: null,
+  tempToken: null,
   gender: null,
   nationality: null,
   age: null,
@@ -97,6 +115,27 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setData(initialData);
   }, []);
 
+  const submitRegistration = useCallback(async (): Promise<RegisterResponse> => {
+    if (!data.email || !data.password || !data.tempToken) {
+      throw new Error('이메일, 비밀번호, 인증 토큰이 필요합니다.');
+    }
+    if (!data.gender || !data.nationality || !data.age || !data.studentId) {
+      throw new Error('기본 정보를 모두 입력해주세요.');
+    }
+
+    const response = await api.post<RegisterResponse>(ENDPOINTS.AUTH.REGISTER, {
+      email: data.email,
+      password: data.password,
+      tempToken: data.tempToken,
+      gender: data.gender.toUpperCase(),
+      nationality: data.nationality,
+      age: data.age,
+      studentId: parseInt(data.studentId, 10),
+    });
+
+    return response;
+  }, [data]);
+
   const submitBasicInfo = useCallback(async () => {
     await api.patch(ENDPOINTS.USERS.ME, {
       gender: data.gender?.toUpperCase(),
@@ -134,6 +173,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       value={{
         data,
         updateData,
+        submitRegistration,
         submitBasicInfo,
         submitLifestyle,
         submitPreferences,

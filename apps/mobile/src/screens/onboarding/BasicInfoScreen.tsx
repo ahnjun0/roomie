@@ -1,19 +1,32 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, useOnboarding } from '../../contexts';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme, useOnboarding, useAuth } from '../../contexts';
+import { api } from '../../services/api';
 import { Button, RadioGroup, Dropdown, Input, Header, ProgressBar } from '../../components';
-import { spacing, fontSize, fontWeight } from '../../constants/theme';
+import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
 import { NATIONALITIES, ENTRANCE_YEARS, ONBOARDING_STEPS } from '../../constants/data';
+import { User } from '../../types';
 
 interface BasicInfoScreenProps {
   navigation: any;
 }
 
+const STORAGE_KEYS = {
+  ACCESS_TOKEN: '@roomie_access_token',
+  REFRESH_TOKEN: '@roomie_refresh_token',
+  USER: '@roomie_user',
+};
+
 export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
   const { colors } = useTheme();
-  const { data, updateData } = useOnboarding();
+  const { data, updateData, submitRegistration } = useOnboarding();
+  const { setTokens } = useAuth();
   const insets = useSafeAreaInsets();
+
+  // tempToken이 있으면 회원가입 모드
+  const isRegistrationMode = !!data.tempToken;
 
   const [localData, setLocalData] = useState({
     gender: data.gender,
@@ -21,6 +34,8 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
     age: data.age?.toString() || '',
     studentId: data.studentId,
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const isValid =
     localData.gender &&
@@ -28,14 +43,57 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
     localData.age &&
     localData.studentId;
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    // 먼저 로컬 데이터를 OnboardingContext에 저장
     updateData({
       gender: localData.gender as 'male' | 'female',
       nationality: localData.nationality,
       age: parseInt(localData.age, 10),
       studentId: localData.studentId,
     });
-    navigation.navigate('DormitorySelect');
+
+    if (isRegistrationMode) {
+      // 회원가입 모드: API 호출
+      setIsLoading(true);
+      setError('');
+
+      try {
+        const response = await submitRegistration();
+
+        // User 객체 구성
+        const user: User = {
+          id: response.id,
+          email: response.email,
+          name: response.nickname,
+          gender: localData.gender as 'male' | 'female',
+          nationality: localData.nationality,
+          birthYear: null,
+          studentId: localData.studentId,
+          persona: null,
+          isEmailVerified: true,
+          isProfileComplete: false,
+        };
+
+        // 토큰 및 사용자 정보 저장
+        await Promise.all([
+          AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken),
+          AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken),
+          AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
+        ]);
+
+        // AuthContext 상태 업데이트 - 이 시점에서 isAuthenticated가 true가 됨
+        api.setAccessToken(response.accessToken);
+        await setTokens(response.accessToken, response.refreshToken);
+
+        // 회원가입 완료 후 온보딩 계속 (RootNavigator가 자동으로 온보딩 플로우로 전환)
+      } catch (err: any) {
+        setError(err.message || '회원가입에 실패했습니다.');
+        setIsLoading(false);
+      }
+    } else {
+      // 온보딩 모드: 다음 화면으로 이동
+      navigation.navigate('DormitorySelect');
+    }
   };
 
   return (
@@ -99,10 +157,19 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
           />
         </View>
 
+        {error && (
+          <View style={[styles.errorBanner, { backgroundColor: themeColors.error + '20' }]}>
+            <Text style={[styles.errorText, { color: themeColors.error }]}>
+              {error}
+            </Text>
+          </View>
+        )}
+
         <Button
-          title="다음"
+          title={isRegistrationMode ? '가입 완료' : '다음'}
           onPress={handleNext}
           disabled={!isValid}
+          loading={isLoading}
           fullWidth
         />
       </ScrollView>
@@ -132,5 +199,14 @@ const styles = StyleSheet.create({
   form: {
     flex: 1,
     marginBottom: spacing.lg,
+  },
+  errorBanner: {
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.md,
+  },
+  errorText: {
+    fontSize: fontSize.sm,
+    textAlign: 'center',
   },
 });

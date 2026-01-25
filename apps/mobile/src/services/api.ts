@@ -57,7 +57,16 @@ class ApiService {
       if (error instanceof ApiError) {
         throw error;
       }
-      throw new ApiError(0, 'Network error');
+      // 상세 오류 로깅 (개발 환경)
+      if (__DEV__) {
+        console.error('API Error:', error);
+        console.error('URL:', `${this.baseUrl}${endpoint}`);
+      }
+      // AbortError는 타임아웃
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new ApiError(0, '요청 시간이 초과되었습니다.');
+      }
+      throw new ApiError(0, '네트워크 오류가 발생했습니다. 서버 연결을 확인해주세요.');
     }
   }
 
