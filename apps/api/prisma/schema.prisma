@@ -40,24 +40,31 @@ model User {
   createdAt   DateTime @default(now())
 }
 
-// 3. 나의 생활 패턴 (Fact) - (Screen 3, 4, 5)
+// 3. 나의 생활 패턴 (Fact) - (Screen 3, 4, 5, 7)
 model UserLifestyle {
   id        Int     @id @default(autoincrement())
   user      User    @relation(fields: [userId], references: [id])
   userId    Int     @unique
-  
-  dormName  String  // 기숙사 이름 (성실관, 진리관...)
-  isSmoker  Boolean // 흡연 여부
-  
-  // 수면 습관 (슬라이더 -> 숫자)
-  sleepStart Int    // 0~30 (예: 23=밤11시, 26=새벽2시)
-  sleepEnd   Int    // 기상 시간
-  sensitivity Int   // 잠귀 밝기 (1~5)
-  
-  // 태그 (이갈이, 코골이 등) -> 콤마로 구분된 문자열로 저장하거나 JSON 사용
-  sleepHabits String? // 예: "SNORING,GRINDING"
-  
-  cleaningHabit String? // 청소 습관
+
+  // 기숙사 (복수 선택 가능 - 쉼표로 구분)
+  dormNames String  // "성실관,봉사관,진리관"
+
+  isSmoker  Boolean // 흡연 여부 (필터링용)
+
+  // 수면 관련
+  sleepStart  Int     // 취침 시간 0~30 (예: 23=밤11시, 26=새벽2시)
+  sleepEnd    Int     // 기상 시간
+  sleepHabits String? // 잠버릇 태그 "SNORING,GRINDING,TALKING,TOSSING,NONE"
+
+  // 생활 스타일 (모두 1~5점 척도)
+  noiseLevel  Int @default(3)  // 소음 민감도 (1=둔함, 5=예민)
+  cleanLevel  Int @default(3)  // 청결도 (1=안치움, 5=결벽)
+  foodLevel   Int @default(3)  // 실내취식 (1=절대불가, 5=배달OK)
+  lightLevel  Int @default(3)  // 소등 선호 (1=칼소등, 5=밝아도OK)
+  tempLevel   Int @default(3)  // 온도 선호 (1=추위탐, 5=더위탐)
+
+  // 기타
+  homeVisit   String? // 본가 방문 주기 (WEEKLY, BI_WEEKLY, MONTHLY, RARELY)
 }
 
 // 4. 선호 조건 & 5만원 게임 가중치 (Preference) - (Screen 6, 7, 8)
@@ -65,16 +72,20 @@ model UserPreference {
   id        Int     @id @default(autoincrement())
   user      User    @relation(fields: [userId], references: [id])
   userId    Int     @unique
-  
-  // 기본 선호
+
+  // 기본 선호 (Screen 6)
   prefNationality Nationality? // 선호 국적 (null이면 무관)
   prefStudentId   String?      // SAME, SENIOR, JUNIOR, ANY
-  
-  // 5만원 게임 가중치 (0.0 ~ 3.0)
-  weightCleanliness Float @default(1.0)
-  weightNoise       Float @default(1.0)
-  weightSmoking     Float @default(1.0)
-  weightSleep       Float @default(1.0)
+
+  // 5만원 게임 가중치 (Screen 8)
+  // 값 = 베팅액 / 1000 (예: 10000원 → 10, 0원 → 0)
+  weightNoise  Int @default(0)  // 소음
+  weightClean  Int @default(0)  // 청결
+  weightFood   Int @default(0)  // 실내취식
+  weightHabit  Int @default(0)  // 잠버릇
+  weightTime   Int @default(0)  // 취침시간
+  weightLight  Int @default(0)  // 소등
+  weightTemp   Int @default(0)  // 온도
 }
 
 // 5. 리뷰 및 평가 (Screen 10)

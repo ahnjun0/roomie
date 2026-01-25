@@ -29,12 +29,21 @@ class ComparisonItem(BaseModel):
     match: bool
 
 
+# 항목별 점수 상세 (5만원 게임 결과)
+class ScoreBreakdownItem(BaseModel):
+    score: int        # 유사도 점수 (0-100)
+    weight: float     # 적용된 가중치
+    status: str       # "Perfect", "Good", "Bad" 등
+
+
 class RadarChartData(BaseModel):
-    cleanliness: int
-    noise: int
-    sleep: int
-    smoking: int
-    temperature: int
+    noise: int       # 소음
+    clean: int       # 청결
+    food: int        # 실내취식
+    light: int       # 소등
+    temp: int        # 온도
+    time: int        # 취침시간
+    habit: int       # 잠버릇
 
 
 class ReviewSummary(BaseModel):
@@ -54,13 +63,17 @@ class MatchingUserDetail(BaseModel):
 
 
 class MatchingLifestyleDetail(BaseModel):
-    dormName: str
+    dormNames: str
     isSmoker: bool
     sleepStart: int
     sleepEnd: int
-    sensitivity: int
     sleepHabits: str | None
-    cleaningHabit: str | None
+    noiseLevel: int
+    cleanLevel: int
+    foodLevel: int
+    lightLevel: int
+    tempLevel: int
+    homeVisit: str | None
 
 
 class MatchingDetailResponse(BaseModel):
@@ -69,5 +82,6 @@ class MatchingDetailResponse(BaseModel):
     matchRate: int
     comparison: dict[str, ComparisonItem]
     radarChart: dict[str, RadarChartData]
+    scoreBreakdown: dict[str, ScoreBreakdownItem]  # 항목별 점수 상세
     reviews: list[ReviewSummary]
     averageReviewScore: float

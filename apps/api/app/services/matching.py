@@ -1,18 +1,129 @@
 """
-매칭 알고리즘 서비스
+매칭 알고리즘 서비스 (v3)
 
 핵심 로직:
-1. 가중치 시스템 (5만원 게임): 사용자가 중요하게 생각하는 항목에 더 높은 점수 반영
-2. 기본 일치도와 가중치를 곱해서 최종 점수 계산
+1. 5만원 게임 가중치 시스템: BASE_WEIGHT + 베팅액으로 가중치 결정
+2. 7개 카테고리별 유사도 계산
+3. 가중 평균으로 최종 점수 산출
+
+공식: Total Score = (Σ(유사도 × 가중치) / Σ가중치) × 100
 """
 
+# ============== 상수 정의 ==============
+BASE_WEIGHT = 10.0      # 0원 베팅해도 기본 가중치 10
+MAX_SCALE_DIFF = 4.0    # 1~5점 척도의 최대 차이
+MAX_TIME_DIFF = 240.0   # 취침시간 최대 허용 차이 (분, 4시간)
+
+
+# ============== 변환 함수 ==============
+
+def get_habit_severity(sleep_habits: str | None) -> int:
+    """
+    잠버릇 태그를 심각도 점수(1~5)로 변환
+
+    1: 없음(조용함)
+    2: 뒤척임
+    3: 잠꼬대
+    4: 이갈이
+    5: 코골이
+    """
+    if not sleep_habits or sleep_habits == "NONE":
+        return 1
+
+    severity = 1
+    if "TOSSING" in sleep_habits:
+        severity = max(severity, 2)
+    if "TALKING" in sleep_habits:
+        severity = max(severity, 3)
+    if "GRINDING" in sleep_habits:
+        severity = max(severity, 4)
+    if "SNORING" in sleep_habits:
+        severity = max(severity, 5)
+
+    return severity
+
+
+def convert_sleep_to_minutes(sleep_hour: int) -> int:
+    """
+    sleepStart (0~30) → 분 단위 (0~1439)로 변환
+
+    예시:
+    - 23 = 밤 11시 = 23*60 = 1380분
+    - 24 = 자정 = 0분
+    - 26 = 새벽 2시 = 120분
+    """
+    if sleep_hour >= 24:
+        return (sleep_hour - 24) * 60
+    return sleep_hour * 60
+
+
+# ============== 유사도 계산 함수 ==============
+
+def calc_scale_similarity(my_val: int, target_val: int) -> float:
+    """
+    1~5 척도 항목의 유사도 계산 (궁합형)
+
+    차이 0 → 유사도 1.0 (100점)
+    차이 1 → 유사도 0.75 (75점)
+    차이 2 → 유사도 0.5 (50점)
+    차이 4 → 유사도 0.0 (0점)
+    """
+    diff = abs(my_val - target_val)
+    return max(0.0, 1.0 - (diff / MAX_SCALE_DIFF))
+
+
+def calc_time_similarity(my_sleep: int, target_sleep: int) -> float:
+    """
+    취침시간 유사도 계산 (분 단위)
+
+    24시간 순환을 고려 (23시와 01시는 2시간 차이)
+    4시간(240분) 이상 차이나면 유사도 0
+    """
+    my_min = convert_sleep_to_minutes(my_sleep)
+    target_min = convert_sleep_to_minutes(target_sleep)
+
+    diff = abs(my_min - target_min)
+
+    # 24시간 순환 처리 (23시-01시 = 2시간)
+    if diff > 720:
+        diff = 1440 - diff
+
+    return max(0.0, 1.0 - (diff / MAX_TIME_DIFF))
+
+
+def calc_habit_similarity(target_severity: int) -> float:
+    """
+    잠버릇 유사도 계산 (절대평가)
+
+    상대방이 조용할수록 높은 점수
+    - 심각도 1 (조용함) → 유사도 1.0
+    - 심각도 5 (코골이) → 유사도 0.0
+
+    ※ 내 잠버릇은 고려하지 않음 (상대가 나를 평가할 때 사용됨)
+    """
+    return max(0.0, 1.0 - ((target_severity - 1) / MAX_SCALE_DIFF))
+
+
+def get_status_text(similarity: float) -> str:
+    """유사도에 따른 상태 텍스트 반환"""
+    if similarity >= 1.0:
+        return "Perfect"
+    elif similarity >= 0.75:
+        return "Good"
+    elif similarity >= 0.5:
+        return "Okay"
+    else:
+        return "Bad"
+
+
+# ============== 메인 매칭 알고리즘 ==============
 
 def calculate_match_score(
     my_lifestyle: dict,
     my_preference: dict,
     target_lifestyle: dict,
     target_user: dict,
-) -> int:
+) -> dict:
     """
     두 사용자 간의 매칭 점수를 계산합니다.
 
@@ -23,99 +134,145 @@ def calculate_match_score(
         target_user: 후보의 기본 정보
 
     Returns:
-        0-100 사이의 매칭 점수
+        {
+            "total_match_rate": 87.5,  # 0-100 사이 점수
+            "breakdown": {
+                "noise": {"score": 100, "weight": 40.0, "status": "Perfect"},
+                ...
+            }
+        }
     """
     if not my_lifestyle or not target_lifestyle:
-        return 50  # 데이터 부족 시 기본 점수
+        return {
+            "total_match_rate": 50,
+            "breakdown": {}
+        }
 
-    score = 0.0
-    max_score = 0.0
+    total_weighted_score = 0.0
+    total_weight_sum = 0.0
+    breakdown = {}
 
-    # 가중치 가져오기 (기본값 1.0)
-    weight_smoking = my_preference.get("weightSmoking", 1.0) if my_preference else 1.0
-    weight_sleep = my_preference.get("weightSleep", 1.0) if my_preference else 1.0
-    weight_cleanliness = my_preference.get("weightCleanliness", 1.0) if my_preference else 1.0
-    weight_noise = my_preference.get("weightNoise", 1.0) if my_preference else 1.0
+    # 가중치 가져오기 (preference에서)
+    pref = my_preference or {}
 
-    # 1. 흡연 여부 매칭
-    max_score += weight_smoking
-    if my_lifestyle.get("isSmoker") == target_lifestyle.get("isSmoker"):
-        score += weight_smoking
-    elif not my_lifestyle.get("isSmoker") and not target_lifestyle.get("isSmoker"):
-        # 둘 다 비흡연자면 만점
-        score += weight_smoking
+    # ============== 7개 카테고리 처리 ==============
 
-    # 2. 수면 시간 매칭
-    max_score += weight_sleep
-    my_sleep = my_lifestyle.get("sleepStart", 24)
-    target_sleep = target_lifestyle.get("sleepStart", 24)
-    sleep_diff = abs(my_sleep - target_sleep)
-    if sleep_diff <= 1:
-        score += weight_sleep
-    elif sleep_diff <= 2:
-        score += weight_sleep * 0.7
-    elif sleep_diff <= 3:
-        score += weight_sleep * 0.4
-    # 3시간 이상 차이나면 0점
+    categories = [
+        {
+            "key": "noise",
+            "weight_key": "weightNoise",
+            "my_val": my_lifestyle.get("noiseLevel", 3),
+            "target_val": target_lifestyle.get("noiseLevel", 3),
+            "calc_type": "scale"
+        },
+        {
+            "key": "clean",
+            "weight_key": "weightClean",
+            "my_val": my_lifestyle.get("cleanLevel", 3),
+            "target_val": target_lifestyle.get("cleanLevel", 3),
+            "calc_type": "scale"
+        },
+        {
+            "key": "food",
+            "weight_key": "weightFood",
+            "my_val": my_lifestyle.get("foodLevel", 3),
+            "target_val": target_lifestyle.get("foodLevel", 3),
+            "calc_type": "scale"
+        },
+        {
+            "key": "light",
+            "weight_key": "weightLight",
+            "my_val": my_lifestyle.get("lightLevel", 3),
+            "target_val": target_lifestyle.get("lightLevel", 3),
+            "calc_type": "scale"
+        },
+        {
+            "key": "temp",
+            "weight_key": "weightTemp",
+            "my_val": my_lifestyle.get("tempLevel", 3),
+            "target_val": target_lifestyle.get("tempLevel", 3),
+            "calc_type": "scale"
+        },
+        {
+            "key": "time",
+            "weight_key": "weightTime",
+            "my_val": my_lifestyle.get("sleepStart", 24),
+            "target_val": target_lifestyle.get("sleepStart", 24),
+            "calc_type": "time"
+        },
+        {
+            "key": "habit",
+            "weight_key": "weightHabit",
+            "my_val": get_habit_severity(my_lifestyle.get("sleepHabits")),
+            "target_val": get_habit_severity(target_lifestyle.get("sleepHabits")),
+            "calc_type": "habit"
+        },
+    ]
 
-    # 3. 청소 습관 매칭
-    max_score += weight_cleanliness
-    my_cleaning = my_lifestyle.get("cleaningHabit", "WEEKLY")
-    target_cleaning = target_lifestyle.get("cleaningHabit", "WEEKLY")
-    if my_cleaning == target_cleaning:
-        score += weight_cleanliness
-    else:
-        # 비슷한 습관이면 부분 점수
-        cleaning_order = ["DAILY", "WEEKLY", "WHEN_DIRTY", "NEVER"]
-        try:
-            my_idx = cleaning_order.index(my_cleaning) if my_cleaning else 1
-            target_idx = cleaning_order.index(target_cleaning) if target_cleaning else 1
-            diff = abs(my_idx - target_idx)
-            if diff == 1:
-                score += weight_cleanliness * 0.6
-            elif diff == 2:
-                score += weight_cleanliness * 0.3
-        except ValueError:
-            score += weight_cleanliness * 0.5
+    for cat in categories:
+        # 가중치 계산: BASE_WEIGHT + 베팅액
+        bet_amount = pref.get(cat["weight_key"], 0)
+        weight = BASE_WEIGHT + bet_amount
 
-    # 4. 잠귀 민감도 매칭
-    max_score += weight_noise
-    my_sensitivity = my_lifestyle.get("sensitivity", 3)
-    target_sensitivity = target_lifestyle.get("sensitivity", 3)
-    sensitivity_diff = abs(my_sensitivity - target_sensitivity)
-    if sensitivity_diff <= 1:
-        score += weight_noise
-    elif sensitivity_diff <= 2:
-        score += weight_noise * 0.6
-    else:
-        score += weight_noise * 0.2
+        # 유사도 계산
+        if cat["calc_type"] == "time":
+            similarity = calc_time_similarity(cat["my_val"], cat["target_val"])
+        elif cat["calc_type"] == "habit":
+            # 잠버릇은 상대방의 심각도만 고려 (절대평가)
+            similarity = calc_habit_similarity(cat["target_val"])
+        else:
+            # scale 타입: 나와 상대의 차이 (상대평가)
+            similarity = calc_scale_similarity(cat["my_val"], cat["target_val"])
 
-    # 5. 국적/학번 선호 (보너스 점수)
+        # 점수 합산
+        total_weighted_score += similarity * weight
+        total_weight_sum += weight
+
+        # breakdown 저장
+        breakdown[cat["key"]] = {
+            "score": round(similarity * 100),
+            "weight": weight,
+            "status": get_status_text(similarity)
+        }
+
+    # ============== 보너스 점수 (국적/학번 선호) ==============
     bonus = 0.0
-    if my_preference:
-        pref_nationality = my_preference.get("prefNationality")
-        if pref_nationality and pref_nationality == target_user.get("nationality"):
-            bonus += 5
 
-        pref_student_id = my_preference.get("prefStudentId")
-        my_student_id = my_lifestyle.get("userId")  # 실제로는 user에서 가져와야 함
-        target_student_id = target_user.get("studentId")
-        if pref_student_id == "SAME" and my_student_id == target_student_id:
-            bonus += 3
-        elif pref_student_id == "ANY":
-            bonus += 1
+    # 국적 선호 보너스
+    pref_nationality = pref.get("prefNationality")
+    if pref_nationality and pref_nationality == target_user.get("nationality"):
+        bonus += 3
 
-    # 최종 점수 계산 (0-100 스케일)
-    if max_score > 0:
-        base_score = (score / max_score) * 100
-        final_score = min(100, base_score + bonus)
-        return round(final_score)
+    # 학번 선호 보너스
+    pref_student_id = pref.get("prefStudentId")
+    target_student_id = target_user.get("studentId")
+    my_student_id = my_lifestyle.get("userId")  # 참고용
 
-    return 50
+    if pref_student_id == "SAME":
+        # 동기 선호: user의 studentId와 같은 학번이면 보너스
+        # (실제로는 current_user의 studentId와 비교해야 함)
+        pass  # 이 부분은 endpoint에서 처리
+    elif pref_student_id == "ANY":
+        bonus += 1
+
+    # ============== 최종 점수 계산 ==============
+    if total_weight_sum == 0:
+        return {
+            "total_match_rate": 50,
+            "breakdown": breakdown
+        }
+
+    base_score = (total_weighted_score / total_weight_sum) * 100
+    final_score = min(100, base_score + bonus)
+
+    return {
+        "total_match_rate": round(final_score, 1),
+        "breakdown": breakdown
+    }
 
 
 def generate_keywords(lifestyle: dict, user: dict) -> list[str]:
-    """사용자의 키워드 태그 생성"""
+    """사용자의 키워드 태그 생성 (최대 4개)"""
     keywords = []
 
     if lifestyle:
@@ -136,21 +293,97 @@ def generate_keywords(lifestyle: dict, user: dict) -> list[str]:
         else:
             keywords.append("늦은취침")
 
-        # 청소 습관
-        cleaning = lifestyle.get("cleaningHabit")
-        if cleaning == "DAILY":
-            keywords.append("매일청소")
-        elif cleaning == "WEEKLY":
-            keywords.append("주1회청소")
-        elif cleaning == "WHEN_DIRTY":
-            keywords.append("필요시청소")
+        # 청결도
+        clean_level = lifestyle.get("cleanLevel", 3)
+        if clean_level >= 4:
+            keywords.append("깔끔선호")
+        elif clean_level <= 2:
+            keywords.append("청소여유")
 
         # 잠버릇
         sleep_habits = lifestyle.get("sleepHabits", "")
         if sleep_habits:
-            if "NONE" in sleep_habits:
+            if "NONE" in sleep_habits or not sleep_habits:
                 keywords.append("조용한수면")
-            if "SNORING" in sleep_habits:
+            elif "SNORING" in sleep_habits:
                 keywords.append("코골이")
 
-    return keywords[:4]  # 최대 4개
+    return keywords[:4]
+
+
+def generate_radar_chart_data(lifestyle: dict) -> dict:
+    """
+    레이더 차트용 데이터 생성
+
+    각 항목을 0-100 스케일로 변환
+    """
+    if not lifestyle:
+        return {
+            "noise": 50,
+            "clean": 50,
+            "food": 50,
+            "light": 50,
+            "temp": 50,
+            "time": 50,
+            "habit": 50,
+        }
+
+    # 1-5 스케일 → 0-100 스케일
+    def scale_to_100(val: int) -> int:
+        return round((val - 1) / 4 * 100)
+
+    # 취침시간 → 0-100 (23시=0, 새벽3시=100)
+    sleep_start = lifestyle.get("sleepStart", 24)
+    if sleep_start <= 23:
+        time_score = 0
+    elif sleep_start >= 27:
+        time_score = 100
+    else:
+        time_score = round((sleep_start - 23) / 4 * 100)
+
+    # 잠버릇 심각도 → 0-100 (반전: 조용할수록 높은 점수)
+    habit_severity = get_habit_severity(lifestyle.get("sleepHabits"))
+    habit_score = 100 - scale_to_100(habit_severity)
+
+    return {
+        "noise": scale_to_100(lifestyle.get("noiseLevel", 3)),
+        "clean": scale_to_100(lifestyle.get("cleanLevel", 3)),
+        "food": scale_to_100(lifestyle.get("foodLevel", 3)),
+        "light": scale_to_100(lifestyle.get("lightLevel", 3)),
+        "temp": scale_to_100(lifestyle.get("tempLevel", 3)),
+        "time": time_score,
+        "habit": habit_score,
+    }
+
+
+def check_dormitory_overlap(my_dorms: str, target_dorms: str) -> bool:
+    """
+    두 사용자의 기숙사 지원 목록에 교집합이 있는지 확인
+
+    Args:
+        my_dorms: "성실관,봉사관"
+        target_dorms: "봉사관,진리관"
+
+    Returns:
+        True if 교집합 존재
+    """
+    if not my_dorms or not target_dorms:
+        return False
+
+    my_set = set(d.strip() for d in my_dorms.split(","))
+    target_set = set(d.strip() for d in target_dorms.split(","))
+
+    return bool(my_set & target_set)
+
+
+def get_common_dormitories(my_dorms: str, target_dorms: str) -> list[str]:
+    """
+    두 사용자의 공통 기숙사 목록 반환
+    """
+    if not my_dorms or not target_dorms:
+        return []
+
+    my_set = set(d.strip() for d in my_dorms.split(","))
+    target_set = set(d.strip() for d in target_dorms.split(","))
+
+    return list(my_set & target_set)

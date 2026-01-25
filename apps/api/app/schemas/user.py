@@ -97,25 +97,41 @@ class UserProfileUpdate(BaseModel):
 # ============== Lifestyle ==============
 
 class LifestyleUpdate(BaseModel):
-    dormName: str
+    # 기숙사 (복수 선택 가능)
+    dormNames: str  # "성실관,봉사관" 쉼표 구분
+
     isSmoker: bool
+
+    # 수면 관련
     sleepStart: int = Field(..., ge=0, le=30)
     sleepEnd: int = Field(..., ge=0, le=30)
-    sensitivity: int = Field(..., ge=1, le=5)
     sleepHabits: str | None = None  # "SNORING,GRINDING,TALKING,TOSSING,NONE"
-    cleaningHabit: str | None = None  # "DAILY,WEEKLY,WHEN_DIRTY,NEVER"
+
+    # 생활 스타일 (1~5점)
+    noiseLevel: int = Field(3, ge=1, le=5)   # 소음 민감도
+    cleanLevel: int = Field(3, ge=1, le=5)   # 청결도
+    foodLevel: int = Field(3, ge=1, le=5)    # 실내취식
+    lightLevel: int = Field(3, ge=1, le=5)   # 소등
+    tempLevel: int = Field(3, ge=1, le=5)    # 온도
+
+    # 기타
+    homeVisit: str | None = None  # "WEEKLY", "BI_WEEKLY", "MONTHLY", "RARELY"
 
 
 class LifestyleResponse(BaseModel):
     id: int
     userId: int
-    dormName: str
+    dormNames: str
     isSmoker: bool
     sleepStart: int
     sleepEnd: int
-    sensitivity: int
     sleepHabits: str | None
-    cleaningHabit: str | None
+    noiseLevel: int
+    cleanLevel: int
+    foodLevel: int
+    lightLevel: int
+    tempLevel: int
+    homeVisit: str | None
 
     class Config:
         from_attributes = True
@@ -124,12 +140,19 @@ class LifestyleResponse(BaseModel):
 # ============== Preference ==============
 
 class PreferenceUpdate(BaseModel):
+    # 기본 선호 (Screen 6)
     prefNationality: Nationality | None = None
     prefStudentId: str | None = None  # "SAME", "SENIOR", "JUNIOR", "ANY"
-    weightCleanliness: float = Field(1.0, ge=0.0, le=3.0)
-    weightNoise: float = Field(1.0, ge=0.0, le=3.0)
-    weightSmoking: float = Field(1.0, ge=0.0, le=3.0)
-    weightSleep: float = Field(1.0, ge=0.0, le=3.0)
+
+    # 5만원 게임 가중치 (Screen 8)
+    # 값 = 베팅액 / 1000 (예: 10000원 → 10, 50000원 → 50, 0원 → 0)
+    weightNoise: int = Field(0, ge=0, le=50)   # 소음
+    weightClean: int = Field(0, ge=0, le=50)   # 청결
+    weightFood: int = Field(0, ge=0, le=50)    # 실내취식
+    weightHabit: int = Field(0, ge=0, le=50)   # 잠버릇
+    weightTime: int = Field(0, ge=0, le=50)    # 취침시간
+    weightLight: int = Field(0, ge=0, le=50)   # 소등
+    weightTemp: int = Field(0, ge=0, le=50)    # 온도
 
 
 class PreferenceResponse(BaseModel):
@@ -137,10 +160,13 @@ class PreferenceResponse(BaseModel):
     userId: int
     prefNationality: Nationality | None
     prefStudentId: str | None
-    weightCleanliness: float
-    weightNoise: float
-    weightSmoking: float
-    weightSleep: float
+    weightNoise: int
+    weightClean: int
+    weightFood: int
+    weightHabit: int
+    weightTime: int
+    weightLight: int
+    weightTemp: int
 
     class Config:
         from_attributes = True
