@@ -17,17 +17,21 @@ model User {
   id          Int      @id @default(autoincrement()) // 고유 ID
   email       String   @unique                       // 학교 이메일
   nickname    String?
-  password    String   // (간단 구현을 위해 평문 저장 or 해시)
-  
+  password    String   // 해시된 비밀번호
+
   gender      Gender   // 성별 (Enum)
   studentId   Int      // 학번 (23, 24)
   age         Int
   nationality Nationality
-  
+
+  // 학교 연결
+  school      School?  @relation(fields: [schoolId], references: [id])
+  schoolId    Int?
+
   // 관계 설정 (1:1, 1:N)
   lifestyle   UserLifestyle?   // 나의 생활 패턴
   preference  UserPreference?  // 나의 선호 조건
-  
+
   // 내가 쓴 리뷰들
   writtenReviews Review[] @relation("WrittenReviews")
   // 내가 받은 리뷰들
@@ -36,6 +40,10 @@ model User {
   // 채팅
   chatParticipants ChatParticipant[]
   chatMessages     ChatMessage[]
+
+  // 매칭 결과 캐시
+  matchResultsAsUser   MatchResult[] @relation("MatchUser")
+  matchResultsAsTarget MatchResult[] @relation("MatchTarget")
 
   createdAt   DateTime @default(now())
 }
@@ -142,12 +150,51 @@ model ChatMessage {
   createdAt  DateTime @default(now())
 }
 
-// 7. 기숙사 정보
-model Dormitory {
-  id       Int     @id @default(autoincrement())
-  name     String  @unique
-  gender   Gender  // 입사 가능 성별
-  capacity Int?
+// 7. 학교 정보
+model School {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique  // "KAIST", "부산대학교"
+  domain    String?  // "kaist.ac.kr" - 이메일 도메인 검증용
+
+  dorms     Dorm[]   // 소속 기숙사들
+  users     User[]   // 소속 학생들
+
+  createdAt DateTime @default(now())
+}
+
+// 8. 기숙사 정보 (학교별)
+model Dorm {
+  id        Int      @id @default(autoincrement())
+
+  school    School   @relation(fields: [schoolId], references: [id])
+  schoolId  Int
+
+  name      String   // "사랑관", "소망관"
+  gender    Gender   // 입사 가능 성별
+  roomType  String?  // "2인실", "4인실"
+  capacity  Int?     // 수용 인원
+
+  @@unique([schoolId, name])  // 같은 학교 내 기숙사명 중복 방지
+}
+
+// 9. 매칭 결과 캐시 (성능 최적화)
+model MatchResult {
+  id           Int      @id @default(autoincrement())
+
+  user         User     @relation("MatchUser", fields: [userId], references: [id])
+  userId       Int
+
+  targetUser   User     @relation("MatchTarget", fields: [targetUserId], references: [id])
+  targetUserId Int
+
+  score        Float    // 매칭 점수 (0-100)
+  breakdown    String?  // JSON 형태의 항목별 점수
+
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@unique([userId, targetUserId])  // 유저 쌍당 하나의 결과만
+  @@index([userId, score(sort: Desc)])  // 조회 성능 최적화
 }
 
 // Enum 정의 (고정된 값들)

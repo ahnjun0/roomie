@@ -158,14 +158,31 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [data]);
 
   const submitLifestyle = useCallback(async () => {
+    // 선택된 기숙사 ID를 이름으로 변환
+    const selectedDormNames = data.selectedDormitories
+      .map(id => {
+        const dorm = [1, 2, 3, 4].find(d => d === id);
+        if (id === 1) return '성실관';
+        if (id === 2) return '봉사관';
+        if (id === 3) return '진리관';
+        if (id === 4) return '화원관';
+        return '';
+      })
+      .filter(Boolean)
+      .join(',');
+
     await api.put(ENDPOINTS.USERS.LIFESTYLE, {
-      dorm_name: data.selectedDormitories[0], // 첫 번째 선택된 기숙사
-      is_smoker: data.isSmoker,
-      sleep_start: data.sleepStart,
-      sleep_end: data.sleepEnd,
-      sensitivity: data.sensitivity,
-      sleep_habits: data.sleepHabits,
-      cleaning_habit: getCleaningHabit(data.cleanliness),
+      dormNames: selectedDormNames,
+      isSmoker: data.isSmoker ?? false,
+      sleepStart: data.sleepStart,
+      sleepEnd: data.sleepEnd,
+      sleepHabits: data.sleepHabits.join(',') || null,
+      noiseLevel: data.noiseLevel,
+      cleanLevel: data.cleanliness,
+      foodLevel: data.indoorEating,
+      lightLevel: data.lightsOut,
+      tempLevel: data.temperature,
+      homeVisit: data.homeVisitFrequency || null,
     });
   }, [data]);
 

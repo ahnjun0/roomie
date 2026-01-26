@@ -1,16 +1,15 @@
 from datetime import datetime, timedelta
 import secrets
 
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from prisma import Prisma
 
 from app.core.config import settings
 from app.core.database import get_db
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # 인증 코드 저장소 (실제 환경에서는 Redis 사용 권장)
@@ -19,13 +18,18 @@ temp_tokens: dict[str, str] = {}
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """비밀번호 검증"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """비밀번호 검증 (bcrypt 직접 사용)"""
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8")
+    )
 
 
 def get_password_hash(password: str) -> str:
-    """비밀번호 해싱"""
-    return pwd_context.hash(password)
+    """비밀번호 해싱 (bcrypt 직접 사용)"""
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return hashed.decode("utf-8")
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:

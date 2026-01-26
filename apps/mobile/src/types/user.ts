@@ -14,17 +14,19 @@ export interface User {
 }
 
 export interface UserLifestyle {
-  isSmoker: boolean | null;
-  snores: boolean | null;
-  grindsTeeth: boolean | null;
-  sleepTime: string | null;
-  wakeTime: string | null;
-  homeVisitFrequency: number | null;
-  lightSensitivity: number | null;
-  noiseSensitivity: number | null;
-  cleanliness: number | null;
-  indoorEating: boolean | null;
-  preferredTemperature: number | null;
+  id: number;
+  userId: number;
+  dormNames: string;
+  isSmoker: boolean;
+  sleepStart: number;
+  sleepEnd: number;
+  sleepHabits: string | null;
+  noiseLevel: number;
+  cleanLevel: number;
+  foodLevel: number;
+  lightLevel: number;
+  tempLevel: number;
+  homeVisit: string | null;
 }
 
 export interface UserPreference {
