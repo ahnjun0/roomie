@@ -137,7 +137,7 @@ async def get_matching_list(
 
 @router.get("/{user_id}", response_model=MatchingDetailResponse)
 async def get_matching_detail(
-    user_id: int,
+    user_id: str,
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):

@@ -2,25 +2,48 @@
 더미 유저 데이터 생성 스크립트
 
 사용법:
-    cd apps/api
+    # 로컬 DB에 직접 생성 (기본)
     python -m scripts.generate_dummy_users
+
+    # 원격 서버 API를 통해 생성
+    python -m scripts.generate_dummy_users --api http://hjxarchive.cloud:8000
+
+    # 원격 DB에 직접 연결 (DATABASE_URL 환경변수 사용)
+    DATABASE_URL="postgresql://..." python -m scripts.generate_dummy_users
+
+    # 기존 더미 유저 삭제 후 재생성
+    python -m scripts.generate_dummy_users --reset
+
+    # 특정 개수만 생성
+    python -m scripts.generate_dummy_users --limit 5
 
 기능:
     - 20명의 페르소나 기반 더미 유저 생성
     - 각 유저별 lifestyle, preference 자동 생성
-    - 매칭 점수 자동 계산
+    - API 모드 / DB 직접 연결 모드 지원
 """
 
+import argparse
 import asyncio
+import os
 import sys
 from pathlib import Path
 
 import bcrypt
+import httpx
+from cuid2 import cuid_wrapper
 
 # 프로젝트 루트를 path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from prisma import Prisma
+
+# CUID2 생성기
+cuid_generator = cuid_wrapper()
+
+# 기본 설정
+DEFAULT_PASSWORD = "test1234"
+DUMMY_EMAIL_DOMAIN = "@kaist.ac.kr"
 
 
 def hash_password(password: str) -> str:
@@ -639,18 +662,37 @@ PERSONAS = [
 ]
 
 
-async def create_dummy_users(db: Prisma):
-    """더미 유저 생성"""
+async def create_dummy_users_db(db: Prisma, personas: list, reset: bool = False):
+    """DB 직접 연결 모드로 더미 유저 생성"""
     # KAIST 학교 조회
     school = await db.school.find_unique(where={"name": "KAIST"})
     if not school:
         print("❌ KAIST 학교 데이터가 없습니다. 먼저 seeds.py를 실행하세요.")
         return
 
+    # reset 모드: 기존 더미 유저 삭제
+    if reset:
+        print("🗑️  기존 더미 유저 삭제 중...")
+        dummy_emails = [p["email"] for p in PERSONAS]
+        for email in dummy_emails:
+            user = await db.user.find_unique(where={"email": email})
+            if user:
+                # 관련 데이터 먼저 삭제
+                await db.userlifestyle.delete_many(where={"userId": user.id})
+                await db.userpreference.delete_many(where={"userId": user.id})
+                await db.review.delete_many(where={"reviewerId": user.id})
+                await db.review.delete_many(where={"targetId": user.id})
+                await db.chatparticipant.delete_many(where={"userId": user.id})
+                await db.chatmessage.delete_many(where={"senderId": user.id})
+                await db.matchresult.delete_many(where={"userId": user.id})
+                await db.matchresult.delete_many(where={"targetUserId": user.id})
+                await db.user.delete(where={"id": user.id})
+        print("  ✓ 삭제 완료")
+
     created_count = 0
     skipped_count = 0
 
-    for persona in PERSONAS:
+    for persona in personas:
         # 이미 존재하는 유저 확인
         existing = await db.user.find_unique(where={"email": persona["email"]})
         if existing:
@@ -661,9 +703,10 @@ async def create_dummy_users(db: Prisma):
         # 유저 생성
         user = await db.user.create(
             data={
+                "id": cuid_generator(),  # CUID2로 ID 생성
                 "email": persona["email"],
                 "nickname": persona["nickname"],
-                "password": hash_password("test1234"),  # 공통 비밀번호
+                "password": hash_password(DEFAULT_PASSWORD),
                 "gender": persona["gender"],
                 "nationality": persona["nationality"],
                 "age": persona["age"],
@@ -696,20 +739,117 @@ async def create_dummy_users(db: Prisma):
     print(f"\n✅ 완료: {created_count}명 생성, {skipped_count}명 스킵")
 
 
+async def create_dummy_users_api(base_url: str, personas: list):
+    """HTTP API 모드로 더미 유저 생성 (admin 엔드포인트 사용)"""
+    admin_url = f"{base_url.rstrip('/')}/api/v1/admin/dummy-users"
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        print(f"🌐 서버에 연결 중: {base_url}")
+
+        # 서버 상태 확인
+        try:
+            health = await client.get(f"{base_url.rstrip('/')}/health")
+            if health.status_code != 200:
+                print(f"❌ 서버 응답 없음: {health.status_code}")
+                return
+        except httpx.ConnectError:
+            print(f"❌ 서버에 연결할 수 없습니다: {base_url}")
+            return
+
+        # Admin API로 bulk 생성 요청
+        try:
+            response = await client.post(
+                admin_url,
+                json={"personas": personas, "password": DEFAULT_PASSWORD},
+                timeout=60.0
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                print(f"\n✅ 완료: {result.get('created', 0)}명 생성, {result.get('skipped', 0)}명 스킵")
+            elif response.status_code == 404:
+                print("❌ Admin API가 없습니다. 서버에 /api/v1/admin/dummy-users 엔드포인트를 추가하세요.")
+                print("   또는 --api 옵션 없이 DB 직접 연결 모드를 사용하세요.")
+            else:
+                print(f"❌ 오류: {response.status_code} - {response.text}")
+        except Exception as e:
+            print(f"❌ API 호출 실패: {e}")
+
+
+def parse_args():
+    """CLI 인자 파싱"""
+    parser = argparse.ArgumentParser(
+        description="더미 유저 데이터 생성 스크립트",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+예시:
+  python -m scripts.generate_dummy_users                    # 로컬 DB 직접 연결
+  python -m scripts.generate_dummy_users --api http://hjxarchive.cloud:8000
+  python -m scripts.generate_dummy_users --reset            # 기존 데이터 삭제 후 재생성
+  python -m scripts.generate_dummy_users --limit 5          # 5명만 생성
+        """
+    )
+    parser.add_argument(
+        "--api",
+        type=str,
+        metavar="URL",
+        help="API 모드: 서버 URL (예: http://hjxarchive.cloud:8000)"
+    )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="기존 더미 유저 삭제 후 재생성"
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        metavar="N",
+        help="생성할 유저 수 제한"
+    )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        dest="list_personas",
+        help="생성 가능한 페르소나 목록 출력"
+    )
+    return parser.parse_args()
+
+
 async def main():
     """메인 실행 함수"""
+    args = parse_args()
+
+    # 페르소나 목록 출력
+    if args.list_personas:
+        print("📋 생성 가능한 페르소나 목록:\n")
+        for i, p in enumerate(PERSONAS, 1):
+            print(f"  {i:2}. {p['nickname']:12} ({p['gender']:6}) - {p['email']}")
+        print(f"\n총 {len(PERSONAS)}명")
+        return
+
+    # 생성할 페르소나 선택
+    personas = PERSONAS[:args.limit] if args.limit else PERSONAS
+
     print("👥 더미 유저 생성 시작...\n")
+    print(f"   대상: {len(personas)}명")
+    print(f"   모드: {'API' if args.api else 'DB 직접 연결'}")
+    print(f"   리셋: {'예' if args.reset else '아니오'}\n")
 
-    db = Prisma()
-    await db.connect()
+    if args.api:
+        # API 모드
+        await create_dummy_users_api(args.api, personas)
+    else:
+        # DB 직접 연결 모드
+        db = Prisma()
+        await db.connect()
 
-    try:
-        await create_dummy_users(db)
-    except Exception as e:
-        print(f"❌ 오류 발생: {e}")
-        raise
-    finally:
-        await db.disconnect()
+        try:
+            await create_dummy_users_db(db, personas, reset=args.reset)
+        except Exception as e:
+            print(f"❌ 오류 발생: {e}")
+            raise
+        finally:
+            await db.disconnect()
 
 
 if __name__ == "__main__":

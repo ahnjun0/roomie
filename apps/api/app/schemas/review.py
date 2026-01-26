@@ -4,15 +4,15 @@ from pydantic import BaseModel, Field
 
 
 class ReviewCreate(BaseModel):
-    targetId: int
+    targetId: str
     content: str
     score: int = Field(..., ge=1, le=5)
 
 
 class ReviewResponse(BaseModel):
     id: int
-    reviewerId: int
-    targetId: int
+    reviewerId: str
+    targetId: str
     content: str
     score: int
     createdAt: datetime

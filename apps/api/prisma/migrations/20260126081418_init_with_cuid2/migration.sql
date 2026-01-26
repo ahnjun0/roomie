@@ -6,7 +6,7 @@ CREATE TYPE "Nationality" AS ENUM ('KOREAN', 'FOREIGNER');
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "nickname" TEXT,
     "password" TEXT NOT NULL,
@@ -14,6 +14,7 @@ CREATE TABLE "User" (
     "studentId" INTEGER NOT NULL,
     "age" INTEGER NOT NULL,
     "nationality" "Nationality" NOT NULL,
+    "schoolId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -22,7 +23,7 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "UserLifestyle" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "dormNames" TEXT NOT NULL,
     "isSmoker" BOOLEAN NOT NULL,
     "sleepStart" INTEGER NOT NULL,
@@ -41,7 +42,7 @@ CREATE TABLE "UserLifestyle" (
 -- CreateTable
 CREATE TABLE "UserPreference" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "prefNationality" "Nationality",
     "prefStudentId" TEXT,
     "weightNoise" INTEGER NOT NULL DEFAULT 0,
@@ -58,8 +59,8 @@ CREATE TABLE "UserPreference" (
 -- CreateTable
 CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
-    "reviewerId" INTEGER NOT NULL,
-    "targetId" INTEGER NOT NULL,
+    "reviewerId" TEXT NOT NULL,
+    "targetId" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "score" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -79,7 +80,7 @@ CREATE TABLE "ChatRoom" (
 CREATE TABLE "ChatParticipant" (
     "id" SERIAL NOT NULL,
     "chatRoomId" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" TEXT NOT NULL,
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ChatParticipant_pkey" PRIMARY KEY ("id")
@@ -89,7 +90,7 @@ CREATE TABLE "ChatParticipant" (
 CREATE TABLE "ChatMessage" (
     "id" TEXT NOT NULL,
     "chatRoomId" TEXT NOT NULL,
-    "senderId" INTEGER NOT NULL,
+    "senderId" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -97,13 +98,38 @@ CREATE TABLE "ChatMessage" (
 );
 
 -- CreateTable
-CREATE TABLE "Dormitory" (
+CREATE TABLE "School" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "domain" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "School_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Dorm" (
+    "id" SERIAL NOT NULL,
+    "schoolId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
     "gender" "Gender" NOT NULL,
+    "roomType" TEXT,
     "capacity" INTEGER,
 
-    CONSTRAINT "Dormitory_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Dorm_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "MatchResult" (
+    "id" SERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "targetUserId" TEXT NOT NULL,
+    "score" DOUBLE PRECISION NOT NULL,
+    "breakdown" TEXT,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "MatchResult_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -119,7 +145,19 @@ CREATE UNIQUE INDEX "UserPreference_userId_key" ON "UserPreference"("userId");
 CREATE UNIQUE INDEX "ChatParticipant_chatRoomId_userId_key" ON "ChatParticipant"("chatRoomId", "userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Dormitory_name_key" ON "Dormitory"("name");
+CREATE UNIQUE INDEX "School_name_key" ON "School"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Dorm_schoolId_name_key" ON "Dorm"("schoolId", "name");
+
+-- CreateIndex
+CREATE INDEX "MatchResult_userId_score_idx" ON "MatchResult"("userId", "score" DESC);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "MatchResult_userId_targetUserId_key" ON "MatchResult"("userId", "targetUserId");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserLifestyle" ADD CONSTRAINT "UserLifestyle_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -144,3 +182,12 @@ ALTER TABLE "ChatMessage" ADD CONSTRAINT "ChatMessage_chatRoomId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "ChatMessage" ADD CONSTRAINT "ChatMessage_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Dorm" ADD CONSTRAINT "Dorm_schoolId_fkey" FOREIGN KEY ("schoolId") REFERENCES "School"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MatchResult" ADD CONSTRAINT "MatchResult_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "MatchResult" ADD CONSTRAINT "MatchResult_targetUserId_fkey" FOREIGN KEY ("targetUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

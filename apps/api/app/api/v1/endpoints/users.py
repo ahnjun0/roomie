@@ -192,7 +192,7 @@ async def get_received_reviews(
 
 @router.get("/{user_id}/reviews")
 async def get_user_reviews(
-    user_id: int,
+    user_id: str,
     page: int = 1,
     limit: int = 20,
     current_user: User = Depends(get_current_user),

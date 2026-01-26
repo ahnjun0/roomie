@@ -4,17 +4,17 @@ from pydantic import BaseModel
 
 
 class ChatRoomCreate(BaseModel):
-    targetUserId: int
+    targetUserId: str
 
 
 class ChatRoomResponse(BaseModel):
     chatRoomId: str
-    participants: list[int]
+    participants: list[str]
     createdAt: datetime
 
 
 class ChatParticipantInfo(BaseModel):
-    id: int
+    id: str
     nickname: str | None
 
 
@@ -36,7 +36,7 @@ class ChatRoomListResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     id: str
-    senderId: int
+    senderId: str
     content: str
     createdAt: datetime
 

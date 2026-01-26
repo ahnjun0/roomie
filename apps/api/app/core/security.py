@@ -93,7 +93,7 @@ async def get_current_user(
             detail={"error": "INVALID_TOKEN", "message": "유효하지 않은 토큰입니다."},
         )
 
-    user = await db.user.find_unique(where={"id": int(user_id)})
+    user = await db.user.find_unique(where={"id": user_id})
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
