@@ -13,6 +13,8 @@ const USE_MOCK_API = true;
 class ApiService {
   private baseUrl: string;
   private accessToken: string | null = null;
+  // Mock 상태 추적을 위한 변수
+  private _mockProfileComplete = false;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -27,7 +29,7 @@ class ApiService {
     console.log(`[MOCK API] ${config.method || 'GET'} ${endpoint}`, config.body ? JSON.stringify(config.body) : '');
     
     // 네트워크 딜레이 시뮬레이션 (0.5초)
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(() => resolve(true), 500));
 
     // 1. Auth & Registration
     if (endpoint.includes('/auth/send-code')) {
@@ -37,6 +39,8 @@ class ApiService {
       return { verified: true, tempToken: 'mock-temp-token-12345' } as any;
     }
     if (endpoint.includes('/auth/register') || endpoint.includes('/auth/login')) {
+      // 로그인/회원가입 시에는 프로필 미완성 상태로 초기화 (테스트 시나리오)
+      this._mockProfileComplete = false;
       return {
         id: 1,
         email: (config.body as any)?.email || 'test@univ.ac.kr',
@@ -61,7 +65,7 @@ class ApiService {
         birthYear: 2000,
         persona: null,
         isEmailVerified: true,
-        isProfileComplete: false, // 온보딩 테스트를 위해 미완성 상태로 설정 (완료 상태 테스트 시 true로 변경)
+        isProfileComplete: this._mockProfileComplete, 
       } as any;
     }
 
@@ -70,6 +74,10 @@ class ApiService {
         (config.method === 'PATCH' || config.method === 'PUT') &&
         (endpoint.includes('/users/me') || endpoint.includes('/lifestyle') || endpoint.includes('/preference'))
     ) {
+        // 선호도(Preference) 설정이 마지막 단계라고 가정하고 완료 처리
+        if (endpoint.includes('/preference')) {
+            this._mockProfileComplete = true;
+        }
         return { ...config.body, id: 1, userId: 1 } as any;
     }
 
@@ -83,36 +91,74 @@ class ApiService {
       ] as any;
     }
     
-    // 5. Matching Recommendations
+    // 5. Matching Recommendations & Detail
     if (endpoint.includes('/matching')) {
-        return [
+        // 상세 조회 (/matching/123)
+        const detailMatch = endpoint.match(/\/matching\/(\d+)/);
+        if (detailMatch) {
+            const id = parseInt(detailMatch[1], 10);
+            return {
+                id: id,
+                nickname: id === 2 ? "룸메찾아요" : "깔끔이",
+                studentId: id === 2 ? "23학번" : "20학번",
+                dormName: id === 2 ? "성실관" : "봉사관",
+                gender: "MALE",
+                nationality: "KOREAN",
+                matchScore: id === 2 ? 95 : 88,
+                comparison: [
+                    { label: "생활패턴", myValue: 80, otherValue: 90 },
+                    { label: "청결도", myValue: 70, otherValue: 60 },
+                    { label: "소음민감", myValue: 50, otherValue: 40 },
+                    { label: "흡연여부", myValue: 100, otherValue: 100 },
+                    { label: "잠버릇", myValue: 90, otherValue: 80 },
+                ],
+                reviews: [
+                    { 
+                        id: 1, 
+                        reviewerName: "이전룸메", 
+                        content: "배려심이 깊고 조용해서 좋았습니다.", 
+                        score: 5, 
+                        createdAt: "2025-12-01" 
+                    }
+                ],
+                avgScore: 5.0,
+                reviewCount: 1
+            } as any;
+        }
+
+        // 목록 조회 (/matching 또는 /matching?...)
+        const items = [
             {
                 id: 2,
-                user: {
-                    id: 2,
-                    nickname: "룸메찾아요",
-                    gender: "MALE",
-                    studentId: 23,
-                    nationality: "KOREAN",
-                    age: 21,
-                },
+                nickname: "룸메찾아요",
+                gender: "MALE",
+                studentId: "23학번",
+                dormName: "성실관",
+                nationality: "KOREAN",
+                age: 21,
                 matchScore: 95,
                 tags: ["조용함", "일찍잠"],
             },
             {
                 id: 3,
-                user: {
-                    id: 3,
-                    nickname: "깔끔이",
-                    gender: "MALE",
-                    studentId: 20,
-                    nationality: "KOREAN",
-                    age: 24,
-                },
+                nickname: "깔끔이",
+                gender: "MALE",
+                studentId: "20학번",
+                dormName: "봉사관",
+                nationality: "KOREAN",
+                age: 24,
                 matchScore: 88,
                 tags: ["청소매일", "비흡연"],
             }
-        ] as any;
+        ];
+        
+        return {
+            items: items,
+            total: items.length,
+            page: 1,
+            limit: 10,
+            hasMore: false
+        } as any;
     }
 
     // Default: 빈 객체 반환 (에러 방지)

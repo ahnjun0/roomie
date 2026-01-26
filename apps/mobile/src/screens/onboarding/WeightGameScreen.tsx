@@ -67,12 +67,6 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
 
       // 사용자 정보 새로고침
       await refreshUser();
-
-      // 메인 화면으로 이동
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'MainTabs' }],
-      });
     } catch (error: any) {
       Alert.alert('오류', error.message || '프로필 설정에 실패했습니다.');
     } finally {
