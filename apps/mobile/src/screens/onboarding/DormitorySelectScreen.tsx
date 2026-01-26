@@ -36,20 +36,26 @@ export function DormitorySelectScreen({ navigation }: DormitorySelectScreenProps
 
   const fetchDormitories = async () => {
     try {
-      // 1. 유저 이메일 도메인 추출
-      const userEmail = user?.email || '';
-      const domain = userEmail.split('@')[1];
+      let schoolId: number;
 
-      if (!domain) {
-        throw new Error('Invalid email domain');
+      // 1. 유저 정보에 schoolId가 있으면 사용, 없으면 이메일 도메인으로 조회
+      if (user?.schoolId) {
+        schoolId = user.schoolId;
+      } else {
+        const userEmail = user?.email || '';
+        const domain = userEmail.split('@')[1];
+
+        if (!domain) {
+          throw new Error('Invalid email domain');
+        }
+
+        const school = await api.get<{ id: number; name: string }>(
+          ENDPOINTS.SCHOOLS.BY_DOMAIN(domain)
+        );
+        schoolId = school.id;
       }
 
-      // 2. 도메인으로 학교 정보 조회
-      const school = await api.get<{ id: number; name: string }>(
-        ENDPOINTS.SCHOOLS.BY_DOMAIN(domain)
-      );
-
-      // 3. 학교 ID로 기숙사 목록 조회
+      // 2. 학교 ID로 기숙사 목록 조회
       // 성별 필터링은 API 레벨에서 할 수도 있지만, 기존 로직 유지를 위해 클라이언트 필터링 사용 
       // 혹은 API에 gender 파라미터를 보낼 수도 있음 (API 명세 확인 필요)
       // 여기서는 API가 지원하므로 gender 파라미터 사용 권장
@@ -57,7 +63,7 @@ export function DormitorySelectScreen({ navigation }: DormitorySelectScreenProps
       const userGenderUpper = userGender?.toUpperCase();
 
       const response = await api.get<Dormitory[]>(
-        `${ENDPOINTS.SCHOOLS.DORMS(school.id)}?gender=${userGenderUpper}`
+        `${ENDPOINTS.SCHOOLS.DORMS(schoolId)}?gender=${userGenderUpper}`
       );
       
       setDorms(response);

@@ -79,6 +79,7 @@ class UserBase(BaseModel):
     nationality: Nationality
     age: int
     studentId: int
+    schoolId: int | None = None
     createdAt: datetime
 
     class Config:
