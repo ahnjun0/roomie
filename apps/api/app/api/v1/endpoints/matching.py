@@ -52,7 +52,10 @@ async def get_matching_list(
             detail={"error": "LIFESTYLE_NOT_FOUND", "message": "프로필 설정을 먼저 완료해주세요."},
         )
 
-    # 후보자 조회: 같은 성별 + 같은 흡연 상태
+    # 후보자 조회: 같은 학교 + 같은 성별 + 같은 흡연 상태
+    # schoolId가 없는 경우 (기존 사용자) 필터링 없이 진행
+    school_filter = {"schoolId": current_user.schoolId} if current_user.schoolId else {}
+
     candidates = await db.user.find_many(
         where={
             "id": {"not": current_user.id},
@@ -60,6 +63,7 @@ async def get_matching_list(
             "lifestyle": {
                 "isSmoker": my_lifestyle.isSmoker,  # 흡연자끼리, 비흡연자끼리
             },
+            **school_filter,  # 같은 학교 필터 (Hard Filter)
         },
         include={"lifestyle": True},
     )
@@ -160,6 +164,14 @@ async def get_matching_detail(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"error": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다."},
         )
+
+    # 같은 학교인지 확인 (schoolId가 있는 경우에만)
+    if current_user.schoolId and target_user.schoolId:
+        if current_user.schoolId != target_user.schoolId:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"error": "DIFFERENT_SCHOOL", "message": "같은 학교 사용자만 조회할 수 있습니다."},
+            )
 
     # 내 정보 조회
     my_lifestyle = await db.userlifestyle.find_unique(where={"userId": current_user.id})

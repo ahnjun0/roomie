@@ -4,6 +4,7 @@ from cuid2 import cuid_wrapper
 from fastapi import APIRouter, Depends, HTTPException, status
 from prisma import Prisma
 
+from app.constants.school import get_school_from_email
 from app.core.database import get_db
 from app.core.security import (
     create_access_token,
@@ -111,6 +112,17 @@ async def register(request: RegisterRequest, db: Prisma = Depends(get_db)):
             detail={"error": "INVALID_TEMP_TOKEN", "message": "유효하지 않은 인증입니다. 이메일 인증을 다시 진행해주세요."},
         )
 
+    # 이메일 도메인에서 학교 식별
+    school_name = get_school_from_email(request.email)
+    if not school_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "UNSUPPORTED_SCHOOL",
+                "message": "지원되지 않는 학교 이메일입니다. 학교 이메일(@xxx.ac.kr)로 가입해주세요.",
+            },
+        )
+
     # 이미 가입된 이메일 확인
     try:
         existing_user = await db.user.find_unique(where={"email": request.email})
@@ -120,10 +132,22 @@ async def register(request: RegisterRequest, db: Prisma = Depends(get_db)):
                 detail={"error": "DUPLICATE_EMAIL", "message": "이미 가입된 이메일입니다."},
             )
 
+        # 학교 조회 또는 생성
+        school = await db.school.find_first(where={"name": school_name})
+        if not school:
+            # 학교가 DB에 없으면 자동 생성
+            email_domain = request.email.split("@")[-1].lower()
+            school = await db.school.create(
+                data={
+                    "name": school_name,
+                    "domain": email_domain,
+                }
+            )
+
         # 비밀번호 해싱
         hashed_password = get_password_hash(request.password)
 
-        # 사용자 생성
+        # 사용자 생성 (학교 연결 포함)
         # 주의: Enum 값은 문자열로 전달 (Prisma Client Python이 처리)
         user = await db.user.create(
             data={
@@ -135,6 +159,7 @@ async def register(request: RegisterRequest, db: Prisma = Depends(get_db)):
                 "nationality": request.nationality.value,
                 "age": request.age,
                 "studentId": request.studentId,
+                "schoolId": school.id,  # 학교 연결
             }
         )
     except Exception as e:
