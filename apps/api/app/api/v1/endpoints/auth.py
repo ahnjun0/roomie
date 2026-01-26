@@ -108,28 +108,39 @@ async def register(request: RegisterRequest, db: Prisma = Depends(get_db)):
         )
 
     # 이미 가입된 이메일 확인
-    existing_user = await db.user.find_unique(where={"email": request.email})
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail={"error": "DUPLICATE_EMAIL", "message": "이미 가입된 이메일입니다."},
+    try:
+        existing_user = await db.user.find_unique(where={"email": request.email})
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "DUPLICATE_EMAIL", "message": "이미 가입된 이메일입니다."},
+            )
+
+        # 비밀번호 해싱
+        hashed_password = get_password_hash(request.password)
+
+        # 사용자 생성
+        # 주의: Enum 값은 문자열로 전달 (Prisma Client Python이 처리)
+        user = await db.user.create(
+            data={
+                "email": request.email,
+                "password": hashed_password,
+                "nickname": request.nickname,
+                "gender": request.gender.value,
+                "nationality": request.nationality.value,
+                "age": request.age,
+                "studentId": request.studentId,
+            }
         )
-
-    # 비밀번호 해싱
-    hashed_password = get_password_hash(request.password)
-
-    # 사용자 생성
-    user = await db.user.create(
-        data={
-            "email": request.email,
-            "password": hashed_password,
-            "nickname": request.nickname,
-            "gender": request.gender.value,
-            "nationality": request.nationality.value,
-            "age": request.age,
-            "studentId": request.studentId,
-        }
-    )
+    except Exception as e:
+        print(f"Error during registration: {str(e)}")
+        # HTTPException을 다시 발생시키거나 500 에러로 변환
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "REGISTRATION_FAILED", "message": f"회원가입 처리 중 오류가 발생했습니다: {str(e)}"},
+        )
 
     # 임시 토큰 삭제
     del temp_tokens[request.tempToken]
