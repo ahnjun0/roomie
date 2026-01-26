@@ -1,0 +1,72 @@
+{
+  "schools": [
+    {
+      "name": "KAIST",
+      "domain": "kaist.ac.kr",
+      "dorms": [
+        {"name": "사랑관", "gender": "MALE", "roomType": "2인실", "capacity": 400},
+        {"name": "소망관", "gender": "MALE", "roomType": "2인실", "capacity": 400},
+        {"name": "성실관", "gender": "MALE", "roomType": "2인실", "capacity": 350},
+        {"name": "진리관", "gender": "MALE", "roomType": "2인실", "capacity": 350},
+        {"name": "지혜관", "gender": "FEMALE", "roomType": "2인실", "capacity": 300},
+        {"name": "신뢰관", "gender": "MALE", "roomType": "2인실", "capacity": 300},
+        {"name": "아름관", "gender": "FEMALE", "roomType": "2인실", "capacity": 250},
+        {"name": "희망관", "gender": "MALE", "roomType": "1인실", "capacity": 200},
+        {"name": "여울관", "gender": "FEMALE", "roomType": "1인실", "capacity": 150}
+      ]
+    },
+        {
+      "name": "부산대학교",
+      "domain": "pusan.ac.kr",
+      "dorms": [
+        {"name": "부산캠퍼스/진리관", "gender": "MALE", "roomType": "2인실", "capacity": 622},
+        {"name": "부산캠퍼스/효원재(남)", "gender": "MALE", "roomType": "2인실", "capacity": 150},
+        {"name": "부산캠퍼스/효원재(여)", "gender": "FEMALE", "roomType": "2인실", "capacity": 150},
+        {"name": "부산캠퍼스/웅비관", "gender": "MALE", "roomType": "2인실", "capacity": 1006},
+        {"name": "부산캠퍼스/자유관", "gender": "FEMALE", "roomType": "2인실", "capacity": 1270},
+        {"name": "양산캠퍼스/행림관A동", "gender": "FEMALE", "roomType": "2인실", "capacity": 264},
+        {"name": "양산캠퍼스/행림관B동", "gender": "MALE", "roomType": "2인실", "capacity": 264},
+        {"name": "양산캠퍼스/지행관C동", "gender": "MALE", "roomType": "2인실", "capacity": 70},
+        {"name": "양산캠퍼스/지행관D동", "gender": "FEMALE", "roomType": "2인실", "capacity": 118},
+        {"name": "밀양캠퍼스/가람관A동", "gender": "FEMALE", "roomType": "2인실", "capacity": 126},
+        {"name": "밀양캠퍼스/가람관B동", "gender": "MALE", "roomType": "2인실", "capacity": 300},
+        {"name": "밀양캠퍼스/청학관(남)", "gender": "MALE", "roomType": "2인실", "capacity": 120},
+        {"name": "밀양캠퍼스/청학관(여)", "gender": "FEMALE", "roomType": "2인실", "capacity": 168}
+      ]
+    },
+
+    {
+      "name": "서울대학교",
+      "domain": "snu.ac.kr",
+      "dorms": [
+        {"name": "관악사", "gender": "MALE", "roomType": "2인실", "capacity": 800},
+        {"name": "BK국제관", "gender": "MALE", "roomType": "1인실", "capacity": 300},
+        {"name": "대학원기숙사", "gender": "FEMALE", "roomType": "2인실", "capacity": 400},
+        {"name": "관정관", "gender": "FEMALE", "roomType": "1인실", "capacity": 250},
+        {"name": "919동", "gender": "MALE", "roomType": "3인실", "capacity": 450},
+        {"name": "918동", "gender": "FEMALE", "roomType": "3인실", "capacity": 400}
+      ]
+    },
+    {
+      "name": "연세대학교",
+      "domain": "yonsei.ac.kr",
+      "dorms": [
+        {"name": "무악학사", "gender": "MALE", "roomType": "2인실", "capacity": 350},
+        {"name": "청송학사", "gender": "MALE", "roomType": "2인실", "capacity": 300},
+        {"name": "백양학사", "gender": "FEMALE", "roomType": "2인실", "capacity": 400},
+        {"name": "SK글로벌하우스", "gender": "MALE", "roomType": "1인실", "capacity": 200},
+        {"name": "국제학사", "gender": "FEMALE", "roomType": "1인실", "capacity": 180}
+      ]
+    },
+    {
+      "name": "고려대학교",
+      "domain": "korea.ac.kr",
+      "dorms": [
+        {"name": "안암학사", "gender": "MALE", "roomType": "2인실", "capacity": 500},
+        {"name": "CJ인터내셔널하우스", "gender": "MALE", "roomType": "1인실", "capacity": 250},
+        {"name": "프런티어관", "gender": "FEMALE", "roomType": "2인실", "capacity": 350},
+        {"name": "라이시움", "gender": "FEMALE", "roomType": "1인실", "capacity": 200}
+      ]
+    }
+  ]
+}

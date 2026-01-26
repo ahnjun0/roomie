@@ -78,6 +78,23 @@ async def update_lifestyle(
     """생활 패턴 등록/수정"""
     data = request.model_dump()
 
+    # 기숙사 성별 검증 (사용자 성별과 일치하는 기숙사만 선택 가능)
+    if data.get("dormNames"):
+        dorm_names = [d.strip() for d in data["dormNames"].split(",")]
+
+        for dorm_name in dorm_names:
+            # DB에서 기숙사 조회
+            dorm = await db.dorm.find_first(where={"name": dorm_name})
+
+            if dorm and dorm.gender != current_user.gender:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "error": "INVALID_DORM_GENDER",
+                        "message": f"'{dorm_name}'은(는) {dorm.gender} 전용 기숙사입니다. 본인 성별에 맞는 기숙사를 선택해주세요."
+                    },
+                )
+
     # upsert: 있으면 update, 없으면 create
     lifestyle = await db.userlifestyle.upsert(
         where={"userId": current_user.id},

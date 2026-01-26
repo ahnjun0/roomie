@@ -11,13 +11,17 @@ export interface UpdateProfileRequest {
 }
 
 export interface UpdateLifestyleRequest {
-  dormName?: string;
+  dormNames?: string;
   isSmoker?: boolean;
   sleepStart?: number;
   sleepEnd?: number;
-  sensitivity?: number;
-  sleepHabits?: string[];
-  cleaningHabit?: string;
+  sleepHabits?: string;
+  noiseLevel?: number;
+  cleanLevel?: number;
+  foodLevel?: number;
+  lightLevel?: number;
+  tempLevel?: number;
+  homeVisit?: string;
 }
 
 export interface UpdatePreferenceRequest {
@@ -43,13 +47,17 @@ export async function getLifestyle(): Promise<UserLifestyle> {
 
 export async function updateLifestyle(data: UpdateLifestyleRequest): Promise<UserLifestyle> {
   return api.put<UserLifestyle>(ENDPOINTS.USERS.LIFESTYLE, {
-    dorm_name: data.dormName,
-    is_smoker: data.isSmoker,
-    sleep_start: data.sleepStart,
-    sleep_end: data.sleepEnd,
-    sensitivity: data.sensitivity,
-    sleep_habits: data.sleepHabits,
-    cleaning_habit: data.cleaningHabit,
+    dormNames: data.dormNames,
+    isSmoker: data.isSmoker,
+    sleepStart: data.sleepStart,
+    sleepEnd: data.sleepEnd,
+    sleepHabits: data.sleepHabits,
+    noiseLevel: data.noiseLevel,
+    cleanLevel: data.cleanLevel,
+    foodLevel: data.foodLevel,
+    lightLevel: data.lightLevel,
+    tempLevel: data.tempLevel,
+    homeVisit: data.homeVisit,
   });
 }
 
