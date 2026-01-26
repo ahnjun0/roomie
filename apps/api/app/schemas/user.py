@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Self
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, computed_field, model_validator
 
 
 class Gender(str, Enum):
@@ -89,6 +89,12 @@ class UserBase(BaseModel):
 class UserResponse(UserBase):
     lifestyle: "LifestyleResponse | None" = None
     preference: "PreferenceResponse | None" = None
+
+    @computed_field
+    @property
+    def isProfileComplete(self) -> bool:
+        """lifestyle과 preference가 모두 존재하면 프로필 완성"""
+        return self.lifestyle is not None and self.preference is not None
 
 
 class UserProfileUpdate(BaseModel):

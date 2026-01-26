@@ -68,10 +68,11 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
           isProfileComplete: false,
         };
 
-        // AuthContext 상태 업데이트 - 토큰과 user 모두 설정
+        // AuthContext 상태 업데이트 - user를 먼저 설정한 후 토큰 설정
+        // (setTokens가 isAuthenticated를 true로 만들어 화면 전환이 일어나므로, user가 먼저 설정되어야 함)
         api.setAccessToken(response.accessToken);
-        await setTokens(response.accessToken, response.refreshToken);
         await setUser(user);
+        await setTokens(response.accessToken, response.refreshToken);
 
         // 회원가입 완료 후 온보딩 계속 (RootNavigator가 자동으로 온보딩 플로우로 전환)
       } catch (err: any) {

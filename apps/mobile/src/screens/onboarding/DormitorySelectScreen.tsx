@@ -81,8 +81,15 @@ export function DormitorySelectScreen({ navigation }: DormitorySelectScreenProps
   }));
 
   const handleNext = () => {
+    // 선택한 기숙사의 이름들을 쉼표로 구분해서 저장
+    const selectedDormNames = selectedDorms
+      .map(id => dorms.find(d => d.id === Number(id))?.name)
+      .filter(Boolean)
+      .join(',');
+
     updateData({
       selectedDormitories: selectedDorms.map(Number),
+      selectedDormitoryNames: selectedDormNames,
     });
     navigation.navigate('CoreHabits');
   };

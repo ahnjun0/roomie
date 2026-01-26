@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { api } from '../services/api';
 import { ENDPOINTS } from '../constants/api';
-import { UserLifestyle, UserPreference } from '../types';
 
 // 온보딩 데이터 타입
 interface OnboardingData {
@@ -24,6 +23,7 @@ interface OnboardingData {
 
   // Dormitory
   selectedDormitories: number[];
+  selectedDormitoryNames: string; // 쉼표로 구분된 기숙사 이름들
 
   // Core Habits
   isSmoker: boolean | null;
@@ -63,13 +63,23 @@ interface RegisterResponse {
   isProfileComplete: boolean;
 }
 
+interface WeightData {
+  weightNoise: number;
+  weightClean: number;
+  weightFood: number;
+  weightHabit: number;
+  weightTime: number;
+  weightLight: number;
+  weightTemp: number;
+}
+
 interface OnboardingContextType {
   data: OnboardingData;
   updateData: (updates: Partial<OnboardingData>) => void;
   submitRegistration: () => Promise<RegisterResponse>;
   submitBasicInfo: () => Promise<void>;
   submitLifestyle: () => Promise<void>;
-  submitPreferences: () => Promise<void>;
+  submitPreferences: (weights: WeightData) => Promise<void>;
   resetData: () => void;
 }
 
@@ -84,8 +94,9 @@ const initialData: OnboardingData = {
   nationality: 'korean',
   age: 24,
   studentId: '2020',
-  
+
   selectedDormitories: [],
+  selectedDormitoryNames: '',
   isSmoker: null,
   sleepHabits: [],
   noiseLevel: 3,
@@ -158,21 +169,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [data]);
 
   const submitLifestyle = useCallback(async () => {
-    // 선택된 기숙사 ID를 이름으로 변환
-    const selectedDormNames = data.selectedDormitories
-      .map(id => {
-        const dorm = [1, 2, 3, 4].find(d => d === id);
-        if (id === 1) return '성실관';
-        if (id === 2) return '봉사관';
-        if (id === 3) return '진리관';
-        if (id === 4) return '화원관';
-        return '';
-      })
-      .filter(Boolean)
-      .join(',');
-
     await api.put(ENDPOINTS.USERS.LIFESTYLE, {
-      dormNames: selectedDormNames,
+      dormNames: data.selectedDormitoryNames || '',
       isSmoker: data.isSmoker ?? false,
       sleepStart: data.sleepStart,
       sleepEnd: data.sleepEnd,
@@ -186,14 +184,27 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     });
   }, [data]);
 
-  const submitPreferences = useCallback(async () => {
+  const submitPreferences = useCallback(async (weights: WeightData) => {
+    // prefNationality 값 변환:
+    // - 'ANY' (상관없음) → null
+    // - 'SAME' (동일 국적) → 사용자 본인의 nationality (KOREAN 또는 FOREIGNER)
+    let prefNationality: string | null = null;
+    if (data.preferredNationality === 'SAME') {
+      // 사용자의 nationality를 사용 ('korean' → 'KOREAN', 그 외 → 'FOREIGNER')
+      prefNationality = data.nationality === 'korean' ? 'KOREAN' : 'FOREIGNER';
+    }
+    // 'ANY'인 경우 null 유지
+
     await api.put(ENDPOINTS.USERS.PREFERENCES, {
-      pref_nationality: data.preferredNationality,
-      pref_student_id: data.preferredStudentYear,
-      weight_cleanliness: data.weightCleanliness,
-      weight_noise: data.weightNoise,
-      weight_smoking: data.weightSmoking,
-      weight_sleep: data.weightSleep,
+      prefNationality,
+      prefStudentId: data.preferredStudentYear,
+      weightNoise: weights.weightNoise,
+      weightClean: weights.weightClean,
+      weightFood: weights.weightFood,
+      weightHabit: weights.weightHabit,
+      weightTime: weights.weightTime,
+      weightLight: weights.weightLight,
+      weightTemp: weights.weightTemp,
     });
   }, [data]);
 
@@ -211,13 +222,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       {children}
     </OnboardingContext.Provider>
   );
-}
-
-function getCleaningHabit(level: number): string {
-  if (level <= 1) return 'DAILY';
-  if (level <= 2) return 'WEEKLY';
-  if (level <= 4) return 'WHEN_DIRTY';
-  return 'NEVER';
 }
 
 export function useOnboarding() {
