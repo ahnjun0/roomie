@@ -93,7 +93,7 @@ export function ChatListScreen({ navigation }: ChatListScreenProps) {
       activeOpacity={0.7}>
       <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
         <Text style={[styles.avatarText, { color: colors.text.secondary }]}>
-          {item.otherUserName.charAt(0)}
+          {item.otherUserName?.charAt(0) || '?'}
         </Text>
       </View>
       <View style={styles.chatInfo}>

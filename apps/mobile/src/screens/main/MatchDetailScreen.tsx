@@ -129,7 +129,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
           <View style={styles.profileHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
               <Text style={[styles.avatarText, { color: colors.text.secondary }]}>
-                {detail.nickname.charAt(0)}
+                {detail.nickname?.charAt(0)}
               </Text>
             </View>
             <View style={styles.profileInfo}>

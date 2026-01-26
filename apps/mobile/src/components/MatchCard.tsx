@@ -40,7 +40,7 @@ export function MatchCard({
         <View style={styles.profileSection}>
           <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
             <Text style={[styles.avatarText, { color: colors.text.secondary }]}>
-              {nickname.charAt(0)}
+              {nickname?.charAt(0) || '?'}
             </Text>
           </View>
           <View>
