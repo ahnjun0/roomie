@@ -50,6 +50,9 @@ model User {
   roomBtiAnimal      String?   // "부지런한 미어캣"
   roomBtiDescription String?   // 설명 텍스트
 
+  // 헬프 요청 게시글
+  helpPosts   HelpPost[]
+
   createdAt   DateTime @default(now())
 }
 
@@ -202,6 +205,28 @@ model MatchResult {
   @@index([userId, score(sort: Desc)])  // 조회 성능 최적화
 }
 
+// 10. 헬프 요청 게시판 (Help Center)
+model HelpPost {
+  id        String   @id                // CUID2 (앱에서 생성)
+
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+
+  category  HelpCategory              // BUG(벌레퇴치), REPAIR(고장신고)
+  title     String                    // 제목
+  content   String                    // 내용 (긴 텍스트)
+  images    String[]                  // 사진 URL 리스트
+
+  status    HelpStatus @default(OPEN) // OPEN(진행중), SOLVED(해결됨)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([category, status])         // 카테고리+상태 필터링 최적화
+  @@index([createdAt(sort: Desc)])    // 최신순 정렬 최적화
+}
+
 // Enum 정의 (고정된 값들)
 enum Gender {
   MALE
@@ -211,4 +236,14 @@ enum Gender {
 enum Nationality {
   KOREAN
   FOREIGNER
+}
+
+enum HelpCategory {
+  BUG      // 벌레 퇴치
+  REPAIR   // 고장 신고
+}
+
+enum HelpStatus {
+  OPEN     // 진행 중
+  SOLVED   // 해결 완료
 }
