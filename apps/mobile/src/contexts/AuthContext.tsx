@@ -60,6 +60,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadStoredAuth();
   }, []);
 
+  // API 서비스와 토큰 동기화 및 리프레시 콜백 설정
+  useEffect(() => {
+    // 1. 리프레시 토큰 설정
+    if (state.refreshToken) {
+      api.setRefreshToken(state.refreshToken);
+    }
+
+    // 2. 콜백 설정
+    api.setCallbacks(
+      // 성공 시: 상태 업데이트
+      (newAccess, newRefresh) => {
+        // 스토리지 및 상태 업데이트
+        setTokens(newAccess, newRefresh);
+      },
+      // 실패 시: 로그아웃
+      () => {
+        logout();
+      }
+    );
+  }, [state.refreshToken, setTokens, logout]);
+
   const loadStoredAuth = async () => {
     try {
       const [accessToken, refreshToken, userJson] = await Promise.all([

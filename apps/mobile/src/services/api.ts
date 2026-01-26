@@ -4,6 +4,7 @@ interface RequestConfig {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: object;
   headers?: Record<string, string>;
+  _retry?: boolean;
 }
 
 // [개발용] 백엔드 연결 없이 UI 테스트를 위한 Mock 모드
@@ -13,6 +14,14 @@ const USE_MOCK_API = false;
 class ApiService {
   private baseUrl: string;
   private accessToken: string | null = null;
+  private refreshToken: string | null = null;
+  
+  // Token Refresh Logic
+  private isRefreshing = false;
+  private refreshSubscribers: ((token: string) => void)[] = [];
+  private onRefreshSuccess: ((access: string, refresh: string) => void) | null = null;
+  private onRefreshFailure: (() => void) | null = null;
+
   // Mock 상태 추적을 위한 변수
   private _mockProfileComplete = false;
 
@@ -22,6 +31,27 @@ class ApiService {
 
   setAccessToken(token: string | null) {
     this.accessToken = token;
+  }
+
+  setRefreshToken(token: string | null) {
+    this.refreshToken = token;
+  }
+
+  setCallbacks(
+    onSuccess: (access: string, refresh: string) => void,
+    onFailure: () => void,
+  ) {
+    this.onRefreshSuccess = onSuccess;
+    this.onRefreshFailure = onFailure;
+  }
+
+  private onRefreshed(token: string) {
+    this.refreshSubscribers.forEach(cb => cb(token));
+    this.refreshSubscribers = [];
+  }
+
+  private addSubscriber(cb: (token: string) => void) {
+    this.refreshSubscribers.push(cb);
   }
 
   // Mock 데이터 처리 로직
@@ -266,6 +296,62 @@ class ApiService {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        // 401 Token Expired Handling
+        if (response.status === 401 && !config._retry) {
+          if (this.isRefreshing) {
+            return new Promise(resolve => {
+              this.addSubscriber(token => {
+                const newHeaders = {...requestHeaders, Authorization: `Bearer ${token}`};
+                resolve(this.request(endpoint, {...config, headers: newHeaders}));
+              });
+            });
+          }
+
+          config._retry = true;
+          this.isRefreshing = true;
+
+          try {
+            const refreshResponse = await fetch(`${this.baseUrl}/auth/refresh`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({refreshToken: this.refreshToken}),
+            });
+
+            if (!refreshResponse.ok) {
+              throw new Error('Refresh failed');
+            }
+
+            const data = await refreshResponse.json();
+            const {accessToken, refreshToken} = data;
+
+            this.setAccessToken(accessToken);
+            this.setRefreshToken(refreshToken);
+            
+            if (this.onRefreshSuccess) {
+              this.onRefreshSuccess(accessToken, refreshToken);
+            }
+
+            this.isRefreshing = false;
+            this.onRefreshed(accessToken);
+
+            // Retry original request with new token
+            const newHeaders = {...requestHeaders, Authorization: `Bearer ${accessToken}`};
+            return this.request(endpoint, {...config, headers: newHeaders});
+
+          } catch (refreshError) {
+            this.isRefreshing = false;
+            this.refreshSubscribers = [];
+            
+            if (this.onRefreshFailure) {
+              this.onRefreshFailure();
+            }
+            // 원래 401 에러를 던져서 호출자가 알 수 있게 함 (로그아웃 처리됨)
+            throw new ApiError(401, '세션이 만료되었습니다. 다시 로그인해주세요.');
+          }
+        }
+
         const error = await response.json().catch(() => ({}));
         let message = error.detail || 'Request failed';
 

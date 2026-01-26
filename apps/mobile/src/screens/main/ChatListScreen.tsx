@@ -17,7 +17,7 @@ import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } fr
 
 interface ChatRoom {
   id: string;
-  otherUserId: number;
+  otherUserId: string;
   otherUserName: string;
   lastMessage: string | null;
   lastMessageAt: string | null;
@@ -42,8 +42,19 @@ export function ChatListScreen({ navigation }: ChatListScreenProps) {
         setIsRefreshing(true);
       }
 
-      const response = await api.get<{ items: ChatRoom[] }>(ENDPOINTS.CHATS.LIST);
-      setChatRooms(response.items);
+      // Backend returns { data: ChatRoomListItem[] }
+      const response = await api.get<{ data: any[] }>(ENDPOINTS.CHATS.LIST);
+      
+      const formattedRooms: ChatRoom[] = response.data.map((item) => ({
+        id: item.chatRoomId,
+        otherUserId: item.participant.id,
+        otherUserName: item.participant.nickname || '알 수 없음',
+        lastMessage: item.lastMessage?.content || null,
+        lastMessageAt: item.lastMessage?.createdAt || null,
+        unreadCount: item.unreadCount,
+      }));
+
+      setChatRooms(formattedRooms);
     } catch (error) {
       console.error('Failed to fetch chat rooms:', error);
     } finally {
