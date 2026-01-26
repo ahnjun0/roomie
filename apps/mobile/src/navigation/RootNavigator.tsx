@@ -20,6 +20,9 @@ import {
   ChatListScreen,
   MatchDetailScreen,
   MyPageScreen,
+  RoomBtiIntroScreen,
+  RoomBtiTestScreen,
+  RoomBtiResultScreen,
 } from '../screens';
 import { colors } from '../constants/theme';
 
@@ -112,6 +115,9 @@ export function RootNavigator() {
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="MatchDetail" component={MatchDetailScreen} />
           <Stack.Screen name="Chat" component={ChatScreen} />
+          <Stack.Screen name="RoomBtiIntro" component={RoomBtiIntroScreen} />
+          <Stack.Screen name="RoomBtiTest" component={RoomBtiTestScreen} />
+          <Stack.Screen name="RoomBtiResult" component={RoomBtiResultScreen} />
         </>
       )}
     </Stack.Navigator>

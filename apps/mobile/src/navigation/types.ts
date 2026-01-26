@@ -26,6 +26,16 @@ export type RootStackParamList = {
   NotificationSettings: undefined;
   Terms: undefined;
   Privacy: undefined;
+
+  // Room-BTI Screens
+  RoomBtiIntro: undefined;
+  RoomBtiTest: undefined;
+  RoomBtiResult: {
+    result: string;
+    animal: string;
+    description: string;
+    imageKey: string;
+  };
 };
 
 export type MainTabParamList = {

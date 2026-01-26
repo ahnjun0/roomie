@@ -16,3 +16,4 @@ export { BottomTabBar } from './BottomTabBar';
 export { ReviewCard } from './ReviewCard';
 export { Header } from './Header';
 export { Dropdown } from './Dropdown';
+export { RoomBtiBadge } from './RoomBtiBadge';

@@ -18,3 +18,8 @@ export { ChatScreen } from './main/ChatScreen';
 export { ChatListScreen } from './main/ChatListScreen';
 export { MatchDetailScreen } from './main/MatchDetailScreen';
 export { MyPageScreen } from './main/MyPageScreen';
+
+// Room-BTI Screens
+export { RoomBtiIntroScreen } from './roomBti/RoomBtiIntroScreen';
+export { RoomBtiTestScreen } from './roomBti/RoomBtiTestScreen';
+export { RoomBtiResultScreen } from './roomBti/RoomBtiResultScreen';

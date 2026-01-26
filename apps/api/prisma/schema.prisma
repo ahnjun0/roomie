@@ -45,6 +45,11 @@ model User {
   matchResultsAsUser   MatchResult[] @relation("MatchUser")
   matchResultsAsTarget MatchResult[] @relation("MatchTarget")
 
+  // Room-BTI 결과
+  roomBtiResult      String?   // "SCDS", "PFNI" 등 4글자 코드
+  roomBtiAnimal      String?   // "부지런한 미어캣"
+  roomBtiDescription String?   // 설명 텍스트
+
   createdAt   DateTime @default(now())
 }
 

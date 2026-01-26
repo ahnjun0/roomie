@@ -49,4 +49,11 @@ export const ENDPOINTS = {
     LIST: '/dormitories',
     GET: (id: number) => `/dormitories/${id}`,
   },
+
+  // Room-BTI
+  ROOM_BTI: {
+    QUESTIONS: '/room-bti/questions',
+    TEST: '/room-bti/test',
+    ME: '/room-bti/me',
+  },
 } as const;

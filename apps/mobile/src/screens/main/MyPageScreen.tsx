@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme, useAuth } from '../../contexts';
-import { Card, Header, Button } from '../../components';
+import { Card, Header, Button, RoomBtiBadge } from '../../components';
+import { api } from '../../services/api';
+import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
 
 interface MyPageScreenProps {
@@ -13,6 +16,36 @@ export function MyPageScreen({ navigation }: MyPageScreenProps) {
   const { colors, setThemeMode, themeMode } = useTheme();
   const { user, logout } = useAuth();
   const insets = useSafeAreaInsets();
+
+  // Room-BTI 상태
+  const [roomBti, setRoomBti] = useState<{
+    animal: string;
+    result: string;
+  } | null>(null);
+
+  // 화면 포커스 시 Room-BTI 데이터 새로고침
+  useFocusEffect(
+    useCallback(() => {
+      fetchRoomBti();
+    }, []),
+  );
+
+  const fetchRoomBti = async () => {
+    try {
+      const response = await api.get<{
+        roomBtiAnimal: string | null;
+        roomBtiResult: string | null;
+      }>(ENDPOINTS.ROOM_BTI.ME);
+      if (response.roomBtiAnimal && response.roomBtiResult) {
+        setRoomBti({
+          animal: response.roomBtiAnimal,
+          result: response.roomBtiResult,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch Room-BTI:', error);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -112,8 +145,49 @@ export function MyPageScreen({ navigation }: MyPageScreenProps) {
               <Text style={[styles.email, { color: colors.text.secondary }]}>
                 {user?.email}
               </Text>
+              {roomBti && (
+                <View style={styles.profileBadge}>
+                  <RoomBtiBadge
+                    animal={roomBti.animal}
+                    result={roomBti.result}
+                    size="small"
+                  />
+                </View>
+              )}
             </View>
           </View>
+        </Card>
+
+        {/* Room-BTI 섹션 */}
+        <Card style={styles.roomBtiCard}>
+          <Text style={[styles.sectionTitle, { color: colors.text.secondary }]}>
+            Room-BTI
+          </Text>
+          {roomBti ? (
+            <TouchableOpacity
+              style={styles.roomBtiContent}
+              onPress={() => navigation.navigate('RoomBtiIntro')}
+              activeOpacity={0.7}>
+              <RoomBtiBadge
+                animal={roomBti.animal}
+                result={roomBti.result}
+                size="medium"
+              />
+              <Text style={[styles.menuArrow, { color: colors.text.tertiary }]}>
+                →
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.roomBtiButton, { backgroundColor: themeColors.primary + '10' }]}
+              onPress={() => navigation.navigate('RoomBtiIntro')}
+              activeOpacity={0.7}>
+              <Text style={styles.roomBtiEmoji}>🏠</Text>
+              <Text style={[styles.roomBtiButtonText, { color: themeColors.primary }]}>
+                나의 룸BTI 알아보기
+              </Text>
+            </TouchableOpacity>
+          )}
         </Card>
 
         {/* 메뉴 */}
@@ -225,6 +299,32 @@ const styles = StyleSheet.create({
   },
   email: {
     fontSize: fontSize.sm,
+  },
+  profileBadge: {
+    marginTop: spacing.sm,
+  },
+  roomBtiCard: {
+    marginBottom: spacing.md,
+  },
+  roomBtiContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  roomBtiButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
+  },
+  roomBtiEmoji: {
+    fontSize: 24,
+    marginRight: spacing.sm,
+  },
+  roomBtiButtonText: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
   },
   menuCard: {
     marginBottom: spacing.md,

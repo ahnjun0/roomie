@@ -1,0 +1,3 @@
+from .room_bti import ROOM_BTI_QUESTIONS, ROOM_BTI_ANIMALS
+
+__all__ = ["ROOM_BTI_QUESTIONS", "ROOM_BTI_ANIMALS"]
