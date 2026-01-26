@@ -48,13 +48,15 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
         `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${pageNum}&limit=10&sort_by=${sortBy}`
       );
 
+      const items = response.items ?? [];
+
       if (refresh || pageNum === 1) {
-        setMatches(response.items);
+        setMatches(items);
       } else {
-        setMatches(prev => [...prev, ...response.items]);
+        setMatches(prev => [...prev, ...items]);
       }
 
-      setHasMore(response.items.length === 10);
+      setHasMore(items.length === 10);
       setPage(pageNum);
     } catch (error) {
       console.error('Failed to fetch matches:', error);
@@ -106,7 +108,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   const renderHeader = () => (
     <View style={styles.listHeader}>
       <Text style={[styles.resultCount, { color: colors.text.secondary }]}>
-        {matches.length}명의 룸메이트 후보
+        {matches?.length ?? 0}명의 룸메이트 후보
       </Text>
       <Dropdown
         options={[
