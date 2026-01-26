@@ -6,7 +6,7 @@ from app.schemas.user import Nationality
 
 
 class MatchingUserResponse(BaseModel):
-    id: int
+    id: str
     nickname: str | None
     studentId: int
     nationality: Nationality
@@ -54,7 +54,7 @@ class ReviewSummary(BaseModel):
 
 
 class MatchingUserDetail(BaseModel):
-    id: int
+    id: str
     nickname: str | None
     gender: str
     nationality: Nationality

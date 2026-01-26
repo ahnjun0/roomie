@@ -52,7 +52,7 @@ class LoginRequest(BaseModel):
 
 
 class AuthResponse(BaseModel):
-    id: int
+    id: str
     email: str
     nickname: str | None
     accessToken: str
@@ -71,7 +71,7 @@ class TokenResponse(BaseModel):
 # ============== User ==============
 
 class UserBase(BaseModel):
-    id: int
+    id: str
     email: str
     nickname: str | None
     gender: Gender
@@ -120,7 +120,7 @@ class LifestyleUpdate(BaseModel):
 
 class LifestyleResponse(BaseModel):
     id: int
-    userId: int
+    userId: str
     dormNames: str
     isSmoker: bool
     sleepStart: int
@@ -157,7 +157,7 @@ class PreferenceUpdate(BaseModel):
 
 class PreferenceResponse(BaseModel):
     id: int
-    userId: int
+    userId: str
     prefNationality: Nationality | None
     prefStudentId: str | None
     weightNoise: int

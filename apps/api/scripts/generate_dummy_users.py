@@ -16,11 +16,15 @@ import sys
 from pathlib import Path
 
 import bcrypt
+from cuid2 import cuid_wrapper
 
 # 프로젝트 루트를 path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from prisma import Prisma
+
+# CUID2 생성기
+cuid_generator = cuid_wrapper()
 
 
 def hash_password(password: str) -> str:
@@ -661,6 +665,7 @@ async def create_dummy_users(db: Prisma):
         # 유저 생성
         user = await db.user.create(
             data={
+                "id": cuid_generator(),  # CUID2로 ID 생성
                 "email": persona["email"],
                 "nickname": persona["nickname"],
                 "password": hash_password("test1234"),  # 공통 비밀번호

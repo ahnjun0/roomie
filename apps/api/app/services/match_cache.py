@@ -11,7 +11,7 @@ from prisma import Prisma
 from app.services.matching import calculate_match_score
 
 
-async def update_match_scores_for_user(db: Prisma, user_id: int):
+async def update_match_scores_for_user(db: Prisma, user_id: str):
     """
     특정 사용자와 다른 모든 사용자 간의 매칭 점수를 계산하여 저장
 
@@ -122,7 +122,7 @@ async def update_match_scores_for_user(db: Prisma, user_id: int):
 
 async def get_cached_matches(
     db: Prisma,
-    user_id: int,
+    user_id: str,
     dorm_name: str | None = None,
     page: int = 1,
     limit: int = 20

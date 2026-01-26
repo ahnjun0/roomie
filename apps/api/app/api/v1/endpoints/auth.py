@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 
+from cuid2 import cuid_wrapper
 from fastapi import APIRouter, Depends, HTTPException, status
 from prisma import Prisma
 
@@ -29,6 +30,9 @@ from app.schemas.user import (
 from app.services.email import send_verification_email
 
 router = APIRouter()
+
+# CUID2 생성기
+cuid_generator = cuid_wrapper()
 
 
 @router.post("/send-code", response_model=EmailSendResponse)
@@ -123,6 +127,7 @@ async def register(request: RegisterRequest, db: Prisma = Depends(get_db)):
         # 주의: Enum 값은 문자열로 전달 (Prisma Client Python이 처리)
         user = await db.user.create(
             data={
+                "id": cuid_generator(),  # CUID2로 ID 생성
                 "email": request.email,
                 "password": hashed_password,
                 "nickname": request.nickname,
@@ -207,7 +212,7 @@ async def refresh_token(request: TokenRefreshRequest, db: Prisma = Depends(get_d
         )
 
     # 사용자 존재 확인
-    user = await db.user.find_unique(where={"id": int(user_id)})
+    user = await db.user.find_unique(where={"id": user_id})
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

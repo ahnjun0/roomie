@@ -23,14 +23,14 @@ from app.core.websocket import manager
 router = APIRouter()
 
 
-async def get_user_from_token(token: str, db: Prisma) -> int | None:
+async def get_user_from_token(token: str, db: Prisma) -> str | None:
     """JWT 토큰에서 사용자 ID 추출"""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         user_id = payload.get("sub")
         if user_id is None:
             return None
-        return int(user_id)
+        return user_id  # CUID2는 이미 문자열
     except JWTError:
         return None
 
