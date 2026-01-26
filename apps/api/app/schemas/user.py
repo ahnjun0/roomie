@@ -1,7 +1,8 @@
 from datetime import datetime
 from enum import Enum
+from typing import Self
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
 
 class Gender(str, Enum):
@@ -139,7 +140,59 @@ class LifestyleResponse(BaseModel):
 
 # ============== Preference ==============
 
+# Step 2: 상대방 선호 조건 (필터링용)
+class PreferenceFiltersUpdate(BaseModel):
+    """
+    상대방에게 바라는 조건 (Step 2: 상대 조건 입력)
+
+    - prefNationality: 선호하는 국적 (null이면 무관)
+    - prefStudentId: 선호하는 학번 관계
+    """
+    prefNationality: Nationality | None = None  # 선호 국적 (null이면 무관)
+    prefStudentId: str | None = None  # "SAME", "SENIOR", "JUNIOR", "ANY"
+
+
+# Step 3: 5만원 게임 가중치 (매칭 알고리즘용)
+class PreferenceWeightsUpdate(BaseModel):
+    """
+    5만원 게임 가중치 (Step 3: 중요도 베팅)
+
+    각 항목에 베팅할 금액을 입력합니다.
+    값 = 베팅액 / 1000 (예: 10000원 → 10)
+    총합은 반드시 50이어야 합니다. (5만원 = 50)
+    """
+    weightNoise: int = Field(0, ge=0, le=50, description="소음 민감도")
+    weightClean: int = Field(0, ge=0, le=50, description="청결도")
+    weightFood: int = Field(0, ge=0, le=50, description="실내취식")
+    weightHabit: int = Field(0, ge=0, le=50, description="잠버릇")
+    weightTime: int = Field(0, ge=0, le=50, description="취침시간")
+    weightLight: int = Field(0, ge=0, le=50, description="소등")
+    weightTemp: int = Field(0, ge=0, le=50, description="온도")
+
+    @model_validator(mode="after")
+    def validate_total_weight(self) -> Self:
+        """가중치 총합이 50인지 검증"""
+        total = (
+            self.weightNoise
+            + self.weightClean
+            + self.weightFood
+            + self.weightHabit
+            + self.weightTime
+            + self.weightLight
+            + self.weightTemp
+        )
+        if total != 50:
+            raise ValueError(f"가중치 총합은 50이어야 합니다. (현재: {total})")
+        return self
+
+
+# 기존 통합 스키마 (하위 호환성 유지, deprecated)
 class PreferenceUpdate(BaseModel):
+    """
+    [Deprecated] 기존 통합 스키마
+
+    새로운 API는 PreferenceFiltersUpdate와 PreferenceWeightsUpdate를 사용해주세요.
+    """
     # 기본 선호 (Screen 6)
     prefNationality: Nationality | None = None
     prefStudentId: str | None = None  # "SAME", "SENIOR", "JUNIOR", "ANY"

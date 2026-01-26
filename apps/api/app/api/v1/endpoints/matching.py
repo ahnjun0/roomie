@@ -52,7 +52,10 @@ async def get_matching_list(
             detail={"error": "LIFESTYLE_NOT_FOUND", "message": "프로필 설정을 먼저 완료해주세요."},
         )
 
-    # 후보자 조회: 같은 성별 + 같은 흡연 상태
+    # 후보자 조회: 같은 학교 + 같은 성별 + 같은 흡연 상태
+    # schoolId가 없는 경우 (기존 사용자) 필터링 없이 진행
+    school_filter = {"schoolId": current_user.schoolId} if current_user.schoolId else {}
+
     candidates = await db.user.find_many(
         where={
             "id": {"not": current_user.id},
@@ -60,6 +63,7 @@ async def get_matching_list(
             "lifestyle": {
                 "isSmoker": my_lifestyle.isSmoker,  # 흡연자끼리, 비흡연자끼리
             },
+            **school_filter,  # 같은 학교 필터 (Hard Filter)
         },
         include={"lifestyle": True},
     )
@@ -69,6 +73,12 @@ async def get_matching_list(
     my_lifestyle_dict = my_lifestyle.model_dump() if my_lifestyle else None
     my_preference_dict = my_preference.model_dump() if my_preference else None
     my_dorms = my_lifestyle.dormNames if my_lifestyle else ""
+
+    # 현재 사용자 정보 (학번/국적 비교용)
+    current_user_dict = {
+        "nationality": current_user.nationality,
+        "studentId": current_user.studentId,
+    }
 
     for candidate in candidates:
         if not candidate.lifestyle:
@@ -92,12 +102,13 @@ async def get_matching_list(
             "studentId": candidate.studentId,
         }
 
-        # 새 알고리즘 사용 (딕셔너리 반환)
+        # 매칭 점수 계산 (current_user 정보 전달하여 학번 비교)
         match_result = calculate_match_score(
             my_lifestyle_dict,
             my_preference_dict,
             target_lifestyle_dict,
             target_user_dict,
+            current_user_dict,  # 학번/국적 비교용
         )
 
         keywords = generate_keywords(target_lifestyle_dict, target_user_dict)
@@ -154,6 +165,14 @@ async def get_matching_detail(
             detail={"error": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다."},
         )
 
+    # 같은 학교인지 확인 (schoolId가 있는 경우에만)
+    if current_user.schoolId and target_user.schoolId:
+        if current_user.schoolId != target_user.schoolId:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"error": "DIFFERENT_SCHOOL", "message": "같은 학교 사용자만 조회할 수 있습니다."},
+            )
+
     # 내 정보 조회
     my_lifestyle = await db.userlifestyle.find_unique(where={"userId": current_user.id})
     my_preference = await db.userpreference.find_unique(where={"userId": current_user.id})
@@ -163,11 +182,18 @@ async def get_matching_detail(
     my_preference_dict = my_preference.model_dump() if my_preference else {}
     target_lifestyle_dict = target_user.lifestyle.model_dump() if target_user.lifestyle else {}
 
+    # 현재 사용자 정보 (학번/국적 비교용)
+    current_user_dict = {
+        "nationality": current_user.nationality,
+        "studentId": current_user.studentId,
+    }
+
     match_result = calculate_match_score(
         my_lifestyle_dict,
         my_preference_dict,
         target_lifestyle_dict,
         {"nationality": target_user.nationality, "studentId": target_user.studentId},
+        current_user_dict,  # 학번/국적 비교용
     )
 
     # 비교 데이터 생성 (7개 항목)
