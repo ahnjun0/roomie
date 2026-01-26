@@ -123,6 +123,7 @@ def calculate_match_score(
     my_preference: dict,
     target_lifestyle: dict,
     target_user: dict,
+    current_user: dict | None = None,
 ) -> dict:
     """
     두 사용자 간의 매칭 점수를 계산합니다.
@@ -131,7 +132,8 @@ def calculate_match_score(
         my_lifestyle: 현재 사용자의 생활 패턴
         my_preference: 현재 사용자의 희망 조건 및 가중치
         target_lifestyle: 후보의 생활 패턴
-        target_user: 후보의 기본 정보
+        target_user: 후보의 기본 정보 (nationality, studentId)
+        current_user: 현재 사용자의 기본 정보 (nationality, studentId) - 학번 비교용
 
     Returns:
         {
@@ -139,6 +141,10 @@ def calculate_match_score(
             "breakdown": {
                 "noise": {"score": 100, "weight": 40.0, "status": "Perfect"},
                 ...
+            },
+            "preferenceBonus": {
+                "nationality": {"matched": True, "bonus": 3},
+                "studentId": {"matched": True, "bonus": 5}
             }
         }
     """
@@ -236,24 +242,65 @@ def calculate_match_score(
         }
 
     # ============== 보너스 점수 (국적/학번 선호) ==============
+    # 선호 조건은 Hard Filter가 아닌 Soft Score로 처리
+    # 조건이 맞으면 가산점, 안 맞아도 감점 없음 (0점)
     bonus = 0.0
+    preference_bonus = {}
 
-    # 국적 선호 보너스
+    # 국적 선호 보너스 (최대 +3점)
     pref_nationality = pref.get("prefNationality")
-    if pref_nationality and pref_nationality == target_user.get("nationality"):
-        bonus += 3
+    target_nationality = target_user.get("nationality")
+    nationality_matched = False
 
-    # 학번 선호 보너스
-    pref_student_id = pref.get("prefStudentId")
+    if pref_nationality:
+        # 선호 국적이 설정된 경우
+        if pref_nationality == target_nationality:
+            bonus += 3
+            nationality_matched = True
+    else:
+        # 국적 무관 (null) - 보너스 없음, 감점도 없음
+        nationality_matched = True  # 무관이므로 "매칭됨"으로 처리
+
+    preference_bonus["nationality"] = {
+        "preference": pref_nationality,
+        "target": target_nationality,
+        "matched": nationality_matched,
+        "bonus": 3 if nationality_matched and pref_nationality else 0
+    }
+
+    # 학번 선호 보너스 (최대 +5점)
+    pref_student_id = pref.get("prefStudentId")  # "SAME", "SENIOR", "JUNIOR", "ANY", None
     target_student_id = target_user.get("studentId")
-    my_student_id = my_lifestyle.get("userId")  # 참고용
+    my_student_id = current_user.get("studentId") if current_user else None
+    student_matched = False
 
-    if pref_student_id == "SAME":
-        # 동기 선호: user의 studentId와 같은 학번이면 보너스
-        # (실제로는 current_user의 studentId와 비교해야 함)
-        pass  # 이 부분은 endpoint에서 처리
-    elif pref_student_id == "ANY":
-        bonus += 1
+    if pref_student_id == "ANY" or pref_student_id is None:
+        # 학번 무관 - 가산점 부여
+        bonus += 2
+        student_matched = True
+    elif pref_student_id == "SAME" and my_student_id is not None:
+        # 동기 선호: 나와 같은 학번이면 가산점
+        if target_student_id == my_student_id:
+            bonus += 5
+            student_matched = True
+    elif pref_student_id == "SENIOR" and my_student_id is not None:
+        # 선배 선호: 나보다 낮은 학번 (더 오래된 = 선배)
+        if target_student_id is not None and target_student_id < my_student_id:
+            bonus += 5
+            student_matched = True
+    elif pref_student_id == "JUNIOR" and my_student_id is not None:
+        # 후배 선호: 나보다 높은 학번 (더 최근 = 후배)
+        if target_student_id is not None and target_student_id > my_student_id:
+            bonus += 5
+            student_matched = True
+
+    preference_bonus["studentId"] = {
+        "preference": pref_student_id,
+        "myStudentId": my_student_id,
+        "targetStudentId": target_student_id,
+        "matched": student_matched,
+        "bonus": bonus - preference_bonus["nationality"]["bonus"]  # 학번 보너스만 추출
+    }
 
     # ============== 최종 점수 계산 ==============
     if total_weight_sum == 0:
@@ -267,7 +314,10 @@ def calculate_match_score(
 
     return {
         "total_match_rate": round(final_score, 1),
-        "breakdown": breakdown
+        "breakdown": breakdown,
+        "preferenceBonus": preference_bonus,
+        "baseScore": round(base_score, 1),
+        "totalBonus": round(bonus, 1),
     }
 
 
