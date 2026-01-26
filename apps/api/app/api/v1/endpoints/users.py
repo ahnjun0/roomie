@@ -7,6 +7,8 @@ from app.core.security import get_current_user
 from app.schemas.user import (
     LifestyleResponse,
     LifestyleUpdate,
+    PreferenceFiltersUpdate,
+    PreferenceWeightsUpdate,
     PreferenceResponse,
     PreferenceUpdate,
     UserProfileUpdate,
@@ -112,7 +114,7 @@ async def get_preference(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """선호 조건 조회"""
+    """선호 조건 조회 (필터 + 가중치 전체)"""
     preference = await db.userpreference.find_unique(where={"userId": current_user.id})
 
     if not preference:
@@ -124,13 +126,85 @@ async def get_preference(
     return preference
 
 
-@router.put("/me/preference", response_model=PreferenceResponse)
+@router.put("/me/preference/filters", response_model=PreferenceResponse)
+async def update_preference_filters(
+    request: PreferenceFiltersUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """
+    [Step 2] 상대방 선호 조건 등록/수정
+
+    상대방에게 바라는 조건을 설정합니다.
+    - prefNationality: 선호하는 국적 (null이면 무관)
+    - prefStudentId: 선호하는 학번 관계 (SAME, SENIOR, JUNIOR, ANY)
+    """
+    data = request.model_dump(exclude_unset=True)
+
+    # Enum을 문자열로 변환
+    if "prefNationality" in data and data["prefNationality"]:
+        data["prefNationality"] = data["prefNationality"].value
+
+    # upsert: 있으면 update, 없으면 create
+    preference = await db.userpreference.upsert(
+        where={"userId": current_user.id},
+        data={
+            "create": {"userId": current_user.id, **data},
+            "update": data,
+        },
+    )
+
+    return preference
+
+
+@router.put("/me/preference/weights", response_model=PreferenceResponse)
+async def update_preference_weights(
+    request: PreferenceWeightsUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """
+    [Step 3] 5만원 게임 가중치 등록/수정
+
+    각 항목의 중요도를 베팅합니다.
+    가중치 총합은 반드시 50이어야 합니다. (5만원 = 50)
+
+    - weightNoise: 소음 민감도
+    - weightClean: 청결도
+    - weightFood: 실내취식
+    - weightHabit: 잠버릇
+    - weightTime: 취침시간
+    - weightLight: 소등
+    - weightTemp: 온도
+    """
+    data = request.model_dump()
+
+    # upsert: 있으면 update, 없으면 create
+    preference = await db.userpreference.upsert(
+        where={"userId": current_user.id},
+        data={
+            "create": {"userId": current_user.id, **data},
+            "update": data,
+        },
+    )
+
+    return preference
+
+
+@router.put("/me/preference", response_model=PreferenceResponse, deprecated=True)
 async def update_preference(
     request: PreferenceUpdate,
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """선호 조건 등록/수정"""
+    """
+    [Deprecated] 선호 조건 통합 등록/수정
+
+    이 API는 하위 호환성을 위해 유지됩니다.
+    새로운 클라이언트는 아래 API를 사용해주세요:
+    - PUT /users/me/preference/filters (Step 2: 상대 조건)
+    - PUT /users/me/preference/weights (Step 3: 중요도 베팅)
+    """
     data = request.model_dump(exclude_unset=True)
 
     # Enum을 문자열로 변환
