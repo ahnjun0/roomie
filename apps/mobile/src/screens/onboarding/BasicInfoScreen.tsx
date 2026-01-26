@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme, useOnboarding, useAuth } from '../../contexts';
 import { api } from '../../services/api';
 import { Button, RadioGroup, Dropdown, Input, Header, ProgressBar } from '../../components';
@@ -13,16 +12,10 @@ interface BasicInfoScreenProps {
   navigation: any;
 }
 
-const STORAGE_KEYS = {
-  ACCESS_TOKEN: '@roomie_access_token',
-  REFRESH_TOKEN: '@roomie_refresh_token',
-  USER: '@roomie_user',
-};
-
 export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
   const { colors } = useTheme();
   const { data, updateData, submitRegistration } = useOnboarding();
-  const { setTokens } = useAuth();
+  const { setTokens, setUser } = useAuth();
   const insets = useSafeAreaInsets();
 
   // tempToken이 있으면 회원가입 모드
@@ -69,21 +62,16 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
           nationality: localData.nationality,
           birthYear: null,
           studentId: localData.studentId,
+          schoolId: null, // 회원가입 시점에는 schoolId가 없음, API에서 이메일 도메인으로 조회
           persona: null,
           isEmailVerified: true,
           isProfileComplete: false,
         };
 
-        // 토큰 및 사용자 정보 저장
-        await Promise.all([
-          AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken),
-          AsyncStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, response.refreshToken),
-          AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
-        ]);
-
-        // AuthContext 상태 업데이트 - 이 시점에서 isAuthenticated가 true가 됨
+        // AuthContext 상태 업데이트 - 토큰과 user 모두 설정
         api.setAccessToken(response.accessToken);
         await setTokens(response.accessToken, response.refreshToken);
+        await setUser(user);
 
         // 회원가입 완료 후 온보딩 계속 (RootNavigator가 자동으로 온보딩 플로우로 전환)
       } catch (err: any) {

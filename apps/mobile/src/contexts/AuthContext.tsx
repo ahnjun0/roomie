@@ -28,6 +28,7 @@ interface AuthContextType extends AuthState {
   verifyCode: (email: string, code: string) => Promise<string>;
   refreshUser: () => Promise<void>;
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
+  setUser: (user: User) => Promise<void>;
 }
 
 interface RegisterData {
@@ -248,6 +249,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const setUser = useCallback(async (user: User) => {
+    await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    setState(prev => ({
+      ...prev,
+      user,
+      isOnboardingComplete: user.isProfileComplete,
+    }));
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -259,6 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         verifyCode,
         refreshUser,
         setTokens,
+        setUser,
       }}>
       {children}
     </AuthContext.Provider>
