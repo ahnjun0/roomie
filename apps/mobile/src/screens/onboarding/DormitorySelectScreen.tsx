@@ -36,7 +36,36 @@ export function DormitorySelectScreen({ navigation }: DormitorySelectScreenProps
 
   const fetchDormitories = async () => {
     try {
-      const response = await api.get<Dormitory[]>(ENDPOINTS.DORMITORIES.LIST);
+      let schoolId: number;
+
+      // 1. 유저 정보에 schoolId가 있으면 사용, 없으면 이메일 도메인으로 조회
+      if (user?.schoolId) {
+        schoolId = user.schoolId;
+      } else {
+        const userEmail = user?.email || '';
+        const domain = userEmail.split('@')[1];
+
+        if (!domain) {
+          throw new Error('Invalid email domain');
+        }
+
+        const school = await api.get<{ id: number; name: string }>(
+          ENDPOINTS.SCHOOLS.BY_DOMAIN(domain)
+        );
+        schoolId = school.id;
+      }
+
+      // 2. 학교 ID로 기숙사 목록 조회
+      // 성별 필터링은 API 레벨에서 할 수도 있지만, 기존 로직 유지를 위해 클라이언트 필터링 사용 
+      // 혹은 API에 gender 파라미터를 보낼 수도 있음 (API 명세 확인 필요)
+      // 여기서는 API가 지원하므로 gender 파라미터 사용 권장
+      const userGender = data.gender || user?.gender?.toLowerCase();
+      const userGenderUpper = userGender?.toUpperCase();
+
+      const response = await api.get<Dormitory[]>(
+        `${ENDPOINTS.SCHOOLS.DORMS(schoolId)}?gender=${userGenderUpper}`
+      );
+      
       setDorms(response);
     } catch (error) {
       console.error('Failed to fetch dormitories:', error);
@@ -45,17 +74,11 @@ export function DormitorySelectScreen({ navigation }: DormitorySelectScreenProps
     }
   };
 
-  // 성별에 따른 기숙사 필터링
-  // OnboardingContext의 데이터가 없으면(새로고침 등) AuthContext의 유저 정보 사용
-  const gender = data.gender || user?.gender?.toLowerCase();
-  const userGenderUpper = gender?.toUpperCase();
-  
-  const availableDorms = dorms
-    .filter(dorm => dorm.gender === userGenderUpper)
-    .map(dorm => ({
-      value: String(dorm.id),
-      label: dorm.name,
-    }));
+  // 이미 API에서 성별 필터링된 데이터를 받아오므로, 여기서는 포맷팅만 수행
+  const availableDorms = dorms.map(dorm => ({
+    value: String(dorm.id),
+    label: dorm.name,
+  }));
 
   const handleNext = () => {
     updateData({

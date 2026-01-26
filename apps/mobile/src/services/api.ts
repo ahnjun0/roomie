@@ -8,7 +8,7 @@ interface RequestConfig {
 
 // [개발용] 백엔드 연결 없이 UI 테스트를 위한 Mock 모드
 // true로 설정하면 모든 API 요청에 대해 가짜 데이터를 반환합니다.
-const USE_MOCK_API = true;
+const USE_MOCK_API = false;
 
 class ApiService {
   private baseUrl: string;
@@ -27,7 +27,7 @@ class ApiService {
   // Mock 데이터 처리 로직
   private async mockRequest<T>(endpoint: string, config: RequestConfig): Promise<T> {
     console.log(`[MOCK API] ${config.method || 'GET'} ${endpoint}`, config.body ? JSON.stringify(config.body) : '');
-    
+
     // 네트워크 딜레이 시뮬레이션 (0.5초)
     await new Promise(resolve => setTimeout(() => resolve(true), 500));
 
@@ -65,7 +65,7 @@ class ApiService {
         birthYear: 2000,
         persona: null,
         isEmailVerified: true,
-        isProfileComplete: this._mockProfileComplete, 
+        isProfileComplete: this._mockProfileComplete,
       } as any;
     }
 
@@ -90,7 +90,7 @@ class ApiService {
         { id: 4, name: '화원관', gender: 'FEMALE' },
       ] as any;
     }
-    
+
     // 5. Matching Recommendations & Detail
     if (endpoint.includes('/matching')) {
         // 상세 조회 (/matching/123)
@@ -113,12 +113,12 @@ class ApiService {
                     { label: "잠버릇", myValue: 90, otherValue: 80 },
                 ],
                 reviews: [
-                    { 
-                        id: 1, 
-                        reviewerName: "이전룸메", 
-                        content: "배려심이 깊고 조용해서 좋았습니다.", 
-                        score: 5, 
-                        createdAt: "2025-12-01" 
+                    {
+                        id: 1,
+                        reviewerName: "이전룸메",
+                        content: "배려심이 깊고 조용해서 좋았습니다.",
+                        score: 5,
+                        createdAt: "2025-12-01"
                     }
                 ],
                 avgScore: 5.0,
@@ -151,7 +151,7 @@ class ApiService {
                 tags: ["청소매일", "비흡연"],
             }
         ];
-        
+
         return {
             items: items,
             total: items.length,
@@ -173,7 +173,7 @@ class ApiService {
                     createdAt: new Date().toISOString(),
                 } as any;
             }
-            
+
             // GET Messages
             const messages = [
                 {
@@ -195,7 +195,7 @@ class ApiService {
                     createdAt: new Date(Date.now() - 86200000).toISOString(),
                 }
             ];
-            
+
             return {
                 items: messages,
                 total: messages.length,
@@ -204,12 +204,12 @@ class ApiService {
                 hasMore: false
             } as any;
         }
-        
+
         // 채팅방 생성 (POST /chats)
         if (config.method === 'POST') {
             return { chat_room_id: 'room_mock_123' } as any;
         }
-        
+
         // 채팅방 목록 (GET /chats)
         const chatRooms = [
             {
@@ -221,7 +221,7 @@ class ApiService {
                 unreadCount: 0
             }
         ];
-        
+
         return {
             items: chatRooms,
         } as any;

@@ -44,6 +44,14 @@ export const ENDPOINTS = {
     CREATE: '/reviews',
   },
 
+  // Schools
+  SCHOOLS: {
+    LIST: '/schools',
+    GET: (id: number) => `/schools/${id}`,
+    DORMS: (id: number) => `/schools/${id}/dorms`,
+    BY_DOMAIN: (domain: string) => `/schools/by-domain/${domain}`,
+  },
+
   // Dormitories
   DORMITORIES: {
     LIST: '/dormitories',

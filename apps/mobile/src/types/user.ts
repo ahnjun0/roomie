@@ -8,6 +8,7 @@ export interface User {
   nationality: string | null;
   birthYear: number | null;
   studentId: string | null;
+  schoolId: number | null;
   persona: string | null;
   isEmailVerified: boolean;
   isProfileComplete: boolean;
