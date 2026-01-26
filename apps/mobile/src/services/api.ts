@@ -161,6 +161,72 @@ class ApiService {
         } as any;
     }
 
+    // 6. Chats
+    if (endpoint.includes('/chats')) {
+        // 메시지 목록 조회/전송 (/chats/{id}/messages)
+        if (endpoint.includes('/messages')) {
+            if (config.method === 'POST') {
+                return {
+                    id: `msg_${Date.now()}`,
+                    content: (config.body as any)?.content || '',
+                    senderId: 1, // Me
+                    createdAt: new Date().toISOString(),
+                } as any;
+            }
+            
+            // GET Messages
+            const messages = [
+                {
+                    id: 'msg_1',
+                    content: '안녕하세요! 룸메이트 구하신다고 해서 연락드렸어요.',
+                    senderId: 1, // Me
+                    createdAt: new Date(Date.now() - 86400000).toISOString(),
+                },
+                {
+                    id: 'msg_2',
+                    content: '네 안녕하세요! 어떤 점이 궁금하신가요?',
+                    senderId: 2, // Other
+                    createdAt: new Date(Date.now() - 86300000).toISOString(),
+                },
+                {
+                    id: 'msg_3',
+                    content: '혹시 흡연하시나요?',
+                    senderId: 1,
+                    createdAt: new Date(Date.now() - 86200000).toISOString(),
+                }
+            ];
+            
+            return {
+                items: messages,
+                total: messages.length,
+                page: 1,
+                limit: 50,
+                hasMore: false
+            } as any;
+        }
+        
+        // 채팅방 생성 (POST /chats)
+        if (config.method === 'POST') {
+            return { chat_room_id: 'room_mock_123' } as any;
+        }
+        
+        // 채팅방 목록 (GET /chats)
+        const chatRooms = [
+            {
+                id: 'room_mock_123',
+                otherUserId: 2,
+                otherUserName: "룸메찾아요",
+                lastMessage: "혹시 흡연하시나요?",
+                lastMessageAt: new Date(Date.now() - 86200000).toISOString(),
+                unreadCount: 0
+            }
+        ];
+        
+        return {
+            items: chatRooms,
+        } as any;
+    }
+
     // Default: 빈 객체 반환 (에러 방지)
     console.warn(`[MOCK API] Unhandled endpoint: ${endpoint} - returning empty object.`);
     return {} as any;
