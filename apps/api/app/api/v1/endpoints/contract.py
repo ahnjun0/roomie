@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from prisma import Prisma
 from prisma.models import User
 
@@ -108,9 +108,26 @@ def _build_contract_data(lifestyle_a, lifestyle_b) -> dict[str, object]:
     }
 
 
+def _build_placeholder_contract_data() -> dict[str, object]:
+    return {
+        "wakeUpTime": "협의 필요",
+        "lightsOutTime": "협의 필요",
+        "cleaningCycle": "협의 필요",
+        "choreRules": "협의 필요",
+        "smokingPolicy": "협의 필요",
+        "sleepHabits": "협의 필요",
+        "noisePolicy": "협의 필요",
+        "foodPolicy": "협의 필요",
+        "lightPolicy": "협의 필요",
+        "temperaturePolicy": "협의 필요",
+        "homeVisitPolicy": "협의 필요",
+    }
+
+
 @router.post("/init", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
 async def init_contract(
     request: ContractInitRequest,
+    allowMissingLifestyle: bool = Query(False),
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
@@ -162,48 +179,52 @@ async def init_contract(
     )
     lifestyle_map = {l.userId: l for l in lifestyles}
 
-    if len(lifestyle_map) != 2:
+    has_full_lifestyle = len(lifestyle_map) == 2
+    if not has_full_lifestyle and not allowMissingLifestyle:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "error": "LIFESTYLE_NOT_FOUND",
-                "message": "채팅방의 모든 사용자의 생활 패턴 정보를 완료해주세요.",
+                "message": "채팅방의 모든 사용자가 생활 패턴 정보를 입력해야 합니다.",
             },
         )
 
-    users = await db.user.find_many(where={"id": {"in": user_ids}})
-    user_map = {u.id: u for u in users}
-    if len(user_map) != 2:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다."},
+    if has_full_lifestyle:
+        users = await db.user.find_many(where={"id": {"in": user_ids}})
+        user_map = {u.id: u for u in users}
+        if len(user_map) != 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={"error": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다."},
+            )
+
+        dorm_names = set()
+        for lifestyle in lifestyle_map.values():
+            dorm_names.update(d.strip() for d in lifestyle.dormNames.split(",") if d.strip())
+
+        if dorm_names:
+            dorms = await db.dorm.find_many(where={"name": {"in": list(dorm_names)}})
+            dorm_map = {d.name: d for d in dorms}
+
+            for user_id in user_ids:
+                user = user_map[user_id]
+                lifestyle = lifestyle_map[user_id]
+                for dorm_name in [d.strip() for d in lifestyle.dormNames.split(",") if d.strip()]:
+                    dorm = dorm_map.get(dorm_name)
+                    if dorm and dorm.gender != user.gender:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail={
+                                "error": "INVALID_DORM_GENDER",
+                                "message": f"'{dorm_name}'은(는) {dorm.gender} 전용 기숙사입니다. 본인 성별에 맞는 기숙사를 선택해주세요.",
+                            },
+                        )
+
+        contract_data = _build_contract_data(
+            lifestyle_map[user_a_id], lifestyle_map[user_b_id]
         )
-
-    dorm_names = set()
-    for lifestyle in lifestyle_map.values():
-        dorm_names.update(d.strip() for d in lifestyle.dormNames.split(",") if d.strip())
-
-    if dorm_names:
-        dorms = await db.dorm.find_many(where={"name": {"in": list(dorm_names)}})
-        dorm_map = {d.name: d for d in dorms}
-
-        for user_id in user_ids:
-            user = user_map[user_id]
-            lifestyle = lifestyle_map[user_id]
-            for dorm_name in [d.strip() for d in lifestyle.dormNames.split(",") if d.strip()]:
-                dorm = dorm_map.get(dorm_name)
-                if dorm and dorm.gender != user.gender:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail={
-                            "error": "INVALID_DORM_GENDER",
-                            "message": f"'{dorm_name}'은(는) {dorm.gender} 전용 기숙사입니다. 본인 성별에 맞는 기숙사를 선택해주세요.",
-                        },
-                    )
-
-    contract_data = _build_contract_data(
-        lifestyle_map[user_a_id], lifestyle_map[user_b_id]
-    )
+    else:
+        contract_data = _build_placeholder_contract_data()
 
     contract = await db.roommatecontract.create(
         data={
