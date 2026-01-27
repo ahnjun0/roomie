@@ -213,8 +213,7 @@ async def main():
             print("❌ 대학교 데이터가 없습니다. 먼저 seeds.py를 실행하세요.")
             return
 
-        print(f"👥 더미 유저 생성 시작... (학교: {[s.name for s in schools]})
-")
+        print(f"👥 더미 유저 생성 시작... (학교: {[s.name for s in schools]})\n")
 
         for school in schools:
             print(f"🏫 {school.name} ({school.domain}) 처리 중...")
