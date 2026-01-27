@@ -15,6 +15,11 @@ class Nationality(str, Enum):
     FOREIGNER = "FOREIGNER"
 
 
+class MatchingStatus(str, Enum):
+    SEARCHING = "SEARCHING"
+    MATCHED = "MATCHED"
+
+
 # ============== Auth ==============
 
 class EmailSendRequest(BaseModel):
@@ -80,6 +85,7 @@ class UserBase(BaseModel):
     age: int
     studentId: int
     schoolId: int | None = None
+    matchingStatus: MatchingStatus
     createdAt: datetime
 
     class Config:

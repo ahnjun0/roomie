@@ -53,6 +53,9 @@ model User {
   // 헬프 요청 게시글
   helpPosts   HelpPost[]
 
+  // 留ㅼ묶 ?곹깭
+  matchingStatus MatchingStatus @default(SEARCHING)
+
   createdAt   DateTime @default(now())
 }
 
@@ -158,6 +161,29 @@ model ChatMessage {
   createdAt  DateTime @default(now())
 }
 
+// 6-1. 猷몃찓?댄듃 怨꾩빟??
+model RoommateContract {
+  id           String   @id @default(cuid())
+
+  chatRoom     ChatRoom @relation(fields: [chatRoomId], references: [id])
+  chatRoomId   String
+
+  userA        User     @relation("ContractUserA", fields: [userAId], references: [id])
+  userAId      String
+
+  userB        User     @relation("ContractUserB", fields: [userBId], references: [id])
+  userBId      String
+
+  status       ContractStatus @default(DRAFT)
+  contractData Json
+
+  signatureA   Boolean @default(false)
+  signatureB   Boolean @default(false)
+  signedAt     DateTime?
+
+  @@unique([chatRoomId])
+}
+
 // 7. 학교 정보
 model School {
   id        Int      @id @default(autoincrement())
@@ -231,6 +257,16 @@ model HelpPost {
 enum Gender {
   MALE
   FEMALE
+}
+
+enum MatchingStatus {
+  SEARCHING
+  MATCHED
+}
+
+enum ContractStatus {
+  DRAFT
+  SIGNED
 }
 
 enum Nationality {
