@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts';
-import { MatchCard, Header, Dropdown } from '../../components';
+import { MatchCard, Header } from '../../components';
 import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
@@ -37,7 +37,6 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   const [matches, setMatches] = useState<MatchingUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [sortBy, setSortBy] = useState('matchRate');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -47,8 +46,9 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
         setIsRefreshing(true);
       }
 
+      // 정렬은 항상 매칭률순으로 고정
       const response = await api.get<{ data: MatchingUser[]; total: number }>(
-        `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${pageNum}&limit=10&sortBy=${sortBy}`
+        `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${pageNum}&limit=10&sortBy=matchRate`
       );
 
       const items = response.data ?? [];
@@ -67,11 +67,11 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [sortBy]);
+  }, []);
 
   useEffect(() => {
     fetchMatches(1, true);
-  }, [sortBy]);
+  }, []);
 
   const handleRefresh = () => {
     fetchMatches(1, true);
@@ -113,14 +113,6 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       <Text style={[styles.resultCount, { color: colors.text.secondary }]}>
         {matches?.length ?? 0}명의 룸메이트 후보
       </Text>
-      <Dropdown
-        options={[
-          { value: 'matchRate', label: '매칭률순' },
-          { value: 'createdAt', label: '최신순' },
-        ]}
-        value={sortBy}
-        onChange={setSortBy}
-      />
     </View>
   );
 
