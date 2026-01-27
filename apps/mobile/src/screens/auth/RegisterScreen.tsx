@@ -30,13 +30,19 @@ export function RegisterScreen({ route, navigation }: RegisterScreenProps) {
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [nickname, setNickname] = useState('');
   const [errors, setErrors] = useState<{
     password?: string;
     confirmPassword?: string;
+    nickname?: string;
   }>({});
 
   const validate = () => {
     const newErrors: typeof errors = {};
+
+    if (!nickname.trim()) {
+      newErrors.nickname = '닉네임을 입력해주세요.';
+    }
 
     if (!password) {
       newErrors.password = '비밀번호를 입력해주세요.';
@@ -62,6 +68,7 @@ export function RegisterScreen({ route, navigation }: RegisterScreenProps) {
       email,
       password,
       tempToken,
+      nickname: nickname.trim(),
     });
 
     // BasicInfoScreen으로 이동
@@ -94,6 +101,17 @@ export function RegisterScreen({ route, navigation }: RegisterScreenProps) {
         </View>
 
         <View style={styles.form}>
+          <Input
+            label="닉네임"
+            placeholder="닉네임을 입력하세요"
+            value={nickname}
+            onChangeText={text => {
+              setNickname(text);
+              setErrors(prev => ({ ...prev, nickname: undefined }));
+            }}
+            error={errors.nickname}
+          />
+
           <Input
             label="비밀번호"
             placeholder="8자 이상 입력"

@@ -14,6 +14,7 @@ interface OnboardingData {
   email: string | null;
   password: string | null;
   tempToken: string | null;
+  nickname: string | null;
 
   // Basic Info
   gender: 'MALE' | 'FEMALE' | null;
@@ -96,6 +97,7 @@ const initialData: OnboardingData = {
   email: 'test@univ.ac.kr',
   password: 'password123',
   tempToken: 'mock-temp-token-dev', 
+  nickname: 'RoomieUser',
 
   gender: 'MALE',
   nationality: 'KOREAN',
@@ -145,8 +147,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const submitRegistration = useCallback(async (): Promise<RegisterResponse> => {
     // 필수 데이터 확인
-    if (!data.email || !data.password || !data.tempToken) {
-      throw new Error('이메일, 비밀번호, 인증 토큰이 필요합니다.');
+    if (!data.email || !data.password || !data.tempToken || !data.nickname) {
+      throw new Error('이메일, 비밀번호, 인증 토큰, 닉네임이 필요합니다.');
     }
     if (!data.gender || !data.nationality || !data.age || !data.studentId) {
       throw new Error('기본 정보를 모두 입력해주세요.');
@@ -156,6 +158,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       email: data.email,
       password: data.password,
       tempToken: data.tempToken,
+      nickname: data.nickname,
       gender: data.gender,
       nationality: data.nationality,
       age: data.age,
