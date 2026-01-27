@@ -19,12 +19,21 @@ async def get_user_from_token(token: str) -> str | None:
     except JWTError:
         return None
 
+def _extract_token_from_headers(websocket: WebSocket) -> str | None:
+    auth_header = websocket.headers.get("authorization")
+    if not auth_header:
+        return None
+    parts = auth_header.split()
+    if len(parts) == 2 and parts[0].lower() == "bearer":
+        return parts[1]
+    return auth_header
+
 # 👇 [수정됨] URL 경로에 {chat_room_id}를 포함시켰습니다.
 @router.websocket("/ws/chats/{chat_room_id}")
 async def websocket_chat(
     websocket: WebSocket,
     chat_room_id: str,
-    token: str = Query(...),  # Postman의 Params에서 token을 받음
+    token: str | None = Query(None),  # Postman의 Params에서 token을 받음
 ):
     """
     WebSocket 채팅 엔드포인트 (방 전용)
@@ -37,7 +46,8 @@ async def websocket_chat(
 
     try:
         # 2. 토큰 검증
-        user_id = await get_user_from_token(token)
+        resolved_token = token or _extract_token_from_headers(websocket)
+        user_id = await get_user_from_token(resolved_token) if resolved_token else None
         if user_id is None:
             await websocket.close(code=4003, reason="Invalid token") # 4003: Forbidden
             return
