@@ -44,11 +44,40 @@ cuid_generator = cuid_wrapper()
 # 기본 설정
 DEFAULT_PASSWORD = "test1234"
 DUMMY_EMAIL_DOMAIN = "@kaist.ac.kr"
+WEIGHT_TOTAL = 60
+WEIGHT_KEYS = [
+    "weightNoise",
+    "weightClean",
+    "weightFood",
+    "weightHabit",
+    "weightTime",
+    "weightTemp",
+]
 
 
 def hash_password(password: str) -> str:
     """비밀번호 해싱"""
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+def normalize_weights(preference: dict) -> dict:
+    """Normalize weight sum to current game total."""
+    weights = {key: int(preference.get(key, 0)) for key in WEIGHT_KEYS}
+    total = sum(weights.values())
+    if total == WEIGHT_TOTAL:
+        return {**preference, **weights}
+    if total == 0:
+        weights["weightTime"] = WEIGHT_TOTAL
+        return {**preference, **weights}
+
+    scaled = {
+        key: round(value * WEIGHT_TOTAL / total) for key, value in weights.items()
+    }
+    diff = WEIGHT_TOTAL - sum(scaled.values())
+    if diff != 0:
+        target_key = max(scaled, key=scaled.get)
+        scaled[target_key] += diff
+    return {**preference, **scaled}
+
 
 
 # 20명의 페르소나 정의
@@ -685,7 +714,7 @@ async def create_dummy_users_db(db: Prisma, personas: list, reset: bool = False)
         )
 
         # Preference 생성
-        preference_data = persona["preference"]
+        preference_data = normalize_weights(persona["preference"])
         await db.userpreference.create(
             data={
                 "userId": user.id,
@@ -718,9 +747,17 @@ async def create_dummy_users_api(base_url: str, personas: list):
 
         # Admin API로 bulk 생성 요청
         try:
+            normalized = []
+            for persona in personas:
+                normalized.append(
+                    {
+                        **persona,
+                        "preference": normalize_weights(persona["preference"]),
+                    }
+                )
             response = await client.post(
                 admin_url,
-                json={"personas": personas, "password": DEFAULT_PASSWORD},
+                json={"personas": normalized, "password": DEFAULT_PASSWORD},
                 timeout=60.0
             )
 
