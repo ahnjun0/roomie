@@ -239,12 +239,6 @@ async def get_matching_detail(
             target=target_user.lifestyle.foodLevel,
             match=abs(my_lifestyle.foodLevel - target_user.lifestyle.foodLevel) <= 1,
         )
-        # 소등 (lightLevel)
-        comparison["light"] = ComparisonItem(
-            me=my_lifestyle.lightLevel,
-            target=target_user.lifestyle.lightLevel,
-            match=abs(my_lifestyle.lightLevel - target_user.lifestyle.lightLevel) <= 1,
-        )
         # 온도 (tempLevel)
         comparison["temp"] = ComparisonItem(
             me=my_lifestyle.tempLevel,
@@ -314,7 +308,6 @@ async def get_matching_detail(
             noiseLevel=target_user.lifestyle.noiseLevel,
             cleanLevel=target_user.lifestyle.cleanLevel,
             foodLevel=target_user.lifestyle.foodLevel,
-            lightLevel=target_user.lifestyle.lightLevel,
             tempLevel=target_user.lifestyle.tempLevel,
             homeVisit=target_user.lifestyle.homeVisit,
         )

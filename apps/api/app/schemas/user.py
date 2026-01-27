@@ -136,7 +136,6 @@ class LifestyleUpdate(BaseModel):
     noiseLevel: int = Field(3, ge=1, le=5)   # 소음 민감도
     cleanLevel: int = Field(3, ge=1, le=5)   # 청결도
     foodLevel: int = Field(3, ge=1, le=5)    # 실내취식
-    lightLevel: int = Field(3, ge=1, le=5)   # 소등
     tempLevel: int = Field(3, ge=1, le=5)    # 온도
 
     # 기타
@@ -154,7 +153,6 @@ class LifestyleResponse(BaseModel):
     noiseLevel: int
     cleanLevel: int
     foodLevel: int
-    lightLevel: int
     tempLevel: int
     homeVisit: str | None
 
@@ -190,7 +188,6 @@ class PreferenceWeightsUpdate(BaseModel):
     weightFood: int = Field(0, ge=0, le=70, description="실내취식")
     weightHabit: int = Field(0, ge=0, le=70, description="잠버릇")
     weightTime: int = Field(0, ge=0, le=70, description="취침시간")
-    weightLight: int = Field(0, ge=0, le=70, description="소등")
     weightTemp: int = Field(0, ge=0, le=70, description="온도")
 
     @model_validator(mode="after")
@@ -202,7 +199,6 @@ class PreferenceWeightsUpdate(BaseModel):
             + self.weightFood
             + self.weightHabit
             + self.weightTime
-            + self.weightLight
             + self.weightTemp
         )
         if total != 70:
@@ -228,7 +224,6 @@ class PreferenceUpdate(BaseModel):
     weightFood: int = Field(0, ge=0, le=70)    # 실내취식
     weightHabit: int = Field(0, ge=0, le=70)   # 잠버릇
     weightTime: int = Field(0, ge=0, le=70)    # 취침시간
-    weightLight: int = Field(0, ge=0, le=70)   # 소등
     weightTemp: int = Field(0, ge=0, le=70)    # 온도
 
 
@@ -242,7 +237,6 @@ class PreferenceResponse(BaseModel):
     weightFood: int
     weightHabit: int
     weightTime: int
-    weightLight: int
     weightTemp: int
 
     class Config:
