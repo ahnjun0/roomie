@@ -58,9 +58,9 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
       const items = response.data ?? [];
 
       if (pageNum === 1) {
-        setMessages(items.reverse());
+        setMessages(items);
       } else {
-        setMessages(prev => [...items.reverse(), ...prev]);
+        setMessages(prev => [...prev, ...items]);
       }
 
       setHasMore(items.length === 50);
@@ -95,13 +95,8 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
           setMessages(prev => {
             // Prevent duplicates if any
             if (prev.some(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
+            return [newMsg, ...prev];
           });
-          
-          // Scroll to bottom on new message
-          setTimeout(() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-          }, 100);
         }
       } catch (err) {
         console.error('WS Parse error', err);
@@ -211,16 +206,7 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
         ]}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.1}
-        inverted={false}
-        onContentSizeChange={() => {
-          // Scroll to bottom on initial load
-          if (messages.length > 0 && page === 1 && !isLoading) {
-            // Optional: only scroll if we are near bottom?
-            // For now, simple scroll on load might be enough or confusing if paging.
-            // If page > 1, we are prepending, so we shouldn't scroll to end.
-            // We need to maintain position. FlatList usually handles prepending well if keys are stable.
-          }
-        }}
+        inverted={true}
       />
 
       <View style={{ paddingBottom: insets.bottom }}>
