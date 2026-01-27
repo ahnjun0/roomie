@@ -34,7 +34,6 @@ interface OnboardingData {
   noiseLevel: number;
   cleanliness: number;
   indoorEating: number;
-  lightsOut: number;
   temperature: number;
 
   // Roommate Preferences
@@ -45,7 +44,6 @@ interface OnboardingData {
   prefNoiseLevel: number;
   prefCleanliness: number;
   prefIndoorEating: number;
-  prefLightsOut: number;
   prefTemperature: number;
 
   // Sleep Patterns
@@ -77,7 +75,6 @@ interface WeightData {
   weightFood: number;
   weightHabit: number;
   weightTime: number;
-  weightLight: number;
   weightTemp: number;
 }
 
@@ -111,14 +108,12 @@ const initialData: OnboardingData = {
   noiseLevel: 3,
   cleanliness: 3,
   indoorEating: 3,
-  lightsOut: 3,
   temperature: 3,
   preferredNationality: 'ANY',
   preferredStudentYear: 'ANY',
   prefNoiseLevel: 3,
   prefCleanliness: 3,
   prefIndoorEating: 3,
-  prefLightsOut: 3,
   prefTemperature: 3,
   sleepStart: 12, // 오전 12시 기본값
   sleepEnd: 18, // 오전 6시 기본값
@@ -191,7 +186,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       noiseLevel: data.noiseLevel,
       cleanLevel: data.cleanliness,
       foodLevel: data.indoorEating,
-      lightLevel: data.lightsOut,
       tempLevel: data.temperature,
       homeVisit: data.homeVisitFrequency || null,
     });
@@ -215,7 +209,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       weightFood: weights.weightFood,
       weightHabit: weights.weightHabit,
       weightTime: weights.weightTime,
-      weightLight: weights.weightLight,
       weightTemp: weights.weightTemp,
     });
   }, [data]);

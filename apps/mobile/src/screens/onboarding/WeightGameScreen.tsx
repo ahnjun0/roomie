@@ -23,12 +23,11 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
   // 초기값: 각 항목 1만원씩 (총 7만원)
   // 값 의미: 3 = 3만원, 1 = 1만원, 0 = 0원
   const [weights, setWeights] = useState<Record<string, number>>({
-    noise: 1,
+    noise: 2,
     cleanliness: 1,
     food: 1,
     habit: 1,
     time: 1,
-    light: 1,
     temp: 1,
   });
 
@@ -65,7 +64,6 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
         weightFood: weights.food * 10,
         weightHabit: weights.habit * 10,
         weightTime: weights.time * 10,
-        weightLight: weights.light * 10,
         weightTemp: weights.temp * 10,
       };
       console.log('[WeightGame] weightData:', weightData);

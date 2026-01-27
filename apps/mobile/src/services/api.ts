@@ -148,7 +148,6 @@ class ApiService {
                     noiseLevel: 2,
                     cleanLevel: 4,
                     foodLevel: 3,
-                    lightLevel: 2,
                     tempLevel: 3,
                     homeVisit: "MONTHLY",
                 },
@@ -159,13 +158,10 @@ class ApiService {
                     noise: { me: 2, target: 2, match: true },
                     clean: { me: 4, target: 4, match: true },
                     food: { me: 3, target: 3, match: true },
-                    light: { me: 2, target: 2, match: true },
                     temp: { me: 3, target: 3, match: true },
                     sleepHabits: { me: "NONE", target: "NONE", match: true },
                 },
                 radarChart: {
-                    me: { noise: 2, clean: 4, food: 3, light: 2, temp: 3, time: 6, habit: 1 },
-                    target: { noise: 2, clean: 4, food: 3, light: 2, temp: 3, time: 6, habit: 1 },
                 },
                 scoreBreakdown: {
                     noise: { score: 100, weight: 10, status: "Perfect" },
@@ -173,7 +169,6 @@ class ApiService {
                     food: { score: 100, weight: 10, status: "Perfect" },
                     habit: { score: 100, weight: 10, status: "Perfect" },
                     time: { score: 100, weight: 10, status: "Perfect" },
-                    light: { score: 100, weight: 10, status: "Perfect" },
                     temp: { score: 100, weight: 10, status: "Perfect" },
                 },
                 reviews: [

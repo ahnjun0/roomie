@@ -29,7 +29,6 @@ const COMPARISON_LABELS: Record<string, string> = {
   noise: '소음 민감도',
   clean: '청결도',
   food: '실내 취식',
-  light: '소등',
   temp: '온도',
   sleepHabits: '잠버릇',
 };

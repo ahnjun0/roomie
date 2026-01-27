@@ -16,7 +16,6 @@ export interface UpdateLifestyleRequest {
   noiseLevel?: number;
   cleanLevel?: number;
   foodLevel?: number;
-  lightLevel?: number;
   tempLevel?: number;
   homeVisit?: string;
 }
@@ -32,7 +31,6 @@ export interface UpdatePreferenceWeightsRequest {
   weightFood: number;
   weightHabit: number;
   weightTime: number;
-  weightLight: number;
   weightTemp: number;
 }
 

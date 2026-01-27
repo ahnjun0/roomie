@@ -51,7 +51,6 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
   const [noiseLevel, setNoiseLevel] = useState(3);
   const [cleanLevel, setCleanLevel] = useState(3);
   const [foodLevel, setFoodLevel] = useState(3);
-  const [lightLevel, setLightLevel] = useState(3);
   const [tempLevel, setTempLevel] = useState(3);
   const [homeVisit, setHomeVisit] = useState<string | null>(null);
 
@@ -76,7 +75,6 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
       setNoiseLevel(lifestyle.noiseLevel);
       setCleanLevel(lifestyle.cleanLevel);
       setFoodLevel(lifestyle.foodLevel);
-      setLightLevel(lifestyle.lightLevel);
       setTempLevel(lifestyle.tempLevel);
       setHomeVisit(lifestyle.homeVisit);
 
@@ -125,7 +123,6 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
     noiseLevel,
     cleanliness: cleanLevel,
     indoorEating: foodLevel,
-    lightsOut: lightLevel,
     temperature: tempLevel,
   };
 
@@ -139,9 +136,6 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
         break;
       case 'indoorEating':
         setFoodLevel(value);
-        break;
-      case 'lightsOut':
-        setLightLevel(value);
         break;
       case 'temperature':
         setTempLevel(value);
@@ -176,7 +170,6 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
         noiseLevel,
         cleanLevel,
         foodLevel,
-        lightLevel,
         tempLevel,
         homeVisit,
       });

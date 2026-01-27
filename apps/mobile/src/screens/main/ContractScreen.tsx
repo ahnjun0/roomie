@@ -46,7 +46,6 @@ const CONTRACT_FIELDS: { key: string; label: string }[] = [
   { key: 'sleepHabits', label: '잠버릇' },
   { key: 'noisePolicy', label: '소음 정책' },
   { key: 'foodPolicy', label: '실내 취식 정책' },
-  { key: 'lightPolicy', label: '소등 정책' },
   { key: 'temperaturePolicy', label: '온도 정책' },
   { key: 'homeVisitPolicy', label: '외박/귀가 정책' },
 ];

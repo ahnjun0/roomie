@@ -19,7 +19,6 @@ export function PreferredLifestyleScreen({ navigation }: PreferredLifestyleScree
     prefNoiseLevel: data.prefNoiseLevel,
     prefCleanliness: data.prefCleanliness,
     prefIndoorEating: data.prefIndoorEating,
-    prefLightsOut: data.prefLightsOut,
     prefTemperature: data.prefTemperature,
   });
 

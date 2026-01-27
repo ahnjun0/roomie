@@ -96,15 +96,6 @@ export const WEIGHT_CATEGORIES = [
     },
   },
   {
-    key: 'light',
-    emoji: '💡',
-    label: '소등 매너',
-    tag: '습관',
-    options: {
-      high: { label: '완벽한 룸메', title: '인간 조도 센서', desc: '내가 눕는 순간 알아서 불 꺼짐' },
-      mid: { label: '적당한 인간미', title: '새벽의 반딧불이', desc: '전체 소등은 OK, 스탠드는 켬' },
-      low: { label: '지옥의 룸메', title: '24시간 편의점', desc: '불 끄면 죽는 병 걸림 (형광등 ON)' },
-    },
   },
   {
     key: 'temp',
@@ -140,13 +131,6 @@ export const LIFESTYLE_SCALES = [
     description: '방 안에서 음식 먹기',
     leftLabel: '취식 불가',
     rightLabel: '자유롭게 취식',
-  },
-  {
-    key: 'lightsOut',
-    label: '소등 시간',
-    description: '밤에 불 끄는 시간',
-    leftLabel: '일찍 소등',
-    rightLabel: '늦게 소등',
   },
   {
     key: 'temperature',
@@ -202,13 +186,6 @@ export const PREFERRED_LIFESTYLE_SCALES = [
     description: '원하는 룸메이트의 실내 취식 여부',
     leftLabel: '취식 불가',
     rightLabel: '자유롭게 취식',
-  },
-  {
-    key: 'prefLightsOut',
-    label: '소등 시간',
-    description: '원하는 룸메이트의 소등 시간',
-    leftLabel: '일찍 소등',
-    rightLabel: '늦게 소등',
   },
   {
     key: 'prefTemperature',
