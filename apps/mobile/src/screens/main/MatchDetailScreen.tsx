@@ -13,19 +13,21 @@ import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
 
+interface ComparisonItem {
+  me: boolean | number | string;
+  target: boolean | number | string;
+  match: boolean;
+}
+
 interface MatchDetail {
-  id: number;
+  id: string | number;
   nickname: string;
-  studentId: string;
+  studentId: string | number;
   dormName: string;
   gender: string;
   nationality: string;
-  matchScore: number;
-  comparison: {
-    label: string;
-    myValue: number;
-    otherValue: number;
-  }[];
+  matchRate: number;
+  comparison: Record<string, ComparisonItem>;
   reviews: {
     id: number;
     reviewerName: string;
@@ -33,18 +35,35 @@ interface MatchDetail {
     score: number;
     createdAt: string;
   }[];
-  avgScore: number;
+  averageReviewScore: number;
   reviewCount: number;
 }
 
 interface MatchDetailScreenProps {
   route: {
     params: {
-      userId: number;
+      userId: string | number;
     };
   };
   navigation: any;
 }
+
+const COMPARISON_LABELS: Record<string, string> = {
+  smoking: '흡연',
+  sleepTime: '취침 시간',
+  noise: '소음 민감도',
+  clean: '청결도',
+  food: '실내 취식',
+  light: '소등',
+  temp: '온도',
+  sleepHabits: '잠버릇',
+};
+
+const formatValue = (key: string, value: any) => {
+  if (typeof value === 'boolean') return value ? 'O' : 'X';
+  if (key === 'sleepTime') return `${value}시`;
+  return value;
+};
 
 export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps) {
   const { userId } = route.params;
@@ -73,13 +92,13 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
 
   const handleChat = async () => {
     try {
-      const response = await api.post<{ chat_room_id: string }>(
+      const response = await api.post<{ chatRoomId: string }>(
         ENDPOINTS.CHATS.CREATE,
-        { target_user_id: userId }
+        { targetUserId: String(userId) }
       );
       navigation.navigate('Chat', {
-        chatRoomId: response.chat_room_id,
-        userId,
+        chatRoomId: response.chatRoomId,
+        userId: String(userId),
         userName: detail?.nickname,
       });
     } catch (error) {
@@ -111,6 +130,15 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
     );
   }
 
+  // RadarChart Data Transformation
+  const radarData = Object.entries(detail.comparison)
+    .filter(([key]) => !['smoking', 'sleepHabits', 'sleepTime'].includes(key))
+    .map(([key, item]) => ({
+      label: COMPARISON_LABELS[key] || key,
+      myValue: Number(item.me) * 20, // 1-5 scale to 20-100
+      otherValue: Number(item.target) * 20,
+    }));
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
@@ -137,7 +165,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
                 {detail.nickname}
               </Text>
               <Text style={[styles.subInfo, { color: colors.text.secondary }]}>
-                {detail.studentId} | {detail.dormName}
+                {detail.studentId}학번 | {detail.dormName}
               </Text>
               <Text style={[styles.subInfo, { color: colors.text.tertiary }]}>
                 {detail.nationality} | {detail.gender === 'MALE' ? '남성' : '여성'}
@@ -146,11 +174,11 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
             <View
               style={[
                 styles.scoreBadge,
-                { backgroundColor: getScoreColor(detail.matchScore) + '20' },
+                { backgroundColor: getScoreColor(detail.matchRate) + '20' },
               ]}>
               <Text
-                style={[styles.scoreText, { color: getScoreColor(detail.matchScore) }]}>
-                {detail.matchScore}%
+                style={[styles.scoreText, { color: getScoreColor(detail.matchRate) }]}>
+                {detail.matchRate}%
               </Text>
               <Text style={[styles.scoreLabel, { color: colors.text.secondary }]}>
                 호환성
@@ -164,7 +192,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
             호환성 비교
           </Text>
-          <RadarChart data={detail.comparison} />
+          <RadarChart data={radarData} />
         </Card>
 
         {/* 상세 비교 */}
@@ -172,19 +200,19 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
             생활 습관 비교
           </Text>
-          {detail.comparison.map((item, index) => (
+          {Object.entries(detail.comparison).map(([key, item]) => (
             <View
-              key={index}
+              key={key}
               style={[styles.comparisonRow, { borderColor: colors.border }]}>
               <Text style={[styles.comparisonLabel, { color: colors.text.primary }]}>
-                {item.label}
+                {COMPARISON_LABELS[key] || key}
               </Text>
               <View style={styles.comparisonValues}>
                 <Text style={[styles.comparisonValue, { color: themeColors.primary }]}>
-                  나: {item.myValue}
+                  나: {formatValue(key, item.me)}
                 </Text>
                 <Text style={[styles.comparisonValue, { color: colors.text.tertiary }]}>
-                  상대: {item.otherValue}
+                  상대: {formatValue(key, item.target)}
                 </Text>
               </View>
             </View>
@@ -199,7 +227,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
             </Text>
             <View style={styles.reviewSummary}>
               <Text style={[styles.avgScore, { color: themeColors.warning }]}>
-                ★ {detail.avgScore.toFixed(1)}
+                ★ {detail.averageReviewScore.toFixed(1)}
               </Text>
               <Text style={[styles.reviewCount, { color: colors.text.tertiary }]}>
                 ({detail.reviewCount}개)

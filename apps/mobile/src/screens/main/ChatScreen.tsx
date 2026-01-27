@@ -46,17 +46,19 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
 
   const fetchMessages = useCallback(async (pageNum: number = 1) => {
     try {
-      const response = await api.get<{ items: Message[]; total: number }>(
+      const response = await api.get<{ data: Message[] }>(
         `${ENDPOINTS.CHATS.MESSAGES(chatRoomId)}?page=${pageNum}&limit=50`
       );
 
+      const items = response.data ?? [];
+
       if (pageNum === 1) {
-        setMessages(response.items.reverse());
+        setMessages(items.reverse());
       } else {
-        setMessages(prev => [...response.items.reverse(), ...prev]);
+        setMessages(prev => [...items.reverse(), ...prev]);
       }
 
-      setHasMore(response.items.length === 50);
+      setHasMore(items.length === 50);
       setPage(pageNum);
     } catch (error) {
       console.error('Failed to fetch messages:', error);

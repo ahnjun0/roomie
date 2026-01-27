@@ -2,11 +2,11 @@ import { api } from './api';
 import { ENDPOINTS } from '../constants/api';
 
 export interface MatchingUser {
-  id: number;
+  id: string;
   nickname: string;
   studentId: string;
   dormName: string;
-  matchScore: number;
+  matchRate: number;
   tags: string[];
 }
 
@@ -17,19 +17,21 @@ export interface MatchingListResponse {
   limit: number;
 }
 
+export interface ComparisonItem {
+  me: boolean | number | string;
+  target: boolean | number | string;
+  match: boolean;
+}
+
 export interface MatchingDetailResponse {
-  id: number;
+  id: string;
   nickname: string;
   studentId: string;
   dormName: string;
   gender: string;
   nationality: string;
-  matchScore: number;
-  comparison: {
-    label: string;
-    myValue: number;
-    otherValue: number;
-  }[];
+  matchRate: number;
+  comparison: Record<string, ComparisonItem>;
   reviews: {
     id: number;
     reviewerName: string;
@@ -37,28 +39,28 @@ export interface MatchingDetailResponse {
     score: number;
     createdAt: string;
   }[];
-  avgScore: number;
+  averageReviewScore: number;
   reviewCount: number;
 }
 
 interface GetMatchingListParams {
   page?: number;
   limit?: number;
-  sortBy?: 'match_score' | 'created_at';
+  sortBy?: 'matchRate' | 'createdAt';
   dormName?: string;
 }
 
 export async function getMatchingList(params: GetMatchingListParams = {}): Promise<MatchingListResponse> {
-  const { page = 1, limit = 10, sortBy = 'match_score', dormName } = params;
+  const { page = 1, limit = 10, sortBy = 'matchRate', dormName } = params;
 
-  let url = `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${page}&limit=${limit}&sort_by=${sortBy}`;
+  let url = `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${page}&limit=${limit}&sortBy=${sortBy}`;
   if (dormName) {
-    url += `&dorm_name=${encodeURIComponent(dormName)}`;
+    url += `&dormName=${encodeURIComponent(dormName)}`;
   }
 
   return api.get<MatchingListResponse>(url);
 }
 
-export async function getMatchingDetail(userId: number): Promise<MatchingDetailResponse> {
+export async function getMatchingDetail(userId: string): Promise<MatchingDetailResponse> {
   return api.get<MatchingDetailResponse>(ENDPOINTS.MATCHING.DETAIL(userId));
 }

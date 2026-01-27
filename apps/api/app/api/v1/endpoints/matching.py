@@ -120,6 +120,7 @@ async def get_matching_list(
                 nickname=candidate.nickname,
                 studentId=candidate.studentId,
                 nationality=candidate.nationality,
+                dormNames=candidate.lifestyle.dormNames,
                 matchRate=round(match_result["total_match_rate"]),
                 keywords=keywords,
                 isSmoker=candidate.lifestyle.isSmoker,
@@ -326,5 +327,6 @@ async def get_matching_detail(
         radarChart=radar_chart,
         scoreBreakdown=score_breakdown,
         reviews=reviews,
+        reviewCount=len(target_user.receivedReviews) if target_user.receivedReviews else 0,
         averageReviewScore=round(avg_score, 1),
     )

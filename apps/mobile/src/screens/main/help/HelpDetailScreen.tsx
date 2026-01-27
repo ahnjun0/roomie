@@ -63,7 +63,7 @@ export function HelpDetailScreen({ navigation, route }: HelpDetailScreenProps) {
       setIsActionLoading(true);
       const response = await createChatRoom(post.authorId);
       navigation.navigate('Chat', {
-        chatRoomId: response.chat_room_id,
+        chatRoomId: response.chatRoomId,
         userId: post.authorId,
         userName: post.author.nickname,
       });

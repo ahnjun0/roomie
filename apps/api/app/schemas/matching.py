@@ -10,6 +10,7 @@ class MatchingUserResponse(BaseModel):
     nickname: str | None
     studentId: int
     nationality: Nationality
+    dormNames: str  # Added field
     matchRate: int
     keywords: list[str]
     isSmoker: bool
@@ -84,4 +85,5 @@ class MatchingDetailResponse(BaseModel):
     radarChart: dict[str, RadarChartData]
     scoreBreakdown: dict[str, ScoreBreakdownItem]  # 항목별 점수 상세
     reviews: list[ReviewSummary]
+    reviewCount: int  # Added field
     averageReviewScore: float
