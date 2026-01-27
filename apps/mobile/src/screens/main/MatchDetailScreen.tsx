@@ -105,12 +105,12 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
 
   const { user, lifestyle } = detail;
 
-  // 4각형 레이더 차트: 소음, 청결, 식사, 잠버릇
+  // 4각형 레이더 차트: 소음도, 청결도, 음식 섭취, 온도
   const chartItems = [
-    { key: 'noise', label: '소음' },
-    { key: 'clean', label: '청결' },
-    { key: 'food', label: '식사' },
-    { key: 'sleepHabits', label: '잠버릇' },
+    { key: 'noise', label: '소음도' },
+    { key: 'clean', label: '청결도' },
+    { key: 'food', label: '음식 섭취' },
+    { key: 'temp', label: '온도' },
   ];
 
   const toRadarValue = (value: number) => {

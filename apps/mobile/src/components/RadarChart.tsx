@@ -110,7 +110,18 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
           strokeWidth={2}
         />
 
-        {/* Data points */}
+        {/* Data points - Other */}
+        {otherPoints.map((point, i) => (
+          <Circle
+            key={`other-${i}`}
+            cx={point.x}
+            cy={point.y}
+            r={4}
+            fill={otherStroke}
+          />
+        ))}
+
+        {/* Data points - Me */}
         {myPoints.map((point, i) => (
           <Circle
             key={`my-${i}`}
