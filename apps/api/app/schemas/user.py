@@ -182,7 +182,14 @@ class PreferenceWeightsUpdate(BaseModel):
     각 항목에 베팅할 금액을 입력합니다.
     값 = 베팅액 / 1000 (예: 10000원 → 10)
     총합은 반드시 60이어야 합니다. (6만원 = 60)
+    총합은 반드시 60이어야 합니다. (6만원 = 60)
     """
+    weightNoise: int = Field(0, ge=0, le=60, description="소음 민감도")
+    weightClean: int = Field(0, ge=0, le=60, description="청결도")
+    weightFood: int = Field(0, ge=0, le=60, description="실내취식")
+    weightHabit: int = Field(0, ge=0, le=60, description="잠버릇")
+    weightTime: int = Field(0, ge=0, le=60, description="취침시간")
+    weightTemp: int = Field(0, ge=0, le=60, description="온도")
     weightNoise: int = Field(0, ge=0, le=60, description="소음 민감도")
     weightClean: int = Field(0, ge=0, le=60, description="청결도")
     weightFood: int = Field(0, ge=0, le=60, description="실내취식")
@@ -193,6 +200,7 @@ class PreferenceWeightsUpdate(BaseModel):
     @model_validator(mode="after")
     def validate_total_weight(self) -> Self:
         """가중치 총합이 60인지 검증"""
+        """가중치 총합이 60인지 검증"""
         total = (
             self.weightNoise
             + self.weightClean
@@ -201,6 +209,8 @@ class PreferenceWeightsUpdate(BaseModel):
             + self.weightTime
             + self.weightTemp
         )
+        if total != 60:
+            raise ValueError(f"가중치 총합은 60이어야 합니다. (현재: {total})")
         if total != 60:
             raise ValueError(f"가중치 총합은 60이어야 합니다. (현재: {total})")
         return self

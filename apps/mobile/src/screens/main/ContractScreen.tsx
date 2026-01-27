@@ -15,6 +15,7 @@ import { Button, Header } from '../../components';
 import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
+import { formatSleepHour } from '../../utils/time';
 
 interface Contract {
   id: string;
@@ -258,7 +259,16 @@ export function ContractScreen({ route, navigation }: ContractScreenProps) {
               />
             ) : (
               <Text style={[styles.fieldValue, { color: colors.text.primary }]}>
-                {String(contract.contractData[field.key] ?? '미설정')}
+                {(() => {
+                  const rawValue = contract.contractData[field.key];
+                  if (
+                    (field.key === 'wakeUpTime' || field.key === 'lightsOutTime') &&
+                    typeof rawValue === 'number'
+                  ) {
+                    return formatSleepHour(rawValue);
+                  }
+                  return String(rawValue ?? '미설정');
+                })()}
               </Text>
             )}
           </View>
