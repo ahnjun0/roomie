@@ -17,3 +17,4 @@ export { ReviewCard } from './ReviewCard';
 export { Header } from './Header';
 export { Dropdown } from './Dropdown';
 export { RoomBtiBadge } from './RoomBtiBadge';
+export { TimeRangeSlider } from './TimeRangeSlider';

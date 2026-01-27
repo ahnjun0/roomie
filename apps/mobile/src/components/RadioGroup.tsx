@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   horizontal: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
   },
   option: {
     paddingVertical: spacing.md,
@@ -83,10 +83,11 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.md,
     borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   horizontalOption: {
     flex: 1,
-    minWidth: 100,
+    paddingHorizontal: spacing.xs,
   },
   optionText: {
     fontSize: fontSize.md,
