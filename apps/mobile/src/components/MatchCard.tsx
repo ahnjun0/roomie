@@ -18,7 +18,7 @@ export function MatchCard({
   nickname,
   studentId,
   matchScore,
-  tags,
+  tags = [],
   dormitory,
   onPress,
   onChat,

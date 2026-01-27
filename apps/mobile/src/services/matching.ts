@@ -6,7 +6,7 @@ export interface MatchingUser {
   nickname: string;
   studentId: string;
   dormName: string;
-  matchScore: number;
+  matchRate: number;
   tags: string[];
 }
 
@@ -24,7 +24,7 @@ export interface MatchingDetailResponse {
   dormName: string;
   gender: string;
   nationality: string;
-  matchScore: number;
+  matchRate: number;
   comparison: {
     label: string;
     myValue: number;
@@ -44,16 +44,16 @@ export interface MatchingDetailResponse {
 interface GetMatchingListParams {
   page?: number;
   limit?: number;
-  sortBy?: 'match_score' | 'created_at';
+  sortBy?: 'matchRate' | 'createdAt';
   dormName?: string;
 }
 
 export async function getMatchingList(params: GetMatchingListParams = {}): Promise<MatchingListResponse> {
-  const { page = 1, limit = 10, sortBy = 'match_score', dormName } = params;
+  const { page = 1, limit = 10, sortBy = 'matchRate', dormName } = params;
 
-  let url = `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${page}&limit=${limit}&sort_by=${sortBy}`;
+  let url = `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${page}&limit=${limit}&sortBy=${sortBy}`;
   if (dormName) {
-    url += `&dorm_name=${encodeURIComponent(dormName)}`;
+    url += `&dormName=${encodeURIComponent(dormName)}`;
   }
 
   return api.get<MatchingListResponse>(url);

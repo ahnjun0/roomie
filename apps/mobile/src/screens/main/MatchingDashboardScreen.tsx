@@ -19,7 +19,7 @@ interface MatchingUser {
   nickname: string;
   studentId: string;
   dormName: string;
-  matchScore: number;
+  matchRate: number;
   tags: string[];
 }
 
@@ -34,7 +34,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   const [matches, setMatches] = useState<MatchingUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [sortBy, setSortBy] = useState('match_score');
+  const [sortBy, setSortBy] = useState('matchRate');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -45,7 +45,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       }
 
       const response = await api.get<{ data: MatchingUser[]; total: number }>(
-        `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${pageNum}&limit=10&sort_by=${sortBy}`
+        `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${pageNum}&limit=10&sortBy=${sortBy}`
       );
 
       const items = response.data ?? [];
@@ -82,11 +82,11 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
 
   const handleChat = async (userId: number) => {
     try {
-      const response = await api.post<{ chat_room_id: string }>(
+      const response = await api.post<{ chatRoomId: string }>(
         ENDPOINTS.CHATS.CREATE,
-        { target_user_id: userId }
+        { targetUserId: userId }
       );
-      navigation.navigate('Chat', { chatRoomId: response.chat_room_id, userId });
+      navigation.navigate('Chat', { chatRoomId: response.chatRoomId, userId });
     } catch (error) {
       console.error('Failed to create chat:', error);
     }
@@ -97,7 +97,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       id={item.id}
       nickname={item.nickname}
       studentId={item.studentId}
-      matchScore={item.matchScore}
+      matchScore={item.matchRate}
       tags={item.tags}
       dormitory={item.dormName}
       onPress={() => navigation.navigate('MatchDetail', { userId: item.id })}
@@ -112,8 +112,8 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       </Text>
       <Dropdown
         options={[
-          { value: 'match_score', label: '매칭률순' },
-          { value: 'created_at', label: '최신순' },
+          { value: 'matchRate', label: '매칭률순' },
+          { value: 'createdAt', label: '최신순' },
         ]}
         value={sortBy}
         onChange={setSortBy}
