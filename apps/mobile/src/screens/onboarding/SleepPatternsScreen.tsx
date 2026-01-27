@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useOnboarding } from '../../contexts';
-import { Button, Slider, RadioGroup, Header, ProgressBar } from '../../components';
+import { Button, Slider, RadioGroup, Header, ProgressBar, TimeRangeSlider } from '../../components';
 import { spacing, fontSize, fontWeight } from '../../constants/theme';
 import { ONBOARDING_STEPS } from '../../constants/data';
 
@@ -10,13 +10,12 @@ interface SleepPatternsScreenProps {
   navigation: any;
 }
 
-// 시간 변환 함수 (0-30 -> 시간 문자열)
-// 0 = 오후 6시, 6 = 자정, 18 = 정오
+// 시간 변환 함수 (0-24 -> 시간 문자열)
+// 0 = 오후 4시(16시), 8 = 자정(24/0시), 20 = 정오(12시), 24 = 오후 4시(16시)
 const formatSleepTime = (value: number): string => {
-  const hour = (18 + value) % 24;
-  const period = hour < 12 ? '오전' : '오후';
-  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${period} ${displayHour}시`;
+  const hour = (16 + value) % 24;
+  // 24시간제 표시 (디자인 시안 스타일)
+  return `${hour.toString().padStart(2, '0')}:00`;
 };
 
 export function SleepPatternsScreen({ navigation }: SleepPatternsScreenProps) {
@@ -26,7 +25,7 @@ export function SleepPatternsScreen({ navigation }: SleepPatternsScreenProps) {
 
   const [sleepStart, setSleepStart] = useState(data.sleepStart);
   const [sleepEnd, setSleepEnd] = useState(data.sleepEnd);
-  const [homeVisit, setHomeVisit] = useState(data.homeVisitFrequency);
+  const [homeVisit, setHomeVisit] = useState(data.homeVisitFrequency || 'RARELY');
   const [sensitivity, setSensitivity] = useState(data.sensitivity);
 
   const handleNext = async () => {
@@ -37,6 +36,11 @@ export function SleepPatternsScreen({ navigation }: SleepPatternsScreenProps) {
       sensitivity,
     });
     navigation.navigate('RoommatePreferences');
+  };
+
+  const handleTimeChange = (start: number, end: number) => {
+    setSleepStart(start);
+    setSleepEnd(end);
   };
 
   return (
@@ -62,23 +66,13 @@ export function SleepPatternsScreen({ navigation }: SleepPatternsScreenProps) {
         </Text>
 
         <View style={styles.form}>
-          <Slider
-            label="취침 시간"
-            value={sleepStart}
-            minimumValue={0}
-            maximumValue={30}
-            onValueChange={setSleepStart}
-            showValue
-            formatValue={formatSleepTime}
-          />
-
-          <Slider
-            label="기상 시간"
-            value={sleepEnd}
-            minimumValue={0}
-            maximumValue={30}
-            onValueChange={setSleepEnd}
-            showValue
+          <Text style={[styles.label, { color: colors.text.primary }]}>수면 시간</Text>
+          <TimeRangeSlider
+            startValue={sleepStart}
+            endValue={sleepEnd}
+            min={0}
+            max={24}
+            onValuesChange={handleTimeChange}
             formatValue={formatSleepTime}
           />
 
@@ -94,6 +88,7 @@ export function SleepPatternsScreen({ navigation }: SleepPatternsScreenProps) {
               ]}
               value={homeVisit}
               onChange={setHomeVisit}
+              horizontal
             />
           </View>
 
@@ -138,7 +133,13 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: spacing.lg,
   },
+  label: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+    marginBottom: spacing.xs,
+  },
   section: {
+    marginTop: spacing.xl,
     marginBottom: spacing.lg,
   },
   sectionTitle: {
