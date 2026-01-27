@@ -24,6 +24,10 @@ import {
   ChatListScreen,
   MatchDetailScreen,
   MyPageScreen,
+  EditProfileScreen,
+  EditLifestyleScreen,
+  EditPreferencesScreen,
+  MyReviewsScreen,
   RoomBtiIntroScreen,
   RoomBtiTestScreen,
   RoomBtiResultScreen,
@@ -139,6 +143,13 @@ export function RootNavigator() {
           <Stack.Screen name="MainTabs" component={MainTabs} />
           <Stack.Screen name="MatchDetail" component={MatchDetailScreen} />
           <Stack.Screen name="Chat" component={ChatScreen} />
+
+          {/* MyPage Screens */}
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+          <Stack.Screen name="EditLifestyle" component={EditLifestyleScreen} />
+          <Stack.Screen name="EditPreferences" component={EditPreferencesScreen} />
+          <Stack.Screen name="MyReviews" component={MyReviewsScreen} />
+
           <Stack.Screen name="RoomBtiIntro" component={RoomBtiIntroScreen} />
           <Stack.Screen name="RoomBtiTest" component={RoomBtiTestScreen} />
           <Stack.Screen name="RoomBtiResult" component={RoomBtiResultScreen} />

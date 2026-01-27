@@ -22,6 +22,10 @@ export { ChatScreen } from './main/ChatScreen';
 export { ChatListScreen } from './main/ChatListScreen';
 export { MatchDetailScreen } from './main/MatchDetailScreen';
 export { MyPageScreen } from './main/MyPageScreen';
+export { EditProfileScreen } from './main/EditProfileScreen';
+export { EditLifestyleScreen } from './main/EditLifestyleScreen';
+export { EditPreferencesScreen } from './main/EditPreferencesScreen';
+export { MyReviewsScreen } from './main/MyReviewsScreen';
 
 // Help Center Screens
 export { HelpListScreen } from './main/help/HelpListScreen';

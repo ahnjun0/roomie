@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (data: RegisterData) => {
       const response = await api.post<{
-        id: number;
+        id: string;
         email: string;
         nickname: string | null;
         accessToken: string;
@@ -173,19 +173,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         tempToken: data.tempToken,
       });
 
-      // 백엔드 응답으로부터 User 객체 구성 (nickname -> name 매핑)
-      const user: User = {
-        id: response.id,
-        email: response.email,
-        name: response.nickname,
-        gender: null,
-        nationality: null,
-        birthYear: null,
-        studentId: null,
-        persona: null,
-        isEmailVerified: true,
-        isProfileComplete: false, // 회원가입 직후이므로 프로필 미완성
-      };
+      api.setAccessToken(response.accessToken);
+
+      // 회원가입 후 전체 사용자 정보 가져오기
+      const user = await api.get<User>(ENDPOINTS.USERS.ME);
 
       await Promise.all([
         AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken),
@@ -193,15 +184,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user)),
       ]);
 
-      api.setAccessToken(response.accessToken);
-
       setState({
         user,
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
         isLoading: false,
         isAuthenticated: true,
-        isOnboardingComplete: false,
+        isOnboardingComplete: user.isProfileComplete,
       });
     },
     [],
@@ -209,7 +198,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await api.post<{
-      id: number;
+      id: string;
       email: string;
       nickname: string | null;
       accessToken: string;
@@ -219,28 +208,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 로그인 후 사용자 상세 정보 가져오기
     api.setAccessToken(response.accessToken);
 
-    let user: User;
-    let isOnboardingComplete = false;
-
-    try {
-      // 전체 사용자 정보 가져오기
-      user = await api.get<User>(ENDPOINTS.USERS.ME);
-      isOnboardingComplete = user.isProfileComplete;
-    } catch {
-      // 실패 시 기본 정보 사용 (nickname -> name 매핑)
-      user = {
-        id: response.id,
-        email: response.email,
-        name: response.nickname,
-        gender: null,
-        nationality: null,
-        birthYear: null,
-        studentId: null,
-        persona: null,
-        isEmailVerified: true,
-        isProfileComplete: false,
-      };
-    }
+    const user = await api.get<User>(ENDPOINTS.USERS.ME);
 
     await Promise.all([
       AsyncStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.accessToken),
@@ -254,7 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshToken: response.refreshToken,
       isLoading: false,
       isAuthenticated: true,
-      isOnboardingComplete,
+      isOnboardingComplete: user.isProfileComplete,
     });
   }, []);
 

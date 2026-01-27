@@ -3,11 +3,14 @@ import { ENDPOINTS } from '../constants/api';
 
 export interface MatchingUser {
   id: string;
-  nickname: string;
-  studentId: string;
-  dormName: string;
+  nickname: string | null;
+  studentId: number;
+  nationality: string;
+  dormNames: string;
   matchRate: number;
-  tags: string[];
+  keywords: string[];
+  isSmoker: boolean;
+  sleepStart: number;
 }
 
 export interface MatchingListResponse {
@@ -23,24 +26,62 @@ export interface ComparisonItem {
   match: boolean;
 }
 
-export interface MatchingDetailResponse {
+export interface ScoreBreakdownItem {
+  score: number;
+  weight: number;
+  status: string;
+}
+
+export interface RadarChartData {
+  noise: number;
+  clean: number;
+  food: number;
+  light: number;
+  temp: number;
+  time: number;
+  habit: number;
+}
+
+export interface MatchingUserDetail {
   id: string;
-  nickname: string;
-  studentId: string;
-  dormName: string;
+  nickname: string | null;
   gender: string;
   nationality: string;
+  studentId: number;
+  age: number;
+}
+
+export interface MatchingLifestyleDetail {
+  dormNames: string;
+  isSmoker: boolean;
+  sleepStart: number;
+  sleepEnd: number;
+  sleepHabits: string | null;
+  noiseLevel: number;
+  cleanLevel: number;
+  foodLevel: number;
+  lightLevel: number;
+  tempLevel: number;
+  homeVisit: string | null;
+}
+
+export interface ReviewSummary {
+  id: number;
+  content: string;
+  score: number;
+  createdAt: string;
+}
+
+export interface MatchingDetailResponse {
+  user: MatchingUserDetail;
+  lifestyle: MatchingLifestyleDetail | null;
   matchRate: number;
   comparison: Record<string, ComparisonItem>;
-  reviews: {
-    id: number;
-    reviewerName: string;
-    content: string;
-    score: number;
-    createdAt: string;
-  }[];
-  averageReviewScore: number;
+  radarChart: Record<string, RadarChartData>;
+  scoreBreakdown: Record<string, ScoreBreakdownItem>;
+  reviews: ReviewSummary[];
   reviewCount: number;
+  averageReviewScore: number;
 }
 
 interface GetMatchingListParams {

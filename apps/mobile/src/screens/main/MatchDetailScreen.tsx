@@ -12,37 +12,12 @@ import { Button, Card, RadarChart, ReviewCard, Header } from '../../components';
 import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
-
-interface ComparisonItem {
-  me: boolean | number | string;
-  target: boolean | number | string;
-  match: boolean;
-}
-
-interface MatchDetail {
-  id: string | number;
-  nickname: string;
-  studentId: string | number;
-  dormName: string;
-  gender: string;
-  nationality: string;
-  matchRate: number;
-  comparison: Record<string, ComparisonItem>;
-  reviews: {
-    id: number;
-    reviewerName: string;
-    content: string;
-    score: number;
-    createdAt: string;
-  }[];
-  averageReviewScore: number;
-  reviewCount: number;
-}
+import type { MatchingDetailResponse } from '../../services/matching';
 
 interface MatchDetailScreenProps {
   route: {
     params: {
-      userId: string | number;
+      userId: string;
     };
   };
   navigation: any;
@@ -70,7 +45,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [detail, setDetail] = useState<MatchDetail | null>(null);
+  const [detail, setDetail] = useState<MatchingDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -79,7 +54,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
 
   const fetchDetail = async () => {
     try {
-      const response = await api.get<MatchDetail>(
+      const response = await api.get<MatchingDetailResponse>(
         ENDPOINTS.MATCHING.DETAIL(userId)
       );
       setDetail(response);
@@ -99,7 +74,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
       navigation.navigate('Chat', {
         chatRoomId: response.chatRoomId,
         userId: String(userId),
-        userName: detail?.nickname,
+        userName: detail?.user.nickname,
       });
     } catch (error) {
       console.error('Failed to create chat:', error);
@@ -130,6 +105,8 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
     );
   }
 
+  const { user, lifestyle } = detail;
+
   // RadarChart Data Transformation
   const radarData = Object.entries(detail.comparison)
     .filter(([key]) => !['smoking', 'sleepHabits', 'sleepTime'].includes(key))
@@ -157,18 +134,18 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
           <View style={styles.profileHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
               <Text style={[styles.avatarText, { color: colors.text.secondary }]}>
-                {detail.nickname?.charAt(0)}
+                {user.nickname?.charAt(0)}
               </Text>
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.nickname, { color: colors.text.primary }]}>
-                {detail.nickname}
+                {user.nickname}
               </Text>
               <Text style={[styles.subInfo, { color: colors.text.secondary }]}>
-                {detail.studentId}학번 | {detail.dormName}
+                {user.studentId}학번 | {lifestyle?.dormNames}
               </Text>
               <Text style={[styles.subInfo, { color: colors.text.tertiary }]}>
-                {detail.nationality} | {detail.gender === 'MALE' ? '남성' : '여성'}
+                {user.nationality} | {user.gender === 'MALE' ? '남성' : '여성'}
               </Text>
             </View>
             <View
@@ -229,7 +206,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
               <Text style={[styles.avgScore, { color: themeColors.warning }]}>
                 ★ {detail.averageReviewScore.toFixed(1)}
               </Text>
-              <Text style={[styles.reviewCount, { color: colors.text.tertiary }]}>
+              <Text style={[styles.reviewCountText, { color: colors.text.tertiary }]}>
                 ({detail.reviewCount}개)
               </Text>
             </View>
@@ -239,7 +216,6 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
             detail.reviews.map(review => (
               <ReviewCard
                 key={review.id}
-                reviewerName={review.reviewerName}
                 content={review.content}
                 score={review.score}
                 createdAt={review.createdAt}
@@ -358,7 +334,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     fontWeight: fontWeight.bold,
   },
-  reviewCount: {
+  reviewCountText: {
     fontSize: fontSize.sm,
   },
   noReviews: {

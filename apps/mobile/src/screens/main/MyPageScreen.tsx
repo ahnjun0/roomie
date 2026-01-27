@@ -157,12 +157,12 @@ export function MyPageScreen({ navigation }: MyPageScreenProps) {
           <View style={styles.profileHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
               <Text style={[styles.avatarText, { color: colors.text.secondary }]}>
-                {user?.name?.charAt(0) || user?.email?.charAt(0) || '?'}
+                {user?.nickname?.charAt(0) || user?.email?.charAt(0) || '?'}
               </Text>
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.nickname, { color: colors.text.primary }]}>
-                {user?.name || '이름 없음'}
+                {user?.nickname || '이름 없음'}
               </Text>
               <Text style={[styles.email, { color: colors.text.secondary }]}>
                 {user?.email}

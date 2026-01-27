@@ -4,7 +4,7 @@ import { useTheme } from '../contexts';
 import { spacing, borderRadius, fontSize, fontWeight, colors as themeColors } from '../constants/theme';
 
 interface ReviewCardProps {
-  reviewerName: string;
+  reviewerName?: string;
   content: string;
   score: number;
   createdAt: string;

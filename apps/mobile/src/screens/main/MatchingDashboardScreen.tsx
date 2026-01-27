@@ -16,11 +16,14 @@ import { spacing, fontSize, fontWeight, colors as themeColors } from '../../cons
 
 interface MatchingUser {
   id: string;
-  nickname: string;
-  studentId: string;
-  dormName: string;
+  nickname: string | null;
+  studentId: number;
+  nationality: string;
+  dormNames: string;
   matchRate: number;
-  tags: string[];
+  keywords: string[];
+  isSmoker: boolean;
+  sleepStart: number;
 }
 
 interface MatchingDashboardScreenProps {
@@ -97,9 +100,9 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       id={item.id}
       nickname={item.nickname}
       studentId={item.studentId}
-      matchScore={item.matchRate}
-      tags={item.tags}
-      dormitory={item.dormName}
+      matchRate={item.matchRate}
+      keywords={item.keywords}
+      dormNames={item.dormNames}
       onPress={() => navigation.navigate('MatchDetail', { userId: item.id })}
       onChat={() => handleChat(item.id)}
     />

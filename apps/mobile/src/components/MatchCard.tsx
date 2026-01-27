@@ -4,12 +4,12 @@ import { useTheme } from '../contexts';
 import { spacing, borderRadius, fontSize, fontWeight, colors as themeColors, shadows } from '../constants/theme';
 
 interface MatchCardProps {
-  id: string | number;
-  nickname: string;
-  studentId: string;
-  matchScore: number;
-  tags: string[];
-  dormitory: string;
+  id: string;
+  nickname: string | null;
+  studentId: number;
+  matchRate: number;
+  keywords: string[];
+  dormNames: string;
   onPress: () => void;
   onChat: () => void;
 }
@@ -17,17 +17,17 @@ interface MatchCardProps {
 export function MatchCard({
   nickname,
   studentId,
-  matchScore,
-  tags = [],
-  dormitory,
+  matchRate,
+  keywords = [],
+  dormNames,
   onPress,
   onChat,
 }: MatchCardProps) {
   const { colors } = useTheme();
 
   const getScoreColor = () => {
-    if (matchScore >= 80) return themeColors.matchHigh;
-    if (matchScore >= 60) return themeColors.matchMedium;
+    if (matchRate >= 80) return themeColors.matchHigh;
+    if (matchRate >= 60) return themeColors.matchMedium;
     return themeColors.matchLow;
   };
 
@@ -48,19 +48,19 @@ export function MatchCard({
               {nickname}
             </Text>
             <Text style={[styles.studentId, { color: colors.text.secondary }]}>
-              {studentId} | {dormitory}
+              {studentId}학번 | {dormNames}
             </Text>
           </View>
         </View>
         <View style={[styles.scoreBadge, { backgroundColor: getScoreColor() + '20' }]}>
           <Text style={[styles.scoreText, { color: getScoreColor() }]}>
-            {matchScore}%
+            {matchRate}%
           </Text>
         </View>
       </View>
 
       <View style={styles.tagsContainer}>
-        {tags.slice(0, 4).map((tag, index) => (
+        {keywords.slice(0, 4).map((tag, index) => (
           <View
             key={index}
             style={[styles.tag, { backgroundColor: colors.tag.background }]}>

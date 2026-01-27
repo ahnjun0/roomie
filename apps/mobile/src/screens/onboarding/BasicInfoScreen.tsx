@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useOnboarding, useAuth } from '../../contexts';
 import { api } from '../../services/api';
+import { ENDPOINTS } from '../../constants/api';
 import { Button, RadioGroup, Dropdown, Input, Header, ProgressBar } from '../../components';
 import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
 import { NATIONALITIES, ENTRANCE_YEARS, ONBOARDING_STEPS } from '../../constants/data';
@@ -39,7 +40,7 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
   const handleNext = async () => {
     // 먼저 로컬 데이터를 OnboardingContext에 저장
     updateData({
-      gender: localData.gender as 'male' | 'female',
+      gender: localData.gender as 'MALE' | 'FEMALE',
       nationality: localData.nationality,
       age: parseInt(localData.age, 10),
       studentId: localData.studentId,
@@ -53,24 +54,12 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
       try {
         const response = await submitRegistration();
 
-        // User 객체 구성
-        const user: User = {
-          id: response.id,
-          email: response.email,
-          name: response.nickname,
-          gender: localData.gender as 'male' | 'female',
-          nationality: localData.nationality,
-          birthYear: null,
-          studentId: localData.studentId,
-          schoolId: null, // 회원가입 시점에는 schoolId가 없음, API에서 이메일 도메인으로 조회
-          persona: null,
-          isEmailVerified: true,
-          isProfileComplete: false,
-        };
+        // 토큰 설정 후 전체 사용자 정보 가져오기
+        api.setAccessToken(response.accessToken);
+        const user = await api.get<User>(ENDPOINTS.USERS.ME);
 
         // AuthContext 상태 업데이트 - user를 먼저 설정한 후 토큰 설정
         // (setTokens가 isAuthenticated를 true로 만들어 화면 전환이 일어나므로, user가 먼저 설정되어야 함)
-        api.setAccessToken(response.accessToken);
         await setUser(user);
         await setTokens(response.accessToken, response.refreshToken);
 
@@ -111,12 +100,12 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
           <RadioGroup
             label="성별"
             options={[
-              { value: 'male', label: '남성' },
-              { value: 'female', label: '여성' },
+              { value: 'MALE', label: '남성' },
+              { value: 'FEMALE', label: '여성' },
             ]}
             value={localData.gender}
             onChange={value =>
-              setLocalData(prev => ({ ...prev, gender: value as 'male' | 'female' }))
+              setLocalData(prev => ({ ...prev, gender: value as 'MALE' | 'FEMALE' }))
             }
             horizontal
           />
