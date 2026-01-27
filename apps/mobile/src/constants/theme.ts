@@ -126,13 +126,4 @@ export const shadows = {
   },
 } as const;
 
-// 스크린 단계 상수
-export const ONBOARDING_STEPS = {
-  BASIC_INFO: { current: 1, total: 11 },
-  DORMITORY_SELECT: { current: 2, total: 11 },
-  CORE_HABITS: { current: 3, total: 11 },
-  LIFESTYLE_SCALE: { current: 4, total: 11 },
-  ROOMMATE_PREFERENCES: { current: 6, total: 11 },
-  SLEEP_PATTERNS: { current: 5, total: 5 },
-  WEIGHT_GAME: { current: 8, total: 11 },
-} as const;
+// ONBOARDING_STEPS는 data.ts에서 관리됩니다.

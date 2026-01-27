@@ -15,8 +15,9 @@ import {
   DormitorySelectScreen,
   CoreHabitsScreen,
   LifestyleScaleScreen,
-  RoommatePreferencesScreen,
   SleepPatternsScreen,
+  RoommatePreferencesScreen,
+  PreferredLifestyleScreen,
   WeightGameScreen,
   MatchingDashboardScreen,
   ChatScreen,
@@ -106,13 +107,17 @@ export function RootNavigator() {
           <Stack.Screen name="BasicInfo" component={BasicInfoScreen} />
         </>
       ) : !isOnboardingComplete ? (
-        // Onboarding Flow (추가 정보 입력)
+        // Onboarding Flow (3단계: 내 정보 → 원하는 상대방 정보 → 중요도)
         <>
+          {/* 1단계: 내 정보 입력 */}
           <Stack.Screen name="DormitorySelect" component={DormitorySelectScreen} />
           <Stack.Screen name="CoreHabits" component={CoreHabitsScreen} />
           <Stack.Screen name="LifestyleScale" component={LifestyleScaleScreen} />
-          <Stack.Screen name="RoommatePreferences" component={RoommatePreferencesScreen} />
           <Stack.Screen name="SleepPatterns" component={SleepPatternsScreen} />
+          {/* 2단계: 원하는 상대방 정보 입력 */}
+          <Stack.Screen name="RoommatePreferences" component={RoommatePreferencesScreen} />
+          <Stack.Screen name="PreferredLifestyle" component={PreferredLifestyleScreen} />
+          {/* 3단계: 중요도 입력 */}
           <Stack.Screen name="WeightGame" component={WeightGameScreen} />
         </>
       ) : (

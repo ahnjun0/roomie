@@ -36,7 +36,7 @@ export function SleepPatternsScreen({ navigation }: SleepPatternsScreenProps) {
       homeVisitFrequency: homeVisit,
       sensitivity,
     });
-    navigation.navigate('WeightGame');
+    navigation.navigate('RoommatePreferences');
   };
 
   return (

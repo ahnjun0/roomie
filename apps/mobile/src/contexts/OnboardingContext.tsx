@@ -40,6 +40,13 @@ interface OnboardingData {
   preferredNationality: string;
   preferredStudentYear: string;
 
+  // Preferred Lifestyle (원하는 룸메이트의 생활 방식)
+  prefNoiseLevel: number;
+  prefCleanliness: number;
+  prefIndoorEating: number;
+  prefLightsOut: number;
+  prefTemperature: number;
+
   // Sleep Patterns
   sleepStart: number; // 0-30 (0 = 오후 6시)
   sleepEnd: number;
@@ -106,6 +113,11 @@ const initialData: OnboardingData = {
   temperature: 3,
   preferredNationality: 'ANY',
   preferredStudentYear: 'ANY',
+  prefNoiseLevel: 3,
+  prefCleanliness: 3,
+  prefIndoorEating: 3,
+  prefLightsOut: 3,
+  prefTemperature: 3,
   sleepStart: 12, // 오전 12시 기본값
   sleepEnd: 18, // 오전 6시 기본값
   homeVisitFrequency: null,

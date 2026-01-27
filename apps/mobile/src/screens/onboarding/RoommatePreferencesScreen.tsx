@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useOnboarding } from '../../contexts';
 import { Button, RadioGroup, Header, ProgressBar } from '../../components';
-import { spacing, fontSize, fontWeight } from '../../constants/theme';
+import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
 import { PREFERENCE_OPTIONS, ONBOARDING_STEPS } from '../../constants/data';
 
 interface RoommatePreferencesScreenProps {
@@ -25,7 +25,7 @@ export function RoommatePreferencesScreen({ navigation }: RoommatePreferencesScr
       preferredNationality: preferences.nationality,
       preferredStudentYear: preferences.studentYear,
     });
-    navigation.navigate('SleepPatterns');
+    navigation.navigate('PreferredLifestyle');
   };
 
   return (
@@ -42,6 +42,12 @@ export function RoommatePreferencesScreen({ navigation }: RoommatePreferencesScr
           { paddingBottom: insets.bottom + spacing.lg },
         ]}>
         <ProgressBar {...ONBOARDING_STEPS.ROOMMATE_PREFERENCES} />
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionHeaderTitle, { color: themeColors.primary }]}>
+            이런 사람이면 좋겠어요
+          </Text>
+        </View>
 
         <Text style={[styles.title, { color: colors.text.primary }]}>
           원하는 룸메이트 조건이 있나요?
@@ -92,6 +98,14 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
+  },
+  sectionHeader: {
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  sectionHeaderTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
   },
   title: {
     fontSize: fontSize.xxl,
