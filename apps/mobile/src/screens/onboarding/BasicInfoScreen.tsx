@@ -26,7 +26,7 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
     gender: data.gender,
     nationality: data.nationality,
     age: data.age?.toString() || '',
-    studentId: data.studentId,
+    studentId: data.studentId?.toString() || '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +35,8 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
     localData.gender &&
     localData.nationality &&
     localData.age &&
-    localData.studentId;
+    localData.studentId &&
+    localData.studentId.length === 2;
 
   const handleNext = async () => {
     // 먼저 로컬 데이터를 OnboardingContext에 저장
@@ -43,7 +44,7 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
       gender: localData.gender as 'MALE' | 'FEMALE',
       nationality: localData.nationality,
       age: parseInt(localData.age, 10),
-      studentId: localData.studentId,
+      studentId: parseInt(localData.studentId, 10),
     });
 
     if (isRegistrationMode) {
@@ -128,12 +129,20 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
             keyboardType="number-pad"
           />
 
-          <Dropdown
+          <Input
             label="입학년도"
-            placeholder="입학년도를 선택하세요"
-            options={ENTRANCE_YEARS}
+            placeholder="25"
             value={localData.studentId}
-            onChange={value => setLocalData(prev => ({ ...prev, studentId: value }))}
+            onChangeText={text =>
+              setLocalData(prev => ({ ...prev, studentId: text.replace(/[^0-9]/g, '').slice(0, 2) }))
+            }
+            keyboardType="number-pad"
+            maxLength={2}
+            rightElement={
+              <Text style={{ color: colors.text.secondary, fontWeight: fontWeight.medium }}>
+                학번
+              </Text>
+            }
           />
         </View>
 

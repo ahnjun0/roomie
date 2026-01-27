@@ -30,6 +30,25 @@ export function CoreHabitsScreen({ navigation }: CoreHabitsScreenProps) {
     navigation.navigate('LifestyleScale');
   };
 
+  const handleSleepHabitsChange = (newValues: string[]) => {
+    const wasNoneSelected = sleepHabits.includes('NONE');
+    const isNoneSelected = newValues.includes('NONE');
+
+    if (!wasNoneSelected && isNoneSelected) {
+      // "없음"을 새로 선택한 경우 -> 다른 선택 해제하고 "없음"만 선택
+      setSleepHabits(['NONE']);
+    } else if (wasNoneSelected && isNoneSelected && newValues.length > 1) {
+      // "없음"이 선택된 상태에서 다른 것을 추가 선택한 경우 -> "없음" 해제
+      setSleepHabits(newValues.filter(v => v !== 'NONE'));
+    } else if (wasNoneSelected && !isNoneSelected) {
+      // "없음"을 해제한 경우
+      setSleepHabits(newValues);
+    } else {
+      // 일반적인 변경
+      setSleepHabits(newValues);
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
@@ -74,7 +93,7 @@ export function CoreHabitsScreen({ navigation }: CoreHabitsScreenProps) {
             <CheckboxGroup
               options={SLEEP_HABITS}
               values={sleepHabits}
-              onChange={setSleepHabits}
+              onChange={handleSleepHabitsChange}
             />
           </View>
         </View>

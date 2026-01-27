@@ -14,6 +14,7 @@ interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   containerStyle?: ViewStyle;
+  rightElement?: React.ReactNode;
 }
 
 export function Input({
@@ -21,6 +22,7 @@ export function Input({
   error,
   containerStyle,
   style,
+  rightElement,
   ...props
 }: InputProps) {
   const { colors } = useTheme();
@@ -33,9 +35,9 @@ export function Input({
           {label}
         </Text>
       )}
-      <TextInput
+      <View
         style={[
-          styles.input,
+          styles.inputWrapper,
           {
             backgroundColor: colors.surface,
             borderColor: error
@@ -43,15 +45,27 @@ export function Input({
               : isFocused
               ? colors.primary
               : colors.border,
-            color: colors.text.primary,
           },
-          style,
-        ]}
-        placeholderTextColor={colors.text.tertiary}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        {...props}
-      />
+        ]}>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              color: colors.text.primary,
+            },
+            style,
+          ]}
+          placeholderTextColor={colors.text.tertiary}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          {...props}
+        />
+        {rightElement && (
+          <View style={styles.rightElement}>
+            {rightElement}
+          </View>
+        )}
+      </View>
       {error && <Text style={[styles.error, { color: colors.error }]}>{error}</Text>}
     </View>
   );
@@ -66,12 +80,20 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.medium,
     marginBottom: spacing.xs,
   },
-  input: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md,
+  },
+  input: {
+    flex: 1,
     paddingVertical: spacing.md,
     fontSize: fontSize.md,
+  },
+  rightElement: {
+    marginLeft: spacing.xs,
   },
   error: {
     fontSize: fontSize.xs,

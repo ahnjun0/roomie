@@ -54,7 +54,9 @@ export function CodeInput({ length = 6, onComplete, error }: CodeInputProps) {
         .map((_, index) => (
           <TextInput
             key={index}
-            ref={ref => (inputRefs.current[index] = ref)}
+            ref={ref => {
+              inputRefs.current[index] = ref;
+            }}
             style={[
               styles.input,
               {
@@ -85,10 +87,10 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   input: {
-    width: 48,
+    width: 44,
     height: 56,
     borderWidth: 2,
     borderRadius: borderRadius.lg,
