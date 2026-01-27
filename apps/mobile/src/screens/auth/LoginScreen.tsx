@@ -29,6 +29,47 @@ export function LoginScreen({ navigation }: Props) {
   const [error, setError] = useState('');
   const [showExistingUserModal, setShowExistingUserModal] = useState(false);
 
+  // 학교 도메인 → 학교명 매핑
+  const SCHOOL_DOMAIN_MAP: Record<string, string> = {
+    'kaist.ac.kr': 'KAIST',
+    'pusan.ac.kr': '부산대학교',
+    'snu.ac.kr': '서울대학교',
+    'korea.ac.kr': '고려대학교',
+    'yonsei.ac.kr': '연세대학교',
+    'skku.edu': '성균관대학교',
+    'hanyang.ac.kr': '한양대학교',
+    'sogang.ac.kr': '서강대학교',
+    'cau.ac.kr': '중앙대학교',
+    'khu.ac.kr': '경희대학교',
+    'ewha.ac.kr': '이화여자대학교',
+    'hongik.ac.kr': '홍익대학교',
+    'konkuk.ac.kr': '건국대학교',
+    'sejong.ac.kr': '세종대학교',
+    'inha.ac.kr': '인하대학교',
+    'ajou.ac.kr': '아주대학교',
+    'gnu.ac.kr': '경상국립대학교',
+    'jnu.ac.kr': '전남대학교',
+    'jbnu.ac.kr': '전북대학교',
+    'knu.ac.kr': '경북대학교',
+    'cnu.ac.kr': '충남대학교',
+    'cbnu.ac.kr': '충북대학교',
+    'kangwon.ac.kr': '강원대학교',
+    'jejunu.ac.kr': '제주대학교',
+    'gist.ac.kr': 'GIST',
+    'unist.ac.kr': 'UNIST',
+    'dgist.ac.kr': 'DGIST',
+    'postech.ac.kr': 'POSTECH',
+  };
+
+  const getSchoolName = (emailValue: string): string | null => {
+    const atIndex = emailValue.indexOf('@');
+    if (atIndex === -1) return null;
+    const domain = emailValue.slice(atIndex + 1).toLowerCase();
+    return SCHOOL_DOMAIN_MAP[domain] || null;
+  };
+
+  const schoolName = getSchoolName(email);
+
   const validateEmail = (emailValue: string) => {
     // 학교 이메일 검증 (.ac.kr 또는 .edu)
     const emailRegex = /^[^\s@]+@[^\s@]+\.(ac\.kr|edu)$/i;
@@ -110,6 +151,12 @@ export function LoginScreen({ navigation }: Props) {
             autoCorrect={false}
             error={error}
           />
+
+          {schoolName && (
+            <Text style={[styles.schoolBadge, { color: themeColors.primary }]}>
+              {schoolName} Roomie
+            </Text>
+          )}
 
           <Button
             title="인증 코드 받기"
@@ -215,6 +262,12 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: spacing.xxl,
+  },
+  schoolBadge: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.bold,
+    textAlign: 'center',
+    marginBottom: spacing.md,
   },
   footer: {
     alignItems: 'center',
