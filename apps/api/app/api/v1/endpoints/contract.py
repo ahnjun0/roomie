@@ -20,6 +20,12 @@ from app.schemas.contract import (
 router = APIRouter()
 
 
+def _wrap_json(data: dict):
+    if Json:
+        return Json(data)
+    return data
+
+
 def _resolve_time(value_a: int | None, value_b: int | None) -> int | str:
     if value_a is None or value_b is None:
         return "협의 필요"

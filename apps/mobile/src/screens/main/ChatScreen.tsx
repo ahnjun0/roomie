@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
+  Text,
+  TouchableOpacity,
   StyleSheet,
   FlatList,
   KeyboardAvoidingView,
@@ -14,7 +16,7 @@ import { ChatBubble, ChatInput, Header } from '../../components';
 import { api, ApiError } from '../../services/api';
 import { getContractByChatRoom, initContract } from '../../services/contract';
 import { ENDPOINTS, WS_BASE_URL } from '../../constants/api';
-import { spacing, colors as themeColors } from '../../constants/theme';
+import { spacing, colors as themeColors, fontSize } from '../../constants/theme';
 
 interface Message {
   id: string;
@@ -183,10 +185,19 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
         title={userName || '채팅'}
         showBack
         onBack={() => navigation.goBack()}
-        rightAction={{
-          label: 'Becoming Roomie',
-          onPress: handleContract,
-        }}
+        rightComponent={
+          <TouchableOpacity
+            onPress={handleContract}
+            style={[
+              styles.contractButton,
+              { borderColor: colors.primary }
+            ]}
+          >
+            <Text style={[styles.contractButtonText, { color: colors.primary }]}>
+              Becoming{'\n'}Roomie
+            </Text>
+          </TouchableOpacity>
+        }
       />
 
       <FlatList
@@ -230,5 +241,19 @@ const styles = StyleSheet.create({
   messageList: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
+  },
+  contractButton: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contractButtonText: {
+    fontSize: 10,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 12,
   },
 });
