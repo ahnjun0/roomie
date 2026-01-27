@@ -34,6 +34,7 @@ interface AuthContextType extends AuthState {
   refreshUser: () => Promise<void>;
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   setUser: (user: User) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 interface RegisterData {
@@ -276,6 +277,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const deleteAccount = useCallback(async () => {
+    await api.delete(ENDPOINTS.USERS.ME);
+    await logout();
+  }, [logout]);
+
   const refreshUser = useCallback(async () => {
     try {
       const user = await api.get<User>(ENDPOINTS.USERS.ME);
@@ -312,6 +318,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshUser,
         setTokens,
         setUser,
+        deleteAccount,
       }}>
       {children}
     </AuthContext.Provider>

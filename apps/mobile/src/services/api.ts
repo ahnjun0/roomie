@@ -99,6 +99,11 @@ class ApiService {
       } as any;
     }
 
+    // Delete User
+    if (endpoint === '/users/me' && config.method === 'DELETE') {
+      return {} as any;
+    }
+
     // 3. User Updates (Basic Info, Lifestyle, Preferences)
     if (
         (config.method === 'PATCH' || config.method === 'PUT') &&
@@ -183,7 +188,7 @@ class ApiService {
         ];
 
         return {
-            items: items,
+            data: items,
             total: items.length,
             page: 1,
             limit: 10,
@@ -255,6 +260,93 @@ class ApiService {
         return {
             items: chatRooms,
         } as any;
+    }
+
+    // 7. Help Center
+    if (endpoint.includes('/help')) {
+      // Create Post
+      if (config.method === 'POST') {
+        return {
+          id: `post_${Date.now()}`,
+          authorId: '1',
+          author: { id: '1', nickname: 'RoomieUser' },
+          category: (config.body as any)?.category || 'BUG',
+          title: (config.body as any)?.title || '제목 없음',
+          content: (config.body as any)?.content || '내용 없음',
+          images: [],
+          status: 'OPEN',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any;
+      }
+
+      // Update Status
+      if (endpoint.includes('/status') && config.method === 'PATCH') {
+        return {
+          id: 'post_1',
+          authorId: '1',
+          author: { id: '1', nickname: 'RoomieUser' },
+          category: 'BUG',
+          title: '기숙사에 벌레가 나왔어요',
+          content: '바퀴벌레가 나왔는데 잡아주실 분...',
+          images: [],
+          status: (config.body as any)?.status || 'SOLVED',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any;
+      }
+
+      // Detail
+      const detailMatch = endpoint.match(/\/help\/(.+)/);
+      if (detailMatch && !endpoint.includes('/status')) {
+        return {
+          id: detailMatch[1],
+          authorId: '2', // Other user
+          author: { id: '2', nickname: '벌레잡는파브르' },
+          category: 'BUG',
+          title: '기숙사에 벌레가 나왔어요',
+          content: '바퀴벌레가 나왔는데 잡아주실 분 구합니다 ㅠㅠ 사례할게요.',
+          images: [],
+          status: 'OPEN',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any;
+      }
+
+      // List
+      const posts = [
+        {
+          id: 'post_1',
+          authorId: '2',
+          author: { id: '2', nickname: '벌레잡는파브르' },
+          category: 'BUG',
+          title: '기숙사에 벌레가 나왔어요',
+          content: '바퀴벌레가 나왔는데 잡아주실 분 구합니다 ㅠㅠ 사례할게요.',
+          images: [],
+          status: 'OPEN',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'post_2',
+          authorId: '3',
+          author: { id: '3', nickname: '고장수리맨' },
+          category: 'REPAIR',
+          title: '에어컨이 안나와요',
+          content: '에어컨 리모컨이 작동을 안하는데 건전지 있으신 분?',
+          images: [],
+          status: 'SOLVED',
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      ];
+
+      return {
+        total: posts.length,
+        page: 1,
+        limit: 20,
+        data: posts,
+      } as any;
     }
 
     // Default: 빈 객체 반환 (에러 방지)

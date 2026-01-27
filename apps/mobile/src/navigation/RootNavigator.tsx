@@ -27,6 +27,9 @@ import {
   RoomBtiIntroScreen,
   RoomBtiTestScreen,
   RoomBtiResultScreen,
+  HelpListScreen,
+  HelpCreateScreen,
+  HelpDetailScreen,
 } from '../screens';
 import { colors } from '../constants/theme';
 
@@ -64,6 +67,16 @@ function MainTabs() {
           tabBarLabel: '메시지',
           tabBarIcon: ({ color }) => (
             <Text style={{ color, fontSize: 20 }}>💬</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="HelpCenter"
+        component={HelpListScreen}
+        options={{
+          tabBarLabel: '게시판',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ color, fontSize: 20 }}>📋</Text>
           ),
         }}
       />
@@ -129,6 +142,10 @@ export function RootNavigator() {
           <Stack.Screen name="RoomBtiIntro" component={RoomBtiIntroScreen} />
           <Stack.Screen name="RoomBtiTest" component={RoomBtiTestScreen} />
           <Stack.Screen name="RoomBtiResult" component={RoomBtiResultScreen} />
+          
+          {/* Help Center */}
+          <Stack.Screen name="HelpCreate" component={HelpCreateScreen} />
+          <Stack.Screen name="HelpDetail" component={HelpDetailScreen} />
         </>
       )}
     </Stack.Navigator>

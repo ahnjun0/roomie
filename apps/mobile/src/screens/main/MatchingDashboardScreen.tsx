@@ -44,11 +44,11 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
         setIsRefreshing(true);
       }
 
-      const response = await api.get<{ items: MatchingUser[]; total: number }>(
+      const response = await api.get<{ data: MatchingUser[]; total: number }>(
         `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${pageNum}&limit=10&sort_by=${sortBy}`
       );
 
-      const items = response.items ?? [];
+      const items = response.data ?? [];
 
       if (refresh || pageNum === 1) {
         setMatches(items);

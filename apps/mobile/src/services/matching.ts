@@ -11,7 +11,7 @@ export interface MatchingUser {
 }
 
 export interface MatchingListResponse {
-  items: MatchingUser[];
+  data: MatchingUser[];
   total: number;
   page: number;
   limit: number;

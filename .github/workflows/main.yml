@@ -58,6 +58,14 @@ jobs:
             # 컨테이너가 시작될 때까지 대기
             sleep 5
 
+            # 2. [추가] DB 스키마 업데이트 (migrate deploy)
+            echo "Running DB migrations..."
+            docker exec roomie-api python -m prisma migrate deploy
+
+            # 3. [추가] Prisma Client 재생성
+            echo "Generating Prisma Client..."
+            docker exec roomie-api python -m prisma generate
+
             # 학교/기숙사 초기 데이터 seed (멱등성 보장 - 이미 있는 데이터는 skip)
             docker exec roomie-api python -m scripts.seeds
 

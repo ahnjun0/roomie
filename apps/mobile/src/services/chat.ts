@@ -23,7 +23,7 @@ export async function getChatRooms(): Promise<ChatRoomListResponse> {
   return api.get<ChatRoomListResponse>(ENDPOINTS.CHATS.LIST);
 }
 
-export async function createChatRoom(targetUserId: number): Promise<CreateChatRoomResponse> {
+export async function createChatRoom(targetUserId: number | string): Promise<CreateChatRoomResponse> {
   return api.post<CreateChatRoomResponse>(ENDPOINTS.CHATS.CREATE, {
     target_user_id: targetUserId,
   });
