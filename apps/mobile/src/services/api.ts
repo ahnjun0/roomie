@@ -480,6 +480,10 @@ class ApiService {
         throw new ApiError(response.status, message);
       }
 
+      if (response.status === 204) {
+        return {} as T;
+      }
+
       return response.json();
     } catch (error) {
       clearTimeout(timeoutId);
