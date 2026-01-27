@@ -13,6 +13,7 @@ import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
 import type { MatchingDetailResponse } from '../../services/matching';
+import { formatSleepHour } from '../../utils/time';
 
 interface MatchDetailScreenProps {
   route: {
@@ -35,7 +36,7 @@ const COMPARISON_LABELS: Record<string, string> = {
 
 const formatValue = (key: string, value: any) => {
   if (typeof value === 'boolean') return value ? 'O' : 'X';
-  if (key === 'sleepTime') return `${value}시`;
+  if (key === 'sleepTime') return formatSleepHour(Number(value));
   return value;
 };
 
