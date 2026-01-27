@@ -12,9 +12,10 @@ interface HeaderProps {
     label: string;
     onPress: () => void;
   };
+  rightComponent?: React.ReactNode;
 }
 
-export function Header({ title, showBack, onBack, rightAction }: HeaderProps) {
+export function Header({ title, showBack, onBack, rightAction, rightComponent }: HeaderProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -38,13 +39,15 @@ export function Header({ title, showBack, onBack, rightAction }: HeaderProps) {
           </Text>
         )}
         <View style={styles.rightSection}>
-          {rightAction && (
+          {rightComponent ? (
+            rightComponent
+          ) : rightAction ? (
             <TouchableOpacity onPress={rightAction.onPress}>
               <Text style={[styles.rightActionText, { color: colors.primary }]}>
                 {rightAction.label}
               </Text>
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </View>
     </View>
