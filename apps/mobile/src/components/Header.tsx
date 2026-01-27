@@ -63,11 +63,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   leftSection: {
-    width: 60,
+    minWidth: 40,
     alignItems: 'flex-start',
   },
   rightSection: {
-    width: 60,
+    minWidth: 40,
     alignItems: 'flex-end',
   },
   backButton: {

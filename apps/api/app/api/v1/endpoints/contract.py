@@ -125,10 +125,29 @@ def _build_placeholder_contract_data() -> dict[str, object]:
     }
 
 
-def _wrap_json(value: dict[str, object]) -> object:
-    if Json is None:
-        return value
-    return Json(value)
+@router.get("", response_model=ContractResponse)
+async def get_contract_by_chat_room(
+    chatRoomId: str = Query(..., description="채팅방 ID"),
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """채팅방 ID로 계약서 조회"""
+    contract = await db.roommatecontract.find_first(
+        where={"chatRoomId": chatRoomId}
+    )
+    if not contract:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "CONTRACT_NOT_FOUND", "message": "계약서가 존재하지 않습니다."},
+        )
+
+    if current_user.id not in [contract.userAId, contract.userBId]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"error": "FORBIDDEN", "message": "계약서에 접근할 권한이 없습니다."},
+        )
+
+    return contract
 
 
 @router.post("/init", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)

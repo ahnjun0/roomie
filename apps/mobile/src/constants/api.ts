@@ -1,5 +1,6 @@
 // API 기본 설정
 export const API_BASE_URL = 'http://hjxarchive.cloud:8000/api/v1';
+export const WS_BASE_URL = 'ws://hjxarchive.cloud:8000/api/v1';
 
 export const API_TIMEOUT = 10000;
 
@@ -38,6 +39,15 @@ export const ENDPOINTS = {
     CREATE: '/chats',
     LIST: '/chats',
     MESSAGES: (chatRoomId: string) => `/chats/${chatRoomId}/messages`,
+  },
+
+  // Contracts
+  CONTRACTS: {
+    BY_CHAT_ROOM: (chatRoomId: string) => `/contracts?chatRoomId=${chatRoomId}`,
+    INIT: '/contracts/init',
+    GET: (contractId: string) => `/contracts/${contractId}`,
+    UPDATE: (contractId: string) => `/contracts/${contractId}`,
+    SIGN: (contractId: string) => `/contracts/${contractId}/sign`,
   },
 
   // Reviews
