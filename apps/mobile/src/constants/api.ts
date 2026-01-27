@@ -32,6 +32,8 @@ export const ENDPOINTS = {
   MATCHING: {
     RECOMMENDATIONS: '/matching',
     DETAIL: (userId: string | number) => `/matching/${userId}`,
+    ROOMMATE: '/matching/roommate',
+    END_SEMESTER: '/matching/end-semester',
   },
 
   // Chats

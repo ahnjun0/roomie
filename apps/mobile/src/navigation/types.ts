@@ -32,6 +32,9 @@ export type RootStackParamList = {
   Terms: undefined;
   Privacy: undefined;
 
+  // Roommate Review
+  RoommateReview: { targetUserId: string; targetNickname: string };
+
   // Help Center
   HelpCreate: undefined;
   HelpDetail: { postId: string };

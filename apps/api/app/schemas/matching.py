@@ -85,3 +85,17 @@ class MatchingDetailResponse(BaseModel):
     reviews: list[ReviewSummary]
     reviewCount: int  # Added field
     averageReviewScore: float
+
+
+class RoommateResponse(BaseModel):
+    userId: str
+    nickname: str | None
+    studentId: int
+    nationality: str
+    dormNames: str
+    chatRoomId: str
+
+
+class EndSemesterResponse(BaseModel):
+    targetUserId: str
+    targetNickname: str | None

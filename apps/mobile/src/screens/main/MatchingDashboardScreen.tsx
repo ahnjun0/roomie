@@ -6,13 +6,15 @@ import {
   FlatList,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '../../contexts';
-import { MatchCard, Header } from '../../components';
+import { useFocusEffect } from '@react-navigation/native';
+import { useTheme, useAuth } from '../../contexts';
+import { MatchCard, Header, Button } from '../../components';
 import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
-import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
 
 interface MatchingUser {
   id: string;
@@ -26,12 +28,22 @@ interface MatchingUser {
   sleepStart: number;
 }
 
+interface RoommateInfo {
+  userId: string;
+  nickname: string | null;
+  studentId: number;
+  nationality: string;
+  dormNames: string;
+  chatRoomId: string;
+}
+
 interface MatchingDashboardScreenProps {
   navigation: any;
 }
 
 export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenProps) {
   const { colors } = useTheme();
+  const { user, refreshUser } = useAuth();
   const insets = useSafeAreaInsets();
 
   const [matches, setMatches] = useState<MatchingUser[]>([]);
@@ -40,13 +52,38 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  // Roommate state (for MATCHED status)
+  const [roommate, setRoommate] = useState<RoommateInfo | null>(null);
+  const [isEndingSemester, setIsEndingSemester] = useState(false);
+
+  const isMatched = user?.matchingStatus === 'MATCHED';
+
+  // Refresh user on focus
+  useFocusEffect(
+    useCallback(() => {
+      refreshUser();
+    }, [refreshUser])
+  );
+
+  const fetchRoommate = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get<RoommateInfo>(ENDPOINTS.MATCHING.ROOMMATE);
+      setRoommate(response);
+    } catch (error) {
+      console.error('Failed to fetch roommate:', error);
+      setRoommate(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const fetchMatches = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     try {
       if (refresh) {
         setIsRefreshing(true);
       }
 
-      // 정렬은 항상 매칭률순으로 고정
       const response = await api.get<{ data: MatchingUser[]; total: number }>(
         `${ENDPOINTS.MATCHING.RECOMMENDATIONS}?page=${pageNum}&limit=10&sortBy=matchRate`
       );
@@ -70,15 +107,23 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   }, []);
 
   useEffect(() => {
-    fetchMatches(1, true);
-  }, []);
+    if (isMatched) {
+      fetchRoommate();
+    } else {
+      fetchMatches(1, true);
+    }
+  }, [isMatched, fetchRoommate, fetchMatches]);
 
   const handleRefresh = () => {
-    fetchMatches(1, true);
+    if (isMatched) {
+      fetchRoommate();
+    } else {
+      fetchMatches(1, true);
+    }
   };
 
   const handleLoadMore = () => {
-    if (hasMore && !isLoading) {
+    if (hasMore && !isLoading && !isMatched) {
       fetchMatches(page + 1);
     }
   };
@@ -93,6 +138,36 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
     } catch (error) {
       console.error('Failed to create chat:', error);
     }
+  };
+
+  const handleEndSemester = () => {
+    Alert.alert(
+      '학기 끝내기',
+      '룸메이트 연결을 해제하시겠습니까? 해제 후 새로운 룸메이트를 찾을 수 있습니다.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '확인',
+          style: 'destructive',
+          onPress: async () => {
+            setIsEndingSemester(true);
+            try {
+              const response = await api.post<{ targetUserId: string; targetNickname: string | null }>(
+                ENDPOINTS.MATCHING.END_SEMESTER
+              );
+              navigation.navigate('RoommateReview', {
+                targetUserId: response.targetUserId,
+                targetNickname: response.targetNickname ?? '룸메이트',
+              });
+            } catch (error: any) {
+              Alert.alert('오류', error.message || '학기 끝내기에 실패했습니다.');
+            } finally {
+              setIsEndingSemester(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const renderItem = ({ item }: { item: MatchingUser }) => (
@@ -133,7 +208,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
     );
   };
 
-  if (isLoading && matches.length === 0) {
+  if (isLoading && (isMatched ? !roommate : matches.length === 0)) {
     return (
       <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={themeColors.primary} />
@@ -141,6 +216,78 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
     );
   }
 
+  // MATCHED status: show roommate info
+  if (isMatched && roommate) {
+    const nationalityLabel = roommate.nationality === 'KOREAN' ? '한국인' : '외국인';
+
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Header title="나의 룸메이트" />
+
+        <View style={[styles.roommateContent, { paddingBottom: insets.bottom + spacing.lg }]}>
+          {/* Roommate profile card */}
+          <View style={[styles.roommateCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.avatarCircle, { backgroundColor: themeColors.primary + '20' }]}>
+              <Text style={styles.avatarText}>
+                {roommate.nickname ? roommate.nickname.charAt(0) : '?'}
+              </Text>
+            </View>
+
+            <Text style={[styles.roommateName, { color: colors.text.primary }]}>
+              {roommate.nickname ?? '알 수 없음'}
+            </Text>
+
+            <View style={styles.infoRow}>
+              <View style={styles.infoItem}>
+                <Text style={[styles.infoLabel, { color: colors.text.tertiary }]}>학번</Text>
+                <Text style={[styles.infoValue, { color: colors.text.primary }]}>
+                  {roommate.studentId}학번
+                </Text>
+              </View>
+              <View style={[styles.infoDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.infoItem}>
+                <Text style={[styles.infoLabel, { color: colors.text.tertiary }]}>국적</Text>
+                <Text style={[styles.infoValue, { color: colors.text.primary }]}>
+                  {nationalityLabel}
+                </Text>
+              </View>
+              <View style={[styles.infoDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.infoItem}>
+                <Text style={[styles.infoLabel, { color: colors.text.tertiary }]}>기숙사</Text>
+                <Text style={[styles.infoValue, { color: colors.text.primary }]}>
+                  {roommate.dormNames}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Chat button */}
+          <Button
+            title="채팅하기"
+            onPress={() => navigation.navigate('Chat', {
+              chatRoomId: roommate.chatRoomId,
+              userId: roommate.userId,
+              userName: roommate.nickname,
+            })}
+            fullWidth
+          />
+
+          {/* End semester button */}
+          <View style={styles.endSemesterContainer}>
+            <Button
+              title="학기 끝내기"
+              onPress={handleEndSemester}
+              variant="outline"
+              loading={isEndingSemester}
+              fullWidth
+            />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  // SEARCHING status: show matching list
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header title="룸메이트 찾기" />
@@ -203,5 +350,60 @@ const styles = StyleSheet.create({
   footer: {
     paddingVertical: spacing.lg,
     alignItems: 'center',
+  },
+  // Roommate (MATCHED) styles
+  roommateContent: {
+    flex: 1,
+    padding: spacing.lg,
+  },
+  roommateCard: {
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    padding: spacing.xl,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  avatarCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  avatarText: {
+    fontSize: 28,
+    fontWeight: fontWeight.bold,
+    color: themeColors.primary,
+  },
+  roommateName: {
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
+    marginBottom: spacing.lg,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'space-around',
+  },
+  infoItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: fontSize.sm,
+    marginBottom: spacing.xs,
+  },
+  infoValue: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+  },
+  infoDivider: {
+    width: 1,
+    height: 32,
+  },
+  endSemesterContainer: {
+    marginTop: spacing.sm,
   },
 });
