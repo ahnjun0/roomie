@@ -114,7 +114,7 @@ async def init_contract(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """猷몃찓?댄듃 怨꾩빟??珥덇린??앹꽦"""
+    """룸메이트 계약서 초기 생성"""
     chat_room = await db.chatroom.find_unique(
         where={"id": request.chatRoomId},
         include={"participants": True},
@@ -123,14 +123,14 @@ async def init_contract(
     if not chat_room:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "CHAT_ROOM_NOT_FOUND", "message": "梨꾪똿諛⑹쓣 李얠쓣 ???놁뒿?덈떎."},
+            detail={"error": "CHAT_ROOM_NOT_FOUND", "message": "채팅방을 찾을 수 없습니다."},
         )
 
     participant_ids = [p.userId for p in chat_room.participants]
     if current_user.id not in participant_ids:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": "FORBIDDEN", "message": "梨꾪똿諛⑹뿉 ?묎렐?????놁뒿?덈떎."},
+            detail={"error": "FORBIDDEN", "message": "채팅방에 접근할 권한이 없습니다."},
         )
 
     if len(participant_ids) != 2:
@@ -138,7 +138,7 @@ async def init_contract(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "error": "INVALID_PARTICIPANTS",
-                "message": "珥덇린 怨꾩빟?섎뒗 2?명? 梨꾪똿諛⑹뿉?쒕쭔 ?앹꽦?⑸땲??.",
+                "message": "초기 계약서는 2인 채팅방에서만 생성됩니다.",
             },
         )
 
@@ -150,7 +150,7 @@ async def init_contract(
             status_code=status.HTTP_409_CONFLICT,
             detail={
                 "error": "CONTRACT_ALREADY_EXISTS",
-                "message": "??梨꾪똿諛⑹뿉? ?대? 怨꾩빟?섍? 議댁옱?⑸땲??.",
+                "message": "해당 채팅방에 이미 계약서가 존재합니다.",
             },
         )
 
@@ -167,7 +167,7 @@ async def init_contract(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "error": "LIFESTYLE_NOT_FOUND",
-                "message": "梨꾪똿諛⑹쓽 紐⑤뱺 ?ъ슜?먰? ?앺솢 ?⑦꽩 ?뺣낫瑜??꾨즺?댁＜?몄슂.",
+                "message": "채팅방의 모든 사용자의 생활 패턴 정보를 완료해주세요.",
             },
         )
 
@@ -176,7 +176,7 @@ async def init_contract(
     if len(user_map) != 2:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": "USER_NOT_FOUND", "message": "?ъ슜?먮? 李얠쓣 ???놁뒿?덈떎."},
+            detail={"error": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다."},
         )
 
     dorm_names = set()
@@ -197,7 +197,7 @@ async def init_contract(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail={
                             "error": "INVALID_DORM_GENDER",
-                            "message": f"'{dorm_name}'?(?? {dorm.gender} ?꾩슜 湲곗닕?ъ엯?덈떎. 蹂몄씤 ?깅퀎??留욌뒗 湲곗닕?щ? ?좏깮?댁＜?몄슂.",
+                            "message": f"'{dorm_name}'은(는) {dorm.gender} 전용 기숙사입니다. 본인 성별에 맞는 기숙사를 선택해주세요.",
                         },
                     )
 
@@ -226,18 +226,18 @@ async def get_contract(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """猷몃찓?댄듃 怨꾩빟??議고쉶"""
+    """룸메이트 계약서 조회"""
     contract = await db.roommatecontract.find_unique(where={"id": contract_id})
     if not contract:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "CONTRACT_NOT_FOUND", "message": "怨꾩빟?섍? 議댁옱?섏? ?딆뒿?덈떎."},
+            detail={"error": "CONTRACT_NOT_FOUND", "message": "계약서가 존재하지 않습니다."},
         )
 
     if current_user.id not in [contract.userAId, contract.userBId]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": "FORBIDDEN", "message": "怨꾩빟?섍? ?묎렐??寃뚰븳?먰? ?놁뒿?덈떎."},
+            detail={"error": "FORBIDDEN", "message": "계약서에 접근할 권한이 없습니다."},
         )
 
     return contract
@@ -250,18 +250,18 @@ async def update_contract(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """猷몃찓?댄듃 怨꾩빟???. ??硫붿떆? ?섏젙??"""
+    """룸메이트 계약서 수정"""
     contract = await db.roommatecontract.find_unique(where={"id": contract_id})
     if not contract:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "CONTRACT_NOT_FOUND", "message": "怨꾩빟?섍? 議댁옱?섏? ?딆뒿?덈떎."},
+            detail={"error": "CONTRACT_NOT_FOUND", "message": "계약서가 존재하지 않습니다."},
         )
 
     if current_user.id not in [contract.userAId, contract.userBId]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": "FORBIDDEN", "message": "怨꾩빟?섍? ?묎렐??寃뚰븳?먰? ?놁뒿?덈떎."},
+            detail={"error": "FORBIDDEN", "message": "계약서에 접근할 권한이 없습니다."},
         )
 
     updated_contract = await db.roommatecontract.update(
@@ -284,18 +284,18 @@ async def sign_contract(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """猷몃찓?댄듃 怨꾩빟??서명/泥섎━"""
+    """룸메이트 계약서 서명/처리"""
     contract = await db.roommatecontract.find_unique(where={"id": contract_id})
     if not contract:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": "CONTRACT_NOT_FOUND", "message": "怨꾩빟?섍? 議댁옱?섏? ?딆뒿?덈떎."},
+            detail={"error": "CONTRACT_NOT_FOUND", "message": "계약서가 존재하지 않습니다."},
         )
 
     if current_user.id not in [contract.userAId, contract.userBId]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": "FORBIDDEN", "message": "怨꾩빟?섍? ?묎렐??寃뚰븳?먰? ?놁뒿?덈떎."},
+            detail={"error": "FORBIDDEN", "message": "계약서에 접근할 권한이 없습니다."},
         )
 
     update_data: dict[str, bool] = {}
