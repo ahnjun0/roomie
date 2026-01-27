@@ -20,14 +20,20 @@ interface AuthState {
   isOnboardingComplete: boolean;
 }
 
+interface SendCodeResponse {
+  userExists: boolean;
+}
+
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  sendVerificationCode: (email: string) => Promise<void>;
+  sendVerificationCode: (email: string) => Promise<SendCodeResponse>;
   verifyCode: (email: string, code: string) => Promise<string>;
+  resetPassword: (email: string, tempToken: string, newPassword: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
+  setUser: (user: User) => Promise<void>;
 }
 
 interface RegisterData {
@@ -58,6 +64,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadStoredAuth();
   }, []);
+
+  // API 서비스와 토큰 동기화 및 리프레시 콜백 설정
+  useEffect(() => {
+    // 1. 리프레시 토큰 설정
+    if (state.refreshToken) {
+      api.setRefreshToken(state.refreshToken);
+    }
+
+    // 2. 콜백 설정
+    api.setCallbacks(
+      // 성공 시: 상태 업데이트
+      (newAccess, newRefresh) => {
+        // 스토리지 및 상태 업데이트
+        setTokens(newAccess, newRefresh);
+      },
+      // 실패 시: 로그아웃
+      () => {
+        logout();
+      }
+    );
+  }, [state.refreshToken, setTokens, logout]);
 
   const loadStoredAuth = async () => {
     try {
@@ -101,8 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const sendVerificationCode = useCallback(async (email: string) => {
-    await api.post(ENDPOINTS.AUTH.SEND_CODE, { email });
+  const sendVerificationCode = useCallback(async (email: string): Promise<SendCodeResponse> => {
+    const response = await api.post<{ message: string; expiresIn: number; userExists: boolean }>(
+      ENDPOINTS.AUTH.SEND_CODE,
+      { email },
+    );
+    return { userExists: response.userExists };
   }, []);
 
   const verifyCode = useCallback(
@@ -112,6 +143,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         { email, code },
       );
       return response.tempToken;
+    },
+    [],
+  );
+
+  const resetPassword = useCallback(
+    async (email: string, tempToken: string, newPassword: string): Promise<void> => {
+      await api.post(ENDPOINTS.AUTH.RESET_PASSWORD, {
+        email,
+        tempToken,
+        newPassword,
+      });
     },
     [],
   );
@@ -248,6 +290,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const setUser = useCallback(async (user: User) => {
+    await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    setState(prev => ({
+      ...prev,
+      user,
+      isOnboardingComplete: user.isProfileComplete,
+    }));
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -257,8 +308,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         sendVerificationCode,
         verifyCode,
+        resetPassword,
         refreshUser,
         setTokens,
+        setUser,
       }}>
       {children}
     </AuthContext.Provider>

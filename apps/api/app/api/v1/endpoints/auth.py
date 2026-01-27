@@ -25,6 +25,8 @@ from app.schemas.user import (
     EmailVerifyResponse,
     LoginRequest,
     RegisterRequest,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
     TokenRefreshRequest,
     TokenResponse,
 )
@@ -37,17 +39,13 @@ cuid_generator = cuid_wrapper()
 
 
 @router.post("/send-code", response_model=EmailSendResponse)
-async def send_verification_code(request: EmailSendRequest):
+async def send_verification_code(request: EmailSendRequest, db: Prisma = Depends(get_db)):
     """인증번호 발송"""
     email = request.email
 
-    # 학교 이메일 검증 (예: @univ.ac.kr)
-    # 실제 환경에서는 학교 도메인을 설정에서 관리
-    # if not email.endswith("@univ.ac.kr"):
-    #     raise HTTPException(
-    #         status_code=status.HTTP_400_BAD_REQUEST,
-    #         detail={"error": "INVALID_EMAIL_DOMAIN", "message": "학교 이메일만 사용 가능합니다."},
-    #     )
+    # 이메일 존재 여부 확인
+    existing_user = await db.user.find_unique(where={"email": email})
+    user_exists = existing_user is not None
 
     # 인증 코드 생성 및 저장
     code = generate_verification_code()
@@ -64,7 +62,7 @@ async def send_verification_code(request: EmailSendRequest):
             detail={"error": "EMAIL_SEND_FAILED", "message": "이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요."},
         )
 
-    return EmailSendResponse(message="인증번호가 발송되었습니다.", expiresIn=300)
+    return EmailSendResponse(message="인증번호가 발송되었습니다.", expiresIn=300, userExists=user_exists)
 
 
 @router.post("/verify-code", response_model=EmailVerifyResponse)
@@ -249,3 +247,35 @@ async def refresh_token(request: TokenRefreshRequest, db: Prisma = Depends(get_d
     new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
     return TokenResponse(accessToken=access_token, refreshToken=new_refresh_token)
+
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+async def reset_password(request: ResetPasswordRequest, db: Prisma = Depends(get_db)):
+    """비밀번호 재설정"""
+    # 임시 토큰 검증
+    email = temp_tokens.get(request.tempToken)
+    if not email or email != request.email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": "INVALID_TEMP_TOKEN", "message": "유효하지 않은 인증입니다. 이메일 인증을 다시 진행해주세요."},
+        )
+
+    # 사용자 조회
+    user = await db.user.find_unique(where={"email": request.email})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "USER_NOT_FOUND", "message": "사용자를 찾을 수 없습니다."},
+        )
+
+    # 비밀번호 해싱 및 업데이트
+    hashed_password = get_password_hash(request.newPassword)
+    await db.user.update(
+        where={"email": request.email},
+        data={"password": hashed_password},
+    )
+
+    # 임시 토큰 삭제
+    del temp_tokens[request.tempToken]
+
+    return ResetPasswordResponse(message="비밀번호가 성공적으로 변경되었습니다.")

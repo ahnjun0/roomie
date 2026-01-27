@@ -1,7 +1,10 @@
 // Auth Screens
 export { LoginScreen } from './auth/LoginScreen';
+export { SignInScreen } from './auth/SignInScreen';
+export { ForgotPasswordScreen } from './auth/ForgotPasswordScreen';
 export { VerifyEmailScreen } from './auth/VerifyEmailScreen';
 export { RegisterScreen } from './auth/RegisterScreen';
+export { ResetPasswordScreen } from './auth/ResetPasswordScreen';
 
 // Onboarding Screens
 export { BasicInfoScreen } from './onboarding/BasicInfoScreen';

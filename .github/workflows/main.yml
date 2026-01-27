@@ -55,4 +55,10 @@ jobs:
             docker compose pull
             docker compose up -d --no-build
 
+            # 컨테이너가 시작될 때까지 대기
+            sleep 5
+
+            # 학교/기숙사 초기 데이터 seed (멱등성 보장 - 이미 있는 데이터는 skip)
+            docker exec roomie-api python -m scripts.seeds
+
             docker image prune -f

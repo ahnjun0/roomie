@@ -15,7 +15,7 @@ const UNIT_AMOUNT = 10000;
 
 export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
   const { colors } = useTheme();
-  const { data, updateData, submitBasicInfo, submitLifestyle, submitPreferences } = useOnboarding();
+  const { submitLifestyle, submitPreferences } = useOnboarding();
   const { refreshUser } = useAuth();
   const insets = useSafeAreaInsets();
 
@@ -37,37 +37,49 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
     setWeights(prev => ({ ...prev, [key]: value }));
   };
 
-  // 가중치 값을 API 형식(0.0~3.0)으로 변환
-  const convertToApiWeight = (value: number): number => {
-    // 0-5 단위를 0.0-3.0으로 변환
-    return value * 0.6;
-  };
-
   const handleComplete = async () => {
+    console.log('[WeightGame] handleComplete called');
+    console.log('[WeightGame] isValid:', isValid, 'totalAllocated:', totalAllocated);
+    console.log('[WeightGame] weights:', weights);
+
     if (!isValid) {
       Alert.alert('알림', '5만원을 모두 배분해주세요.');
       return;
     }
 
     setIsLoading(true);
+    console.log('[WeightGame] Starting profile submission...');
 
     try {
-      // 가중치 데이터 업데이트
-      updateData({
-        weightSmoking: convertToApiWeight(weights.smoking),
-        weightSleep: convertToApiWeight(weights.sleep),
-        weightCleanliness: convertToApiWeight(weights.cleanliness),
-        weightNoise: convertToApiWeight(weights.noise),
-      });
+      // 가중치 데이터를 백엔드 형식으로 변환 (총합 50이 되도록)
+      // 프론트엔드: 0-5 범위, 총합 5 (50000원 / 10000원)
+      // 백엔드: 0-50 범위, 총합 50
+      const weightData = {
+        weightNoise: weights.noise * 10,
+        weightClean: weights.cleanliness * 10,
+        weightFood: 0, // 프론트엔드에서 미사용
+        weightHabit: weights.smoking * 10, // 흡연 → 잠버릇으로 매핑
+        weightTime: weights.sleep * 10, // 수면 → 취침시간으로 매핑
+        weightLight: 0, // 프론트엔드에서 미사용
+        weightTemp: 0, // 프론트엔드에서 미사용
+      };
+      console.log('[WeightGame] weightData:', weightData);
 
       // 모든 데이터 제출
-      await submitBasicInfo();
+      console.log('[WeightGame] Submitting lifestyle...');
       await submitLifestyle();
-      await submitPreferences();
+      console.log('[WeightGame] Lifestyle submitted');
 
-      // 사용자 정보 새로고침
+      console.log('[WeightGame] Submitting preferences...');
+      await submitPreferences(weightData);
+      console.log('[WeightGame] Preferences submitted');
+
+      // 사용자 정보 새로고침 (isProfileComplete가 true가 되어야 메인 화면으로 전환)
+      console.log('[WeightGame] Refreshing user...');
       await refreshUser();
+      console.log('[WeightGame] User refreshed, profile complete!');
     } catch (error: any) {
+      console.error('[WeightGame] Profile completion error:', error);
       Alert.alert('오류', error.message || '프로필 설정에 실패했습니다.');
     } finally {
       setIsLoading(false);
@@ -113,10 +125,18 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
           </Text>
         )}
 
+        {/* 디버그 정보 */}
+        <Text style={{ color: colors.text.secondary, fontSize: 12, marginTop: 8 }}>
+          [DEBUG] isValid: {isValid ? 'true' : 'false'}, total: {totalAllocated}, isLoading: {isLoading ? 'true' : 'false'}
+        </Text>
+
         <View style={styles.footer}>
           <Button
             title="프로필 완성"
-            onPress={handleComplete}
+            onPress={() => {
+              console.log('[WeightGame] Button pressed!');
+              handleComplete();
+            }}
             disabled={!isValid}
             loading={isLoading}
             fullWidth

@@ -6,8 +6,11 @@ import { useAuth, useTheme } from '../contexts';
 import { RootStackParamList, MainTabParamList } from './types';
 import {
   LoginScreen,
+  SignInScreen,
+  ForgotPasswordScreen,
   VerifyEmailScreen,
   RegisterScreen,
+  ResetPasswordScreen,
   BasicInfoScreen,
   DormitorySelectScreen,
   CoreHabitsScreen,
@@ -92,11 +95,14 @@ export function RootNavigator() {
         contentStyle: { backgroundColor: themeColors.background },
       }}>
       {!isAuthenticated ? (
-        // Auth Flow (회원가입 + 기본 정보 입력)
+        // Auth Flow (회원가입 + 로그인 + 비밀번호 재설정)
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="SignIn" component={SignInScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
           <Stack.Screen name="BasicInfo" component={BasicInfoScreen} />
         </>
       ) : !isOnboardingComplete ? (

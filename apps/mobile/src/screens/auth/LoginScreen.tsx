@@ -6,17 +6,20 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Modal,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useAuth } from '../../contexts';
 import { Button, Input } from '../../components';
 import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../navigation/types';
 
-interface LoginScreenProps {
-  navigation: any;
-}
+type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
-export function LoginScreen({ navigation }: LoginScreenProps) {
+export function LoginScreen({ navigation }: Props) {
   const { colors } = useTheme();
   const { sendVerificationCode } = useAuth();
   const insets = useSafeAreaInsets();
@@ -24,11 +27,12 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showExistingUserModal, setShowExistingUserModal] = useState(false);
 
-  const validateEmail = (email: string) => {
+  const validateEmail = (emailValue: string) => {
     // 학교 이메일 검증 (.ac.kr 또는 .edu)
     const emailRegex = /^[^\s@]+@[^\s@]+\.(ac\.kr|edu)$/i;
-    return emailRegex.test(email);
+    return emailRegex.test(emailValue);
   };
 
   const handleSendCode = async () => {
@@ -46,13 +50,30 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
     setError('');
 
     try {
-      await sendVerificationCode(email);
-      navigation.navigate('VerifyEmail', { email });
+      const { userExists } = await sendVerificationCode(email);
+
+      if (userExists) {
+        // 이미 가입된 이메일 - 모달 표시
+        setShowExistingUserModal(true);
+      } else {
+        // 신규 사용자 - 이메일 인증 화면으로 이동
+        navigation.navigate('VerifyEmail', { email, mode: 'register' });
+      }
     } catch (err: any) {
       setError(err.message || '인증 코드 발송에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoToLogin = () => {
+    setShowExistingUserModal(false);
+    navigation.navigate('SignIn', { email });
+  };
+
+  const handleGoToResetPassword = () => {
+    setShowExistingUserModal(false);
+    navigation.navigate('VerifyEmail', { email, mode: 'reset' });
   };
 
   return (
@@ -99,11 +120,66 @@ export function LoginScreen({ navigation }: LoginScreenProps) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.text.tertiary }]}>
+          <TouchableOpacity onPress={() => navigation.navigate('SignIn', {})}>
+            <Text style={[styles.footerText, { color: colors.text.tertiary }]}>
+              이미 계정이 있으신가요?{' '}
+              <Text style={{ color: themeColors.primary, fontWeight: fontWeight.semibold }}>
+                로그인
+              </Text>
+            </Text>
+          </TouchableOpacity>
+          <Text style={[styles.termsText, { color: colors.text.tertiary, marginTop: spacing.md }]}>
             가입하면 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
           </Text>
         </View>
       </ScrollView>
+
+      {/* 이미 가입된 이메일 모달 */}
+      <Modal
+        visible={showExistingUserModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowExistingUserModal(false)}>
+        <TouchableWithoutFeedback onPress={() => setShowExistingUserModal(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+                  이미 가입된 이메일입니다
+                </Text>
+                <Text style={[styles.modalMessage, { color: colors.text.secondary }]}>
+                  {email}로 이미 가입된 계정이 있습니다.{'\n'}
+                  어떻게 하시겠어요?
+                </Text>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: themeColors.primary }]}
+                    onPress={handleGoToLogin}>
+                    <Text style={styles.modalButtonTextPrimary}>로그인하기</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.modalButtonOutline, { borderColor: themeColors.primary }]}
+                    onPress={handleGoToResetPassword}>
+                    <Text style={[styles.modalButtonTextSecondary, { color: themeColors.primary }]}>
+                      비밀번호 재설정
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.modalCancelButton}
+                  onPress={() => setShowExistingUserModal(false)}>
+                  <Text style={[styles.modalCancelText, { color: colors.text.tertiary }]}>
+                    취소
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -141,11 +217,73 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   footer: {
+    alignItems: 'center',
     marginTop: spacing.lg,
   },
   footerText: {
+    fontSize: fontSize.sm,
+    textAlign: 'center',
+  },
+  termsText: {
     fontSize: fontSize.xs,
     textAlign: 'center',
     lineHeight: fontSize.xs * 1.5,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: 16,
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: fontSize.md,
+    textAlign: 'center',
+    lineHeight: fontSize.md * 1.5,
+    marginBottom: spacing.xl,
+  },
+  modalButtons: {
+    width: '100%',
+    gap: spacing.sm,
+  },
+  modalButton: {
+    width: '100%',
+    paddingVertical: spacing.md,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalButtonOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+  },
+  modalButtonTextPrimary: {
+    color: '#FFFFFF',
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+  },
+  modalButtonTextSecondary: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+  },
+  modalCancelButton: {
+    marginTop: spacing.md,
+    padding: spacing.sm,
+  },
+  modalCancelText: {
+    fontSize: fontSize.sm,
   },
 });

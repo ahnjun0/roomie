@@ -12,6 +12,7 @@ export const ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     REFRESH: '/auth/refresh',
+    RESET_PASSWORD: '/auth/reset-password',
   },
 
   // Users

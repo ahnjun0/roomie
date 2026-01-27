@@ -9,25 +9,19 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useAuth } from '../../contexts';
-import { Button, CodeInput, Header } from '../../components';
+import { CodeInput, Header } from '../../components';
 import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../navigation/types';
 
-interface VerifyEmailScreenProps {
-  route: {
-    params: {
-      email: string;
-    };
-  };
-  navigation: any;
-}
+type Props = NativeStackScreenProps<RootStackParamList, 'VerifyEmail'>;
 
-export function VerifyEmailScreen({ route, navigation }: VerifyEmailScreenProps) {
-  const { email } = route.params;
+export function VerifyEmailScreen({ route, navigation }: Props) {
+  const { email, mode = 'register' } = route.params;
   const { colors } = useTheme();
   const { verifyCode, sendVerificationCode } = useAuth();
   const insets = useSafeAreaInsets();
 
-  const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(60);
@@ -40,13 +34,18 @@ export function VerifyEmailScreen({ route, navigation }: VerifyEmailScreenProps)
   }, [resendTimer]);
 
   const handleCodeComplete = async (enteredCode: string) => {
-    setCode(enteredCode);
     setIsLoading(true);
     setError('');
 
     try {
       const tempToken = await verifyCode(email, enteredCode);
-      navigation.navigate('Register', { email, tempToken });
+
+      // mode에 따라 다음 화면 분기
+      if (mode === 'reset') {
+        navigation.navigate('ResetPassword', { email, tempToken });
+      } else {
+        navigation.navigate('Register', { email, tempToken });
+      }
     } catch (err: any) {
       setError(err.message || '인증 코드가 올바르지 않습니다.');
     } finally {
@@ -66,12 +65,14 @@ export function VerifyEmailScreen({ route, navigation }: VerifyEmailScreenProps)
     }
   };
 
+  const headerTitle = mode === 'reset' ? '비밀번호 재설정' : '이메일 인증';
+
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: colors.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Header
-        title="이메일 인증"
+        title={headerTitle}
         showBack
         onBack={() => navigation.goBack()}
       />
