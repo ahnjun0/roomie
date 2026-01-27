@@ -65,4 +65,12 @@ export const ENDPOINTS = {
     TEST: '/room-bti/test',
     ME: '/room-bti/me',
   },
+
+  // Help Center
+  HELP: {
+    LIST: '/help',
+    CREATE: '/help',
+    GET: (id: string) => `/help/${id}`,
+    UPDATE_STATUS: (id: string) => `/help/${id}/status`,
+  },
 } as const;

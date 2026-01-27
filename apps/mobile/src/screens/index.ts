@@ -23,6 +23,11 @@ export { ChatListScreen } from './main/ChatListScreen';
 export { MatchDetailScreen } from './main/MatchDetailScreen';
 export { MyPageScreen } from './main/MyPageScreen';
 
+// Help Center Screens
+export { HelpListScreen } from './main/help/HelpListScreen';
+export { HelpCreateScreen } from './main/help/HelpCreateScreen';
+export { HelpDetailScreen } from './main/help/HelpDetailScreen';
+
 // Room-BTI Screens
 export { RoomBtiIntroScreen } from './roomBti/RoomBtiIntroScreen';
 export { RoomBtiTestScreen } from './roomBti/RoomBtiTestScreen';

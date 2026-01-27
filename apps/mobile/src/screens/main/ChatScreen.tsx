@@ -17,7 +17,7 @@ import { spacing, colors as themeColors } from '../../constants/theme';
 interface Message {
   id: string;
   content: string;
-  senderId: number;
+  senderId: number | string;
   createdAt: string;
 }
 
@@ -25,7 +25,7 @@ interface ChatScreenProps {
   route: {
     params: {
       chatRoomId: string;
-      userId: number;
+      userId: number | string;
       userName?: string;
     };
   };
@@ -112,7 +112,7 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
     <ChatBubble
       message={item.content}
       timestamp={formatTime(item.createdAt)}
-      isMine={item.senderId === user?.id}
+      isMine={String(item.senderId) === String(user?.id)}
     />
   );
 

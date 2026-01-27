@@ -31,6 +31,10 @@ export type RootStackParamList = {
   Terms: undefined;
   Privacy: undefined;
 
+  // Help Center
+  HelpCreate: undefined;
+  HelpDetail: { postId: string };
+
   // Room-BTI Screens
   RoomBtiIntro: undefined;
   RoomBtiTest: undefined;
@@ -45,5 +49,6 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Matching: undefined;
   ChatList: undefined;
+  HelpCenter: undefined;
   MyPage: undefined;
 };
