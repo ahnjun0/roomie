@@ -2,6 +2,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from prisma import Prisma
+
+try:
+    from prisma import Json
+except Exception:  # pragma: no cover - runtime fallback for older prisma-client-py
+    Json = None  # type: ignore[assignment]
 from prisma.models import User
 
 from app.core.database import get_db
@@ -152,7 +157,6 @@ async def get_contract_by_chat_room(
 @router.post("/init", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
 async def init_contract(
     request: ContractInitRequest,
-    allowMissingLifestyle: bool = Query(True),
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
@@ -205,15 +209,6 @@ async def init_contract(
     lifestyle_map = {l.userId: l for l in lifestyles}
 
     has_full_lifestyle = len(lifestyle_map) == 2
-    if not has_full_lifestyle and not allowMissingLifestyle:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "error": "LIFESTYLE_NOT_FOUND",
-                "message": "채팅방의 모든 사용자가 생활 패턴 정보를 입력해야 합니다.",
-            },
-        )
-
     if has_full_lifestyle:
         users = await db.user.find_many(where={"id": {"in": user_ids}})
         user_map = {u.id: u for u in users}
@@ -253,10 +248,10 @@ async def init_contract(
 
     contract = await db.roommatecontract.create(
         data={
-            "chatRoomId": request.chatRoomId,
-            "userAId": user_a_id,
-            "userBId": user_b_id,
-            "contractData": contract_data,
+            "chatRoom": {"connect": {"id": request.chatRoomId}},
+            "userA": {"connect": {"id": user_a_id}},
+            "userB": {"connect": {"id": user_b_id}},
+            "contractData": _wrap_json(contract_data),
             "status": "DRAFT",
             "signatureA": False,
             "signatureB": False,
@@ -313,7 +308,7 @@ async def update_contract(
     updated_contract = await db.roommatecontract.update(
         where={"id": contract_id},
         data={
-            "contractData": request.contractData,
+            "contractData": _wrap_json(request.contractData),
             "signatureA": False,
             "signatureB": False,
             "status": "DRAFT",
