@@ -16,7 +16,7 @@ interface OnboardingData {
   tempToken: string | null;
 
   // Basic Info
-  gender: 'male' | 'female' | null;
+  gender: 'MALE' | 'FEMALE' | null;
   nationality: string | null;
   age: number | null;
   studentId: string | null;
@@ -62,7 +62,7 @@ interface OnboardingData {
 
 // 회원가입 응답 타입
 interface RegisterResponse {
-  id: number;
+  id: string;
   email: string;
   nickname: string | null;
   accessToken: string;
@@ -97,8 +97,8 @@ const initialData: OnboardingData = {
   password: 'password123',
   tempToken: 'mock-temp-token-dev', 
 
-  gender: 'male',
-  nationality: 'korean',
+  gender: 'MALE',
+  nationality: 'KOREAN',
   age: 24,
   studentId: '2020',
 
@@ -156,16 +156,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       email: data.email,
       password: data.password,
       tempToken: data.tempToken,
-      gender: data.gender.toUpperCase(),
-      
-      // API 요구사항에 맞게 데이터 변환
-      // nationality: 'korean' -> 'KOREAN', 그 외 -> 'FOREIGNER'
-      nationality: data.nationality === 'korean' ? 'KOREAN' : 'FOREIGNER',
-      
+      gender: data.gender,
+      nationality: data.nationality,
       age: data.age,
-      
-      // studentId: '2024' -> 24 (입학년도 뒤 2자리)
-      studentId: parseInt(data.studentId, 10) % 100,
+      studentId: typeof data.studentId === 'string'
+        ? parseInt(data.studentId, 10) % 100
+        : data.studentId,
     });
 
     return response;
@@ -173,10 +169,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const submitBasicInfo = useCallback(async () => {
     await api.patch(ENDPOINTS.USERS.ME, {
-      gender: data.gender?.toUpperCase(),
+      gender: data.gender,
       nationality: data.nationality,
       age: data.age,
-      student_id: data.studentId,
+      studentId: typeof data.studentId === 'string'
+        ? parseInt(data.studentId, 10) % 100
+        : data.studentId,
     });
   }, [data]);
 
@@ -202,8 +200,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     // - 'SAME' (동일 국적) → 사용자 본인의 nationality (KOREAN 또는 FOREIGNER)
     let prefNationality: string | null = null;
     if (data.preferredNationality === 'SAME') {
-      // 사용자의 nationality를 사용 ('korean' → 'KOREAN', 그 외 → 'FOREIGNER')
-      prefNationality = data.nationality === 'korean' ? 'KOREAN' : 'FOREIGNER';
+      prefNationality = data.nationality;
     }
     // 'ANY'인 경우 null 유지
 

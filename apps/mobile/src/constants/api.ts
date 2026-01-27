@@ -18,13 +18,13 @@ export const ENDPOINTS = {
   // Users
   USERS: {
     ME: '/users/me',
-    PROFILE: '/users/me/profile',
     LIFESTYLE: '/users/me/lifestyle',
     PREFERENCES: '/users/me/preference',
+    PREFERENCE_FILTERS: '/users/me/preference/filters',
+    PREFERENCE_WEIGHTS: '/users/me/preference/weights',
     REVIEWS_WRITTEN: '/users/me/reviews/written',
     REVIEWS_RECEIVED: '/users/me/reviews/received',
-    GET: (id: number) => `/users/${id}`,
-    REVIEWS: (id: number) => `/users/${id}/reviews`,
+    REVIEWS: (id: string) => `/users/${id}/reviews`,
   },
 
   // Matching
@@ -56,7 +56,6 @@ export const ENDPOINTS = {
   // Dormitories
   DORMITORIES: {
     LIST: '/dormitories',
-    GET: (id: number) => `/dormitories/${id}`,
   },
 
   // Room-BTI

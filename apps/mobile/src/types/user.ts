@@ -1,22 +1,26 @@
-export type Gender = 'male' | 'female';
+export type Gender = 'MALE' | 'FEMALE';
+export type Nationality = 'KOREAN' | 'FOREIGNER';
+export type MatchingStatus = 'SEARCHING' | 'MATCHED';
 
 export interface User {
-  id: number;
+  id: string;
   email: string;
-  name: string | null;
-  gender: Gender | null;
-  nationality: string | null;
-  birthYear: number | null;
-  studentId: string | null;
+  nickname: string | null;
+  gender: Gender;
+  nationality: Nationality;
+  age: number;
+  studentId: number;
   schoolId: number | null;
-  persona: string | null;
-  isEmailVerified: boolean;
+  matchingStatus: MatchingStatus;
+  createdAt: string;
+  lifestyle?: UserLifestyle | null;
+  preference?: UserPreference | null;
   isProfileComplete: boolean;
 }
 
 export interface UserLifestyle {
   id: number;
-  userId: number;
+  userId: string;
   dormNames: string;
   isSmoker: boolean;
   sleepStart: number;
@@ -31,12 +35,15 @@ export interface UserLifestyle {
 }
 
 export interface UserPreference {
-  preferredNationality: string | null;
-  preferredStudentYear: string | null;
-  maxNoiseLevel: number | null;
-  minCleanliness: number | null;
-  allowsIndoorEating: boolean | null;
-  allowsSmoking: boolean | null;
-  weights: Record<string, number>;
-  preferredDormitoryIds: number[];
+  id: number;
+  userId: string;
+  prefNationality: Nationality | null;
+  prefStudentId: string | null;
+  weightNoise: number;
+  weightClean: number;
+  weightFood: number;
+  weightHabit: number;
+  weightTime: number;
+  weightLight: number;
+  weightTemp: number;
 }

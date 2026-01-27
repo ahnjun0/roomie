@@ -4,10 +4,7 @@ import { User, UserLifestyle, UserPreference } from '../types';
 
 export interface UpdateProfileRequest {
   nickname?: string;
-  gender?: 'MALE' | 'FEMALE';
-  nationality?: string;
   age?: number;
-  studentId?: string;
 }
 
 export interface UpdateLifestyleRequest {
@@ -24,13 +21,19 @@ export interface UpdateLifestyleRequest {
   homeVisit?: string;
 }
 
-export interface UpdatePreferenceRequest {
-  prefNationality?: string;
-  prefStudentId?: string;
-  weightCleanliness?: number;
-  weightNoise?: number;
-  weightSmoking?: number;
-  weightSleep?: number;
+export interface UpdatePreferenceFiltersRequest {
+  prefNationality?: string | null;
+  prefStudentId?: string | null;
+}
+
+export interface UpdatePreferenceWeightsRequest {
+  weightNoise: number;
+  weightClean: number;
+  weightFood: number;
+  weightHabit: number;
+  weightTime: number;
+  weightLight: number;
+  weightTemp: number;
 }
 
 export async function getProfile(): Promise<User> {
@@ -46,32 +49,17 @@ export async function getLifestyle(): Promise<UserLifestyle> {
 }
 
 export async function updateLifestyle(data: UpdateLifestyleRequest): Promise<UserLifestyle> {
-  return api.put<UserLifestyle>(ENDPOINTS.USERS.LIFESTYLE, {
-    dormNames: data.dormNames,
-    isSmoker: data.isSmoker,
-    sleepStart: data.sleepStart,
-    sleepEnd: data.sleepEnd,
-    sleepHabits: data.sleepHabits,
-    noiseLevel: data.noiseLevel,
-    cleanLevel: data.cleanLevel,
-    foodLevel: data.foodLevel,
-    lightLevel: data.lightLevel,
-    tempLevel: data.tempLevel,
-    homeVisit: data.homeVisit,
-  });
+  return api.put<UserLifestyle>(ENDPOINTS.USERS.LIFESTYLE, data);
 }
 
 export async function getPreference(): Promise<UserPreference> {
   return api.get<UserPreference>(ENDPOINTS.USERS.PREFERENCES);
 }
 
-export async function updatePreference(data: UpdatePreferenceRequest): Promise<UserPreference> {
-  return api.put<UserPreference>(ENDPOINTS.USERS.PREFERENCES, {
-    pref_nationality: data.prefNationality,
-    pref_student_id: data.prefStudentId,
-    weight_cleanliness: data.weightCleanliness,
-    weight_noise: data.weightNoise,
-    weight_smoking: data.weightSmoking,
-    weight_sleep: data.weightSleep,
-  });
+export async function updatePreferenceFilters(data: UpdatePreferenceFiltersRequest): Promise<UserPreference> {
+  return api.put<UserPreference>(ENDPOINTS.USERS.PREFERENCE_FILTERS, data);
+}
+
+export async function updatePreferenceWeights(data: UpdatePreferenceWeightsRequest): Promise<UserPreference> {
+  return api.put<UserPreference>(ENDPOINTS.USERS.PREFERENCE_WEIGHTS, data);
 }

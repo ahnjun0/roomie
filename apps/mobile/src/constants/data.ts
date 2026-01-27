@@ -1,18 +1,14 @@
 // 앱에서 사용하는 정적 데이터
 export const NATIONALITIES = [
-  { value: 'korean', label: '한국' },
-  { value: 'chinese', label: '중국' },
-  { value: 'japanese', label: '일본' },
-  { value: 'vietnamese', label: '베트남' },
-  { value: 'american', label: '미국' },
-  { value: 'other', label: '기타' },
+  { value: 'KOREAN', label: '한국인' },
+  { value: 'FOREIGNER', label: '외국인' },
 ] as const;
 
 export const DORMITORIES = [
-  { id: 1, name: '성실관', gender: 'male' },
-  { id: 2, name: '봉사관', gender: 'male' },
-  { id: 3, name: '진리관', gender: 'female' },
-  { id: 4, name: '화원관', gender: 'female' },
+  { id: 1, name: '성실관', gender: 'MALE' },
+  { id: 2, name: '봉사관', gender: 'MALE' },
+  { id: 3, name: '진리관', gender: 'FEMALE' },
+  { id: 4, name: '화원관', gender: 'FEMALE' },
 ] as const;
 
 export const SLEEP_HABITS = [

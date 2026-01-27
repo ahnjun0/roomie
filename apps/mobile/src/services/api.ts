@@ -72,29 +72,27 @@ class ApiService {
       // 로그인/회원가입 시에는 프로필 미완성 상태로 초기화 (테스트 시나리오)
       this._mockProfileComplete = false;
       return {
-        id: 1,
+        id: 'mock-user-id',
         email: (config.body as any)?.email || 'test@univ.ac.kr',
         nickname: 'RoomieUser',
         accessToken: 'mock_access_token_' + Date.now(),
         refreshToken: 'mock_refresh_token_' + Date.now(),
-        isProfileComplete: false,
-        isEmailVerified: true,
       } as any;
     }
 
     // 2. User Profile (Me)
     if (endpoint === '/users/me' && (!config.method || config.method === 'GET')) {
       return {
-        id: 1,
+        id: 'mock-user-id',
         email: 'test@univ.ac.kr',
-        name: 'RoomieUser',
         nickname: 'RoomieUser',
         gender: 'MALE',
         nationality: 'KOREAN',
+        age: 24,
         studentId: 24,
-        birthYear: 2000,
-        persona: null,
-        isEmailVerified: true,
+        schoolId: 1,
+        matchingStatus: 'SEARCHING',
+        createdAt: new Date().toISOString(),
         isProfileComplete: this._mockProfileComplete,
       } as any;
     }
@@ -128,62 +126,92 @@ class ApiService {
 
     // 5. Matching Recommendations & Detail
     if (endpoint.includes('/matching')) {
-        // 상세 조회 (/matching/123)
-        const detailMatch = endpoint.match(/\/matching\/(\d+)/);
-        if (detailMatch) {
-            const id = parseInt(detailMatch[1], 10);
+        // 상세 조회 (/matching/{id})
+        const detailMatch = endpoint.match(/\/matching\/([^?]+)/);
+        if (detailMatch && !endpoint.includes('?')) {
+            const id = detailMatch[1];
             return {
-                id: id,
-                nickname: id === 2 ? "룸메찾아요" : "깔끔이",
-                studentId: id === 2 ? "23학번" : "20학번",
-                dormName: id === 2 ? "성실관" : "봉사관",
-                gender: "MALE",
-                nationality: "KOREAN",
-                matchScore: id === 2 ? 95 : 88,
-                comparison: [
-                    { label: "생활패턴", myValue: 80, otherValue: 90 },
-                    { label: "청결도", myValue: 70, otherValue: 60 },
-                    { label: "소음민감", myValue: 50, otherValue: 40 },
-                    { label: "흡연여부", myValue: 100, otherValue: 100 },
-                    { label: "잠버릇", myValue: 90, otherValue: 80 },
-                ],
+                user: {
+                    id: id,
+                    nickname: "룸메찾아요",
+                    gender: "MALE",
+                    nationality: "KOREAN",
+                    studentId: 23,
+                    age: 21,
+                },
+                lifestyle: {
+                    dormNames: "성실관",
+                    isSmoker: false,
+                    sleepStart: 6,
+                    sleepEnd: 14,
+                    sleepHabits: "NONE",
+                    noiseLevel: 2,
+                    cleanLevel: 4,
+                    foodLevel: 3,
+                    lightLevel: 2,
+                    tempLevel: 3,
+                    homeVisit: "MONTHLY",
+                },
+                matchRate: 95,
+                comparison: {
+                    smoking: { me: false, target: false, match: true },
+                    sleepTime: { me: 6, target: 6, match: true },
+                    noise: { me: 2, target: 2, match: true },
+                    clean: { me: 4, target: 4, match: true },
+                    food: { me: 3, target: 3, match: true },
+                    light: { me: 2, target: 2, match: true },
+                    temp: { me: 3, target: 3, match: true },
+                    sleepHabits: { me: "NONE", target: "NONE", match: true },
+                },
+                radarChart: {
+                    me: { noise: 2, clean: 4, food: 3, light: 2, temp: 3, time: 6, habit: 1 },
+                    target: { noise: 2, clean: 4, food: 3, light: 2, temp: 3, time: 6, habit: 1 },
+                },
+                scoreBreakdown: {
+                    noise: { score: 100, weight: 10, status: "Perfect" },
+                    clean: { score: 100, weight: 10, status: "Perfect" },
+                    food: { score: 100, weight: 10, status: "Perfect" },
+                    habit: { score: 100, weight: 10, status: "Perfect" },
+                    time: { score: 100, weight: 10, status: "Perfect" },
+                    light: { score: 100, weight: 10, status: "Perfect" },
+                    temp: { score: 100, weight: 10, status: "Perfect" },
+                },
                 reviews: [
                     {
                         id: 1,
-                        reviewerName: "이전룸메",
                         content: "배려심이 깊고 조용해서 좋았습니다.",
                         score: 5,
-                        createdAt: "2025-12-01"
+                        createdAt: "2025-12-01T00:00:00Z"
                     }
                 ],
-                avgScore: 5.0,
-                reviewCount: 1
+                reviewCount: 1,
+                averageReviewScore: 5.0,
             } as any;
         }
 
         // 목록 조회 (/matching 또는 /matching?...)
         const items = [
             {
-                id: 2,
+                id: "mock-user-2",
                 nickname: "룸메찾아요",
-                gender: "MALE",
-                studentId: "23학번",
-                dormName: "성실관",
+                studentId: 23,
                 nationality: "KOREAN",
-                age: 21,
-                matchScore: 95,
-                tags: ["조용함", "일찍잠"],
+                dormNames: "성실관",
+                matchRate: 95,
+                keywords: ["조용함", "일찍잠"],
+                isSmoker: false,
+                sleepStart: 6,
             },
             {
-                id: 3,
+                id: "mock-user-3",
                 nickname: "깔끔이",
-                gender: "MALE",
-                studentId: "20학번",
-                dormName: "봉사관",
+                studentId: 20,
                 nationality: "KOREAN",
-                age: 24,
-                matchScore: 88,
-                tags: ["청소매일", "비흡연"],
+                dormNames: "봉사관",
+                matchRate: 88,
+                keywords: ["청소매일", "비흡연"],
+                isSmoker: false,
+                sleepStart: 8,
             }
         ];
 
@@ -192,7 +220,6 @@ class ApiService {
             total: items.length,
             page: 1,
             limit: 10,
-            hasMore: false
         } as any;
     }
 

@@ -59,11 +59,10 @@ export function DormitorySelectScreen({ navigation }: DormitorySelectScreenProps
       // 성별 필터링은 API 레벨에서 할 수도 있지만, 기존 로직 유지를 위해 클라이언트 필터링 사용 
       // 혹은 API에 gender 파라미터를 보낼 수도 있음 (API 명세 확인 필요)
       // 여기서는 API가 지원하므로 gender 파라미터 사용 권장
-      const userGender = data.gender || user?.gender?.toLowerCase();
-      const userGenderUpper = userGender?.toUpperCase();
+      const userGender = data.gender || user?.gender;
 
       const response = await api.get<Dormitory[]>(
-        `${ENDPOINTS.SCHOOLS.DORMS(schoolId)}?gender=${userGenderUpper}`
+        `${ENDPOINTS.SCHOOLS.DORMS(schoolId)}?gender=${userGender}`
       );
       
       setDorms(response);
