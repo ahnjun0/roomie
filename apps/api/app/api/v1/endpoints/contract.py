@@ -2,7 +2,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from prisma import Prisma
-from prisma.types import Json
+
+try:
+    from prisma import Json
+except Exception:  # pragma: no cover - runtime fallback for older prisma-client-py
+    Json = None  # type: ignore[assignment]
 from prisma.models import User
 
 from app.core.database import get_db
@@ -125,6 +129,12 @@ def _build_placeholder_contract_data() -> dict[str, object]:
     }
 
 
+def _wrap_json(value: dict[str, object]) -> object:
+    if Json is None:
+        return value
+    return Json(value)
+
+
 @router.post("/init", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
 async def init_contract(
     request: ContractInitRequest,
@@ -222,7 +232,7 @@ async def init_contract(
             "chatRoom": {"connect": {"id": request.chatRoomId}},
             "userA": {"connect": {"id": user_a_id}},
             "userB": {"connect": {"id": user_b_id}},
-            "contractData": Json(contract_data),
+            "contractData": _wrap_json(contract_data),
             "status": "DRAFT",
             "signatureA": False,
             "signatureB": False,
@@ -279,7 +289,7 @@ async def update_contract(
     updated_contract = await db.roommatecontract.update(
         where={"id": contract_id},
         data={
-            "contractData": Json(request.contractData),
+            "contractData": _wrap_json(request.contractData),
             "signatureA": False,
             "signatureB": False,
             "status": "DRAFT",
