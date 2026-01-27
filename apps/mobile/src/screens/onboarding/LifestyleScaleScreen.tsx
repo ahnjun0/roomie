@@ -19,7 +19,6 @@ export function LifestyleScaleScreen({ navigation }: LifestyleScaleScreenProps) 
     noiseLevel: data.noiseLevel,
     cleanliness: data.cleanliness,
     indoorEating: data.indoorEating,
-    lightsOut: data.lightsOut,
     temperature: data.temperature,
   });
 

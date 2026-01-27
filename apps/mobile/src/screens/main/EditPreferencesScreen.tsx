@@ -27,7 +27,6 @@ interface PreferenceData {
   weightFood: number;
   weightHabit: number;
   weightTime: number;
-  weightLight: number;
   weightTemp: number;
 }
 
@@ -48,12 +47,11 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
 
   // Weight preferences (stored as 0-70 on backend, displayed as 0/1/3 on frontend)
   const [weights, setWeights] = useState<Record<string, number>>({
-    noise: 1,
+    noise: 2,
     cleanliness: 1,
     food: 1,
     habit: 1,
     time: 1,
-    light: 1,
     temp: 1,
   });
 
@@ -79,7 +77,6 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
         food: pref.weightFood / 10,
         habit: pref.weightHabit / 10,
         time: pref.weightTime / 10,
-        light: pref.weightLight / 10,
         temp: pref.weightTemp / 10,
       });
     } catch (error) {
@@ -122,7 +119,6 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
         weightFood: weights.food * 10,
         weightHabit: weights.habit * 10,
         weightTime: weights.time * 10,
-        weightLight: weights.light * 10,
         weightTemp: weights.temp * 10,
       });
 

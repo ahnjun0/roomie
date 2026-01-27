@@ -29,7 +29,6 @@ export interface UserLifestyle {
   noiseLevel: number;
   cleanLevel: number;
   foodLevel: number;
-  lightLevel: number;
   tempLevel: number;
   homeVisit: string | null;
 }
@@ -44,6 +43,5 @@ export interface UserPreference {
   weightFood: number;
   weightHabit: number;
   weightTime: number;
-  weightLight: number;
   weightTemp: number;
 }

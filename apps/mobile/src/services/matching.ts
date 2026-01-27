@@ -36,7 +36,6 @@ export interface RadarChartData {
   noise: number;
   clean: number;
   food: number;
-  light: number;
   temp: number;
   time: number;
   habit: number;
@@ -60,7 +59,6 @@ export interface MatchingLifestyleDetail {
   noiseLevel: number;
   cleanLevel: number;
   foodLevel: number;
-  lightLevel: number;
   tempLevel: number;
   homeVisit: string | null;
 }
