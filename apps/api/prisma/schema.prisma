@@ -41,6 +41,11 @@ model User {
   chatParticipants ChatParticipant[]
   chatMessages     ChatMessage[]
 
+  // 배달 파티
+  deliveryPosts        DeliveryPost[]        @relation("DeliveryAuthor")
+  deliveryParticipants DeliveryParticipant[]
+  deliveryMessages     DeliveryMessage[]
+
   // 매칭 결과 캐시
   matchResultsAsUser   MatchResult[] @relation("MatchUser")
   matchResultsAsTarget MatchResult[] @relation("MatchTarget")
@@ -164,6 +169,57 @@ model ChatMessage {
   content    String
 
   createdAt  DateTime @default(now())
+}
+
+// 6-3. 배달 파티 모집글
+model DeliveryPost {
+  id              String   @id @default(cuid())
+
+  title           String
+  content         String
+  foodCategory    String
+  orderLink       String?
+  bankAccount     String?
+  maxParticipants Int
+  isClosed        Boolean  @default(false)
+
+  author          User     @relation("DeliveryAuthor", fields: [authorId], references: [id])
+  authorId        String
+
+  participants    DeliveryParticipant[]
+  messages        DeliveryMessage[]
+
+  createdAt       DateTime @default(now())
+}
+
+// 6-4. 배달 파티 참여자
+model DeliveryParticipant {
+  id             Int          @id @default(autoincrement())
+
+  deliveryPost   DeliveryPost @relation(fields: [deliveryPostId], references: [id])
+  deliveryPostId String
+
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+
+  joinedAt       DateTime     @default(now())
+
+  @@unique([deliveryPostId, userId])
+}
+
+// 6-5. 배달 파티 메시지
+model DeliveryMessage {
+  id             String   @id @default(cuid())
+
+  deliveryPost   DeliveryPost @relation(fields: [deliveryPostId], references: [id])
+  deliveryPostId String
+
+  sender         User     @relation(fields: [senderId], references: [id])
+  senderId       String
+
+  content        String
+
+  createdAt      DateTime @default(now())
 }
 
 // 6-1. 猷몃찓?댄듃 怨꾩빟??
