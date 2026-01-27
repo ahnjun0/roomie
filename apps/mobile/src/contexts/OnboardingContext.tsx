@@ -51,12 +51,6 @@ interface OnboardingData {
   sleepEnd: number;
   homeVisitFrequency: string | null;
   sensitivity: number; // 1-5
-
-  // Weight Game (0.0 ~ 3.0)
-  weightSmoking: number;
-  weightSleep: number;
-  weightCleanliness: number;
-  weightNoise: number;
 }
 
 // 회원가입 응답 타입
@@ -96,10 +90,10 @@ const initialData: OnboardingData = {
   tempToken: 'mock-temp-token-dev', 
   nickname: 'RoomieUser',
 
-  gender: 'MALE',
-  nationality: 'KOREAN',
-  age: 24,
-  studentId: '2020',
+  gender: null,
+  nationality: null,
+  age: null,
+  studentId: null,
 
   selectedDormitories: [],
   selectedDormitoryNames: '',
@@ -119,10 +113,6 @@ const initialData: OnboardingData = {
   sleepEnd: 18, // 오전 6시 기본값
   homeVisitFrequency: null,
   sensitivity: 3,
-  weightSmoking: 1.0,
-  weightSleep: 1.0,
-  weightCleanliness: 1.0,
-  weightNoise: 1.0,
 };
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(

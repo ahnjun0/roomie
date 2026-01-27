@@ -62,21 +62,26 @@ async def create_dummy_users(
     }
     ```
     """
-    # KAIST 학교 조회
-    school = await db.school.find_unique(where={"name": "KAIST"})
-    if not school:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="KAIST 학교 데이터가 없습니다. seeds를 먼저 실행하세요."
-        )
-
     created_count = 0
     skipped_count = 0
     hashed_password = hash_password(request.password)
 
+    # 학교 정보 캐싱 (domain -> school_id)
+    schools = await db.school.find_many()
+    school_map = {s.domain: s.id for s in schools if s.domain}
+
     for persona in request.personas:
+        email = persona["email"]
+        domain = email.split("@")[-1]
+        school_id = school_map.get(domain)
+
+        if not school_id:
+            print(f"⚠️ 학교를 찾을 수 없음: {domain} (Skipping {email})")
+            skipped_count += 1
+            continue
+
         # 이미 존재하는 유저 확인
-        existing = await db.user.find_unique(where={"email": persona["email"]})
+        existing = await db.user.find_unique(where={"email": email})
         if existing:
             skipped_count += 1
             continue
@@ -86,14 +91,14 @@ async def create_dummy_users(
             user = await db.user.create(
                 data={
                     "id": cuid_generator(),
-                    "email": persona["email"],
+                    "email": email,
                     "nickname": persona.get("nickname"),
                     "password": hashed_password,
                     "gender": persona["gender"],
                     "nationality": persona["nationality"],
                     "age": persona["age"],
                     "studentId": persona["studentId"],
-                    "schoolId": school.id
+                    "schoolId": school_id
                 }
             )
 
@@ -118,7 +123,7 @@ async def create_dummy_users(
             created_count += 1
 
         except Exception as e:
-            print(f"유저 생성 실패 ({persona.get('email')}): {e}")
+            print(f"유저 생성 실패 ({email}): {e}")
             skipped_count += 1
             continue
 
