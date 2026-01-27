@@ -119,7 +119,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
   const toChartScore = (value: number) => {
     if (!Number.isFinite(value)) return 0;
     const clamped = Math.max(0, Math.min(2, value));
-    return (clamped / 2) * 100;
+    return clamped / 2;
   };
 
   const radarLabels = chartItems.map(item => item.label);
@@ -140,10 +140,10 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
     backgroundGradientTo: 'transparent',
     backgroundGradientFromOpacity: 0,
     backgroundGradientToOpacity: 0,
-    color: () => 'rgba(0, 122, 255, 0.9)',
+    color: () => 'rgba(0, 0, 255, 0.9)',
     labelColor: () => colors.text.primary,
-    fillShadowGradient: 'rgba(0, 122, 255, 1)',
-    fillShadowGradientOpacity: 0.45,
+    fillShadowGradient: 'rgba(0, 0, 255, 1)',
+    fillShadowGradientOpacity: 0.5,
     strokeWidth: 2,
     propsForLabels: {
       fontSize: fontSize.xs,
@@ -152,10 +152,10 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
 
   const otherChartConfig = {
     ...myChartConfig,
-    color: () => 'rgba(255, 80, 80, 0.9)',
+    color: () => 'rgba(255, 0, 0, 0.9)',
     labelColor: () => 'transparent',
-    fillShadowGradient: 'rgba(255, 80, 80, 1)',
-    fillShadowGradientOpacity: 0.45,
+    fillShadowGradient: 'rgba(255, 0, 0, 1)',
+    fillShadowGradientOpacity: 0.5,
   };
 
   return (
@@ -229,11 +229,11 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
           </View>
           <View style={styles.chartLegend}>
             <View style={styles.chartLegendItem}>
-              <View style={[styles.chartLegendSwatch, { backgroundColor: 'rgba(0, 122, 255, 0.9)' }]} />
+              <View style={[styles.chartLegendSwatch, { backgroundColor: 'rgba(0, 0, 255, 0.9)' }]} />
               <Text style={[styles.chartLegendText, { color: colors.text.primary }]}>나</Text>
             </View>
             <View style={styles.chartLegendItem}>
-              <View style={[styles.chartLegendSwatch, { backgroundColor: 'rgba(255, 80, 80, 0.9)' }]} />
+              <View style={[styles.chartLegendSwatch, { backgroundColor: 'rgba(255, 0, 0, 0.9)' }]} />
               <Text style={[styles.chartLegendText, { color: colors.text.primary }]}>상대방</Text>
             </View>
           </View>
