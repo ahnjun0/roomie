@@ -96,8 +96,6 @@ export const WEIGHT_CATEGORIES = [
     },
   },
   {
-  },
-  {
     key: 'temp',
     emoji: '🌡️',
     label: '실내 온도',

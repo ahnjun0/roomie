@@ -174,25 +174,25 @@ class PreferenceFiltersUpdate(BaseModel):
     prefStudentId: str | None = None  # "SAME", "SENIOR", "JUNIOR", "ANY"
 
 
-# Step 3: 7만원 게임 가중치 (매칭 알고리즘용)
+# Step 3: 6만원 게임 가중치 (매칭 알고리즘용)
 class PreferenceWeightsUpdate(BaseModel):
     """
-    7만원 게임 가중치 (Step 3: 중요도 베팅)
+    6만원 게임 가중치 (Step 3: 중요도 베팅)
 
     각 항목에 베팅할 금액을 입력합니다.
     값 = 베팅액 / 1000 (예: 10000원 → 10)
-    총합은 반드시 70이어야 합니다. (7만원 = 70)
+    총합은 반드시 60이어야 합니다. (6만원 = 60)
     """
-    weightNoise: int = Field(0, ge=0, le=70, description="소음 민감도")
-    weightClean: int = Field(0, ge=0, le=70, description="청결도")
-    weightFood: int = Field(0, ge=0, le=70, description="실내취식")
-    weightHabit: int = Field(0, ge=0, le=70, description="잠버릇")
-    weightTime: int = Field(0, ge=0, le=70, description="취침시간")
-    weightTemp: int = Field(0, ge=0, le=70, description="온도")
+    weightNoise: int = Field(0, ge=0, le=60, description="소음 민감도")
+    weightClean: int = Field(0, ge=0, le=60, description="청결도")
+    weightFood: int = Field(0, ge=0, le=60, description="실내취식")
+    weightHabit: int = Field(0, ge=0, le=60, description="잠버릇")
+    weightTime: int = Field(0, ge=0, le=60, description="취침시간")
+    weightTemp: int = Field(0, ge=0, le=60, description="온도")
 
     @model_validator(mode="after")
     def validate_total_weight(self) -> Self:
-        """가중치 총합이 70인지 검증"""
+        """가중치 총합이 60인지 검증"""
         total = (
             self.weightNoise
             + self.weightClean
@@ -201,8 +201,8 @@ class PreferenceWeightsUpdate(BaseModel):
             + self.weightTime
             + self.weightTemp
         )
-        if total != 70:
-            raise ValueError(f"가중치 총합은 70이어야 합니다. (현재: {total})")
+        if total != 60:
+            raise ValueError(f"가중치 총합은 60이어야 합니다. (현재: {total})")
         return self
 
 
@@ -217,14 +217,14 @@ class PreferenceUpdate(BaseModel):
     prefNationality: Nationality | None = None
     prefStudentId: str | None = None  # "SAME", "SENIOR", "JUNIOR", "ANY"
 
-    # 7만원 게임 가중치 (Screen 8)
-    # 값 = 베팅액 / 1000 (예: 10000원 → 10, 70000원 → 70, 0원 → 0)
-    weightNoise: int = Field(0, ge=0, le=70)   # 소음
-    weightClean: int = Field(0, ge=0, le=70)   # 청결
-    weightFood: int = Field(0, ge=0, le=70)    # 실내취식
-    weightHabit: int = Field(0, ge=0, le=70)   # 잠버릇
-    weightTime: int = Field(0, ge=0, le=70)    # 취침시간
-    weightTemp: int = Field(0, ge=0, le=70)    # 온도
+    # 6만원 게임 가중치 (Screen 8)
+    # 값 = 베팅액 / 1000 (예: 10000원 → 10, 60000원 → 60, 0원 → 0)
+    weightNoise: int = Field(0, ge=0, le=60)   # 소음
+    weightClean: int = Field(0, ge=0, le=60)   # 청결
+    weightFood: int = Field(0, ge=0, le=60)    # 실내취식
+    weightHabit: int = Field(0, ge=0, le=60)   # 잠버릇
+    weightTime: int = Field(0, ge=0, le=60)    # 취침시간
+    weightTemp: int = Field(0, ge=0, le=60)    # 온도
 
 
 class PreferenceResponse(BaseModel):

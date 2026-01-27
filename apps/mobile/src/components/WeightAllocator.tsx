@@ -31,17 +31,17 @@ interface WeightAllocatorProps {
 
 // 선택된 금액에 따른 색상
 const getOptionColor = (value: number, selected: boolean) => {
-  if (!selected) return { bg: 'transparent', border: '#E0E0E0', text: '#9E9E9E' };
+  if (!selected) return { bg: 'transparent', border: '#E0E0E0', text: '#9E9E9E', subText: '#BDBDBD' };
 
   switch (value) {
     case 3: // 3만원 - 완벽한 룸메 (primary)
-      return { bg: themeColors.primary + '15', border: themeColors.primary, text: themeColors.primary };
+      return { bg: themeColors.primary + '15', border: themeColors.primary, text: themeColors.primary, subText: themeColors.primary + 'CC' };
     case 1: // 1만원 - 적당한 인간미 (yellow/orange)
-      return { bg: '#FFF3E0', border: '#FF9800', text: '#F57C00' };
+      return { bg: '#FFF3E0', border: '#FF9800', text: '#F57C00', subText: '#FB8C00' };
     case 0: // 0원 - 지옥의 룸메 (gray)
-      return { bg: '#F5F5F5', border: '#9E9E9E', text: '#757575' };
+      return { bg: '#F5F5F5', border: '#9E9E9E', text: '#757575', subText: '#9E9E9E' };
     default:
-      return { bg: 'transparent', border: '#E0E0E0', text: '#9E9E9E' };
+      return { bg: 'transparent', border: '#E0E0E0', text: '#9E9E9E', subText: '#BDBDBD' };
   }
 };
 
@@ -74,7 +74,7 @@ export function WeightAllocator({
   };
 
   const getSelectedOption = (category: WeightCategory) => {
-    const value = values[category.key];
+    const value = values[category.key] ?? 1;
     if (value === 3) return category.options.high;
     if (value === 0) return category.options.low;
     return category.options.mid;
@@ -96,7 +96,7 @@ export function WeightAllocator({
         </Text>
         {!isComplete && (
           <Text style={[styles.budgetHint, { color: colors.text.tertiary }]}>
-            7만원을 모두 배분해주세요
+            6만원을 모두 배분해주세요
           </Text>
         )}
       </View>
@@ -113,7 +113,6 @@ export function WeightAllocator({
               style={[styles.categoryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {/* 카드 헤더 */}
               <View style={styles.cardHeader}>
-                {/* 이미지/아이콘 영역 */}
                 <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
                   <Text style={styles.emoji}>{category.emoji}</Text>
                 </View>
@@ -128,11 +127,8 @@ export function WeightAllocator({
                       </Text>
                     </View>
                   </View>
-                  {/* 선택된 옵션 설명 */}
-                  <Text style={[styles.selectedTitle, { color: colors.text.primary }]}>
-                    "{selectedOption.title}"
-                  </Text>
-                  <Text style={[styles.selectedDesc, { color: colors.text.secondary }]}>
+                  {/* 선택된 옵션의 상세 설명 */}
+                  <Text style={[styles.selectedDesc, { color: colors.text.secondary }]} numberOfLines={2}>
                     {selectedOption.desc}
                   </Text>
                 </View>
@@ -140,7 +136,7 @@ export function WeightAllocator({
 
               {/* 3만원 / 1만원 / 0원 선택 버튼들 */}
               <View style={styles.optionsRow}>
-                {/* 3만원 버튼 */}
+                {/* 3만원 버튼 (High) */}
                 <TouchableOpacity
                   style={[
                     styles.optionButton,
@@ -151,23 +147,11 @@ export function WeightAllocator({
                   ]}
                   onPress={() => handleSelect(category.key, 3)}
                   disabled={currentValue !== 3 && remaining < (3 - currentValue) * unitAmount}>
-                  <Text
-                    style={[
-                      styles.optionAmount,
-                      { color: getOptionColor(3, currentValue === 3).text },
-                    ]}>
-                    3만원
-                  </Text>
-                  <Text
-                    style={[
-                      styles.optionLabel,
-                      { color: getOptionColor(3, currentValue === 3).text },
-                    ]}>
-                    {category.options.high.label}
-                  </Text>
+                  <Text style={[styles.optionAmount, { color: getOptionColor(3, currentValue === 3).text }]}>3만원</Text>
+                  <Text style={[styles.optionTitle, { color: getOptionColor(3, currentValue === 3).text }]} numberOfLines={1}>{category.options.high.title}</Text>
                 </TouchableOpacity>
 
-                {/* 1만원 버튼 */}
+                {/* 1만원 버튼 (Mid) */}
                 <TouchableOpacity
                   style={[
                     styles.optionButton,
@@ -177,23 +161,11 @@ export function WeightAllocator({
                     },
                   ]}
                   onPress={() => handleSelect(category.key, 1)}>
-                  <Text
-                    style={[
-                      styles.optionAmount,
-                      { color: getOptionColor(1, currentValue === 1).text },
-                    ]}>
-                    1만원
-                  </Text>
-                  <Text
-                    style={[
-                      styles.optionLabel,
-                      { color: getOptionColor(1, currentValue === 1).text },
-                    ]}>
-                    {category.options.mid.label}
-                  </Text>
+                  <Text style={[styles.optionAmount, { color: getOptionColor(1, currentValue === 1).text }]}>1만원</Text>
+                  <Text style={[styles.optionTitle, { color: getOptionColor(1, currentValue === 1).text }]} numberOfLines={1}>{category.options.mid.title}</Text>
                 </TouchableOpacity>
 
-                {/* 0원 버튼 */}
+                {/* 0원 버튼 (Low) */}
                 <TouchableOpacity
                   style={[
                     styles.optionButton,
@@ -203,20 +175,8 @@ export function WeightAllocator({
                     },
                   ]}
                   onPress={() => handleSelect(category.key, 0)}>
-                  <Text
-                    style={[
-                      styles.optionAmount,
-                      { color: getOptionColor(0, currentValue === 0).text },
-                    ]}>
-                    0원
-                  </Text>
-                  <Text
-                    style={[
-                      styles.optionLabel,
-                      { color: getOptionColor(0, currentValue === 0).text },
-                    ]}>
-                    {category.options.low.label}
-                  </Text>
+                  <Text style={[styles.optionAmount, { color: getOptionColor(0, currentValue === 0).text }]}>0원</Text>
+                  <Text style={[styles.optionTitle, { color: getOptionColor(0, currentValue === 0).text }]} numberOfLines={1}>{category.options.low.title}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -229,47 +189,48 @@ export function WeightAllocator({
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.lg,
+    gap: spacing.md,
   },
   budgetContainer: {
-    padding: spacing.lg,
+    padding: spacing.md,
     borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
   budgetLabel: {
-    fontSize: fontSize.sm,
-    marginBottom: spacing.xs,
+    fontSize: fontSize.xs,
+    marginBottom: 2,
   },
   budgetAmount: {
-    fontSize: fontSize.xxxl,
+    fontSize: 28,
     fontWeight: fontWeight.bold,
   },
   budgetHint: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.xs,
+    fontSize: 10,
+    marginTop: 2,
   },
   categoriesContainer: {
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   categoryCard: {
     borderRadius: borderRadius.lg,
     borderWidth: 1,
-    padding: spacing.md,
+    padding: spacing.sm,
   },
   cardHeader: {
     flexDirection: 'row',
-    marginBottom: spacing.md,
+    alignItems: 'center',
+    marginBottom: spacing.sm,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
+    width: 44,
+    height: 44,
     borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.md,
+    marginRight: spacing.sm,
   },
   emoji: {
-    fontSize: 28,
+    fontSize: 22,
   },
   headerText: {
     flex: 1,
@@ -277,48 +238,48 @@ const styles = StyleSheet.create({
   labelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    marginBottom: spacing.xs,
+    gap: spacing.xs,
+    marginBottom: 2,
   },
   categoryLabel: {
-    fontSize: fontSize.lg,
+    fontSize: fontSize.md,
     fontWeight: fontWeight.bold,
   },
+  selectedDesc: {
+    fontSize: 10,
+    lineHeight: 12,
+  },
   tag: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
     borderRadius: borderRadius.sm,
   },
   tagText: {
-    fontSize: fontSize.xs,
+    fontSize: 10,
     fontWeight: fontWeight.medium,
-  },
-  selectedTitle: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    marginBottom: 2,
-  },
-  selectedDesc: {
-    fontSize: fontSize.sm,
   },
   optionsRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: 6,
   },
   optionButton: {
     flex: 1,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
+    paddingHorizontal: 4,
     borderRadius: borderRadius.md,
-    borderWidth: 2,
+    borderWidth: 1.5,
     alignItems: 'center',
+    minHeight: 60,
+    justifyContent: 'center',
   },
   optionAmount: {
-    fontSize: fontSize.md,
+    fontSize: 16,
     fontWeight: fontWeight.bold,
     marginBottom: 2,
   },
-  optionLabel: {
-    fontSize: fontSize.xs,
+  optionTitle: {
+    fontSize: 10,
+    fontWeight: fontWeight.bold,
+    textAlign: 'center',
   },
 });
