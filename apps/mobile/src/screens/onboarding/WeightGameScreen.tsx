@@ -20,15 +20,15 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
   const insets = useSafeAreaInsets();
 
   const [isLoading, setIsLoading] = useState(false);
-  // 초기값: 각 항목 1만원씩 (총 6만원)
+  // 초기값: 각 항목 0원씩
   // 값 의미: 3 = 3만원, 1 = 1만원, 0 = 0원
   const [weights, setWeights] = useState<Record<string, number>>({
-    noise: 1,
-    cleanliness: 1,
-    food: 1,
-    habit: 1,
-    time: 1,
-    temp: 1,
+    noise: 0,
+    cleanliness: 0,
+    food: 0,
+    habit: 0,
+    time: 0,
+    temp: 0,
   });
 
   const totalAllocated = Object.values(weights).reduce(

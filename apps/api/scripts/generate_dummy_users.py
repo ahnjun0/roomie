@@ -79,9 +79,9 @@ def normalize_weights(preference: dict) -> dict:
     return {**preference, **scaled}
 
 
-async def create_dummy_users_db(db: Prisma, personas: list, school_id: int, reset: bool = False):
+async def create_dummy_users_db(db: Prisma, personas: list, school_id: int, reset: bool = False) -> tuple[int, int]:
     """DB 직접 연결 모드로 특정 학교의 더미 유저 생성"""
-    
+
     # reset 모드: 기존 더미 유저 삭제 (전체 대상)
     if reset:
         print("🗑️  기존 더미 유저 삭제 중...")
@@ -145,7 +145,7 @@ async def create_dummy_users_db(db: Prisma, personas: list, school_id: int, rese
     return created_count, skipped_count
 
 
-async def create_dummy_users_api(base_url: str, personas: list):
+async def create_dummy_users_api(base_url: str, personas: list) -> None:
     """HTTP API 모드로 더미 유저 생성 (admin 엔드포인트 사용)"""
     admin_url = f"{base_url.rstrip('/')}/api/v1/admin/dummy-users"
 
@@ -163,7 +163,7 @@ async def create_dummy_users_api(base_url: str, personas: list):
                 )
             batch_size = 50
             total_created = 0
-            
+
             for i in range(0, len(normalized), batch_size):
                 batch = normalized[i:i+batch_size]
                 response = await client.post(
@@ -180,10 +180,9 @@ async def create_dummy_users_api(base_url: str, personas: list):
                     print(f"❌ 배치 전송 실패: {response.status_code} - {response.text}")
 
             print(f"\n✅ 완료: 총 {total_created}명 생성")
-            
+
         except Exception as e:
             print(f"❌ API 호출 실패: {e}")
-
 
 def parse_args():
     """CLI 인자 파싱"""
@@ -209,7 +208,7 @@ async def main():
             where={"name": {"in": ["KAIST", "부산대학교"]}},
             include={"dorms": True}
         )
-        
+
         if not schools:
             print("❌ 대학교 데이터가 없습니다. 먼저 seeds.py를 실행하세요.")
             return
@@ -219,26 +218,27 @@ async def main():
 
         for school in schools:
             print(f"🏫 {school.name} ({school.domain}) 처리 중...")
-            
+
             # 기숙사 목록 추출
             dorms = [d.name for d in school.dorms]
-            
+
             # 페르소나 생성
             personas = generate_random_personas(
-                count=args.limit, 
-                email_domain=school.domain, 
+                count=args.limit,
+                email_domain=school.domain,
                 dorm_list=dorms
             )
 
             if args.api:
-                # API 모드
+                # API 모드는 현재 학교 매칭 로직이 admin API에 구현되어 있어야 함
+                # (일단 personas 넘김)
                 await create_dummy_users_api(args.api, personas)
             else:
                 # DB 직접 연결
                 c, s = await create_dummy_users_db(db, personas, school.id, reset=args.reset)
                 print(f"  ✓ {school.name}: {c}명 생성, {s}명 스킵")
                 # reset은 첫 번째 학교에서만 수행하도록 (아니면 매번 하면 이전 학교 거 지워짐)
-                args.reset = False 
+                args.reset = False
 
         print("\n✅ 모든 작업 완료")
 
