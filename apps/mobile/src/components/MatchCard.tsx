@@ -4,7 +4,7 @@ import { useTheme } from '../contexts';
 import { spacing, borderRadius, fontSize, fontWeight, colors as themeColors, shadows } from '../constants/theme';
 
 interface MatchCardProps {
-  id: number;
+  id: string | number;
   nickname: string;
   studentId: string;
   matchScore: number;

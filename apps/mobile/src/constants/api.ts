@@ -30,7 +30,7 @@ export const ENDPOINTS = {
   // Matching
   MATCHING: {
     RECOMMENDATIONS: '/matching',
-    DETAIL: (userId: number) => `/matching/${userId}`,
+    DETAIL: (userId: string | number) => `/matching/${userId}`,
   },
 
   // Chats

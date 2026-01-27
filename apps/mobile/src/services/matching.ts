@@ -2,7 +2,7 @@ import { api } from './api';
 import { ENDPOINTS } from '../constants/api';
 
 export interface MatchingUser {
-  id: number;
+  id: string;
   nickname: string;
   studentId: string;
   dormName: string;
@@ -17,19 +17,21 @@ export interface MatchingListResponse {
   limit: number;
 }
 
+export interface ComparisonItem {
+  me: boolean | number | string;
+  target: boolean | number | string;
+  match: boolean;
+}
+
 export interface MatchingDetailResponse {
-  id: number;
+  id: string;
   nickname: string;
   studentId: string;
   dormName: string;
   gender: string;
   nationality: string;
   matchRate: number;
-  comparison: {
-    label: string;
-    myValue: number;
-    otherValue: number;
-  }[];
+  comparison: Record<string, ComparisonItem>;
   reviews: {
     id: number;
     reviewerName: string;
@@ -37,7 +39,7 @@ export interface MatchingDetailResponse {
     score: number;
     createdAt: string;
   }[];
-  avgScore: number;
+  averageReviewScore: number;
   reviewCount: number;
 }
 
@@ -59,6 +61,6 @@ export async function getMatchingList(params: GetMatchingListParams = {}): Promi
   return api.get<MatchingListResponse>(url);
 }
 
-export async function getMatchingDetail(userId: number): Promise<MatchingDetailResponse> {
+export async function getMatchingDetail(userId: string): Promise<MatchingDetailResponse> {
   return api.get<MatchingDetailResponse>(ENDPOINTS.MATCHING.DETAIL(userId));
 }

@@ -15,7 +15,7 @@ import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
 
 interface MatchingUser {
-  id: number;
+  id: string;
   nickname: string;
   studentId: string;
   dormName: string;
@@ -80,7 +80,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
     }
   };
 
-  const handleChat = async (userId: number) => {
+  const handleChat = async (userId: string) => {
     try {
       const response = await api.post<{ chatRoomId: string }>(
         ENDPOINTS.CHATS.CREATE,
@@ -153,7 +153,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       <FlatList
         data={matches}
         renderItem={renderItem}
-        keyExtractor={item => String(item.id)}
+        keyExtractor={item => item.id}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ListFooterComponent={renderFooter}
