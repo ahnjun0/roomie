@@ -99,6 +99,11 @@ class ApiService {
       } as any;
     }
 
+    // Delete User
+    if (endpoint === '/users/me' && config.method === 'DELETE') {
+      return {} as any;
+    }
+
     // 3. User Updates (Basic Info, Lifestyle, Preferences)
     if (
         (config.method === 'PATCH' || config.method === 'PUT') &&
@@ -183,7 +188,7 @@ class ApiService {
         ];
 
         return {
-            items: items,
+            data: items,
             total: items.length,
             page: 1,
             limit: 10,

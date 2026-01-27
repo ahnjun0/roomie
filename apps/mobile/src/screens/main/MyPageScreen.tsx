@@ -14,7 +14,7 @@ interface MyPageScreenProps {
 
 export function MyPageScreen({ navigation }: MyPageScreenProps) {
   const { colors, setThemeMode, themeMode } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, deleteAccount } = useAuth();
   const insets = useSafeAreaInsets();
 
   // Room-BTI 상태
@@ -49,7 +49,7 @@ export function MyPageScreen({ navigation }: MyPageScreenProps) {
 
   const handleLogout = () => {
     Alert.alert(
-      '로그아웃',
+      ' ',
       '정말 로그아웃 하시겠습니까?',
       [
         { text: '취소', style: 'cancel' },
@@ -58,6 +58,28 @@ export function MyPageScreen({ navigation }: MyPageScreenProps) {
           style: 'destructive',
           onPress: async () => {
             await logout();
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      '회원 탈퇴',
+      '정말 탈퇴하시겠습니까? 모든 데이터가 삭제되며 복구할 수 없습니다.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '탈퇴',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+            } catch (error) {
+              console.error('Delete account failed:', error);
+              Alert.alert('오류', '회원 탈퇴 중 문제가 발생했습니다.');
+            }
           },
         },
       ],
@@ -253,6 +275,16 @@ export function MyPageScreen({ navigation }: MyPageScreenProps) {
           variant="outline"
           onPress={handleLogout}
           fullWidth
+          style={{ marginBottom: spacing.sm }}
+        />
+
+        {/* 회원 탈퇴 */}
+        <Button
+          title="회원 탈퇴"
+          variant="ghost"
+          onPress={handleDeleteAccount}
+          fullWidth
+          textStyle={{ color: themeColors.error }}
         />
 
         <Text style={[styles.version, { color: colors.text.tertiary }]}>

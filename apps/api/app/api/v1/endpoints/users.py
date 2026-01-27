@@ -336,3 +336,64 @@ async def get_user_reviews(
         "limit": limit,
         "data": review_data,
     }
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_me(
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """
+    회원 탈퇴 (계정 삭제)
+
+    사용자의 모든 데이터(프로필, 생활패턴, 선호조건, 리뷰, 채팅, 매칭 등)를 삭제합니다.
+    """
+    # 트랜잭션으로 모든 연관 데이터 삭제
+    async with db.tx() as tx:
+        # 1. 1:1 관계 데이터 삭제 (Lifestyle, Preference)
+        await tx.userlifestyle.delete_many(where={"userId": current_user.id})
+        await tx.userpreference.delete_many(where={"userId": current_user.id})
+
+        # 2. 매칭 결과 삭제 (나와 관련된 모든 매칭)
+        await tx.matchresult.delete_many(
+            where={
+                "OR": [
+                    {"userId": current_user.id},
+                    {"targetUserId": current_user.id},
+                ]
+            }
+        )
+
+        # 3. 리뷰 삭제 (내가 쓴 것, 내가 받은 것)
+        await tx.review.delete_many(
+            where={
+                "OR": [
+                    {"reviewerId": current_user.id},
+                    {"targetId": current_user.id},
+                ]
+            }
+        )
+
+        # 4. 헬프 게시글 삭제
+        await tx.helppost.delete_many(where={"authorId": current_user.id})
+
+        # 5. 룸메이트 계약서 삭제
+        await tx.roommatecontract.delete_many(
+            where={
+                "OR": [
+                    {"userAId": current_user.id},
+                    {"userBId": current_user.id},
+                ]
+            }
+        )
+
+        # 6. 채팅 메시지 삭제 (내가 보낸 메시지)
+        await tx.chatmessage.delete_many(where={"senderId": current_user.id})
+
+        # 7. 채팅 참여 내역 삭제
+        await tx.chatparticipant.delete_many(where={"userId": current_user.id})
+
+        # 8. 사용자 본체 삭제
+        await tx.user.delete(where={"id": current_user.id})
+
+    return None
