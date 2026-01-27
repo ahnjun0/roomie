@@ -127,7 +127,7 @@ def _build_placeholder_contract_data() -> dict[str, object]:
 @router.post("/init", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
 async def init_contract(
     request: ContractInitRequest,
-    allowMissingLifestyle: bool = Query(False),
+    allowMissingLifestyle: bool = Query(True),
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
