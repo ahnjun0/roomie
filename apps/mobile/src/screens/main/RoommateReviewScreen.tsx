@@ -21,13 +21,14 @@ interface RoommateReviewScreenProps {
     params: {
       targetUserId: string;
       targetNickname: string;
+      bothEnded: boolean;
     };
   };
   navigation: any;
 }
 
 export function RoommateReviewScreen({ route, navigation }: RoommateReviewScreenProps) {
-  const { targetUserId, targetNickname } = route.params;
+  const { targetUserId, targetNickname, bothEnded } = route.params;
   const { colors } = useTheme();
   const { refreshUser } = useAuth();
   const insets = useSafeAreaInsets();
@@ -35,6 +36,16 @@ export function RoommateReviewScreen({ route, navigation }: RoommateReviewScreen
   const [score, setScore] = useState(0);
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const goBackToDashboard = () => {
+    refreshUser();
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'MainTabs' }],
+      })
+    );
+  };
 
   const handleSubmit = async () => {
     if (score === 0) {
@@ -46,24 +57,16 @@ export function RoommateReviewScreen({ route, navigation }: RoommateReviewScreen
     try {
       await api.post(ENDPOINTS.REVIEWS.CREATE, {
         targetId: targetUserId,
-        content,
+        content: content || '',
         score,
       });
 
-      await refreshUser();
+      const message = bothEnded
+        ? '평가가 완료되었습니다. 매칭이 해제됩니다.'
+        : '평가가 완료되었습니다. 상대방이 학기 끝내기를 하면 매칭이 해제됩니다.';
 
-      Alert.alert('완료', '평가가 완료되었습니다.', [
-        {
-          text: '확인',
-          onPress: () => {
-            navigation.dispatch(
-              CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'MainTabs' }],
-              })
-            );
-          },
-        },
+      Alert.alert('완료', message, [
+        { text: '확인', onPress: goBackToDashboard },
       ]);
     } catch (error: any) {
       Alert.alert('오류', error.message || '평가 제출에 실패했습니다.');
@@ -72,18 +75,20 @@ export function RoommateReviewScreen({ route, navigation }: RoommateReviewScreen
     }
   };
 
-  const handleSkip = async () => {
-    await refreshUser();
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'MainTabs' }],
-      })
-    );
+  const handleSkip = () => {
+    const message = bothEnded
+      ? '평가를 건너뛰시겠습니까? 매칭이 해제됩니다.'
+      : '평가를 건너뛰시겠습니까? 상대방이 학기 끝내기를 하면 매칭이 해제됩니다.';
+
+    Alert.alert('건너뛰기', message, [
+      { text: '취소', style: 'cancel' },
+      { text: '확인', onPress: goBackToDashboard },
+    ]);
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* No back button - this is a one-way flow */}
       <Header title="룸메이트 평가" />
 
       <ScrollView

@@ -242,6 +242,9 @@ model RoommateContract {
   signatureB   Boolean @default(false)
   signedAt     DateTime?
 
+  endSemesterA Boolean @default(false)
+  endSemesterB Boolean @default(false)
+
   @@unique([chatRoomId])
 }
 

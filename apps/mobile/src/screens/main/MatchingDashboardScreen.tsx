@@ -35,6 +35,8 @@ interface RoommateInfo {
   nationality: string;
   dormNames: string;
   chatRoomId: string;
+  endSemesterMe: boolean;
+  endSemesterPartner: boolean;
 }
 
 interface MatchingDashboardScreenProps {
@@ -143,7 +145,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   const handleEndSemester = () => {
     Alert.alert(
       '학기 끝내기',
-      '룸메이트 연결을 해제하시겠습니까? 해제 후 새로운 룸메이트를 찾을 수 있습니다.',
+      '학기를 끝내고 룸메이트를 평가하시겠습니까?\n상대방도 학기 끝내기를 해야 매칭이 해제됩니다.',
       [
         { text: '취소', style: 'cancel' },
         {
@@ -152,12 +154,17 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
           onPress: async () => {
             setIsEndingSemester(true);
             try {
-              const response = await api.post<{ targetUserId: string; targetNickname: string | null }>(
-                ENDPOINTS.MATCHING.END_SEMESTER
-              );
+              const response = await api.post<{
+                targetUserId: string;
+                targetNickname: string | null;
+                bothEnded: boolean;
+              }>(ENDPOINTS.MATCHING.END_SEMESTER);
+
+              // Navigate to review screen
               navigation.navigate('RoommateReview', {
                 targetUserId: response.targetUserId,
                 targetNickname: response.targetNickname ?? '룸메이트',
+                bothEnded: response.bothEnded,
               });
             } catch (error: any) {
               Alert.alert('오류', error.message || '학기 끝내기에 실패했습니다.');
@@ -219,12 +226,27 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   // MATCHED status: show roommate info
   if (isMatched && roommate) {
     const nationalityLabel = roommate.nationality === 'KOREAN' ? '한국인' : '외국인';
+    const iAlreadyEnded = roommate.endSemesterMe;
+    const partnerEnded = roommate.endSemesterPartner;
 
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <Header title="나의 룸메이트" />
 
         <View style={[styles.roommateContent, { paddingBottom: insets.bottom + spacing.lg }]}>
+          {/* End semester status banner */}
+          {(iAlreadyEnded || partnerEnded) && (
+            <View style={[styles.statusBanner, { backgroundColor: themeColors.warning + '20', borderColor: themeColors.warning }]}>
+              <Text style={[styles.statusBannerText, { color: themeColors.warning }]}>
+                {iAlreadyEnded && !partnerEnded
+                  ? '학기 끝내기 완료 - 상대방의 확인을 기다리고 있습니다'
+                  : !iAlreadyEnded && partnerEnded
+                  ? '상대방이 학기 끝내기를 요청했습니다'
+                  : ''}
+              </Text>
+            </View>
+          )}
+
           {/* Roommate profile card */}
           <View style={[styles.roommateCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={[styles.avatarCircle, { backgroundColor: themeColors.primary + '20' }]}>
@@ -275,10 +297,11 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
           {/* End semester button */}
           <View style={styles.endSemesterContainer}>
             <Button
-              title="학기 끝내기"
+              title={iAlreadyEnded ? '상대방 대기 중...' : '학기 끝내기'}
               onPress={handleEndSemester}
               variant="outline"
               loading={isEndingSemester}
+              disabled={iAlreadyEnded}
               fullWidth
             />
           </View>
@@ -355,6 +378,18 @@ const styles = StyleSheet.create({
   roommateContent: {
     flex: 1,
     padding: spacing.lg,
+  },
+  statusBanner: {
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  statusBannerText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    textAlign: 'center',
   },
   roommateCard: {
     borderRadius: borderRadius.lg,

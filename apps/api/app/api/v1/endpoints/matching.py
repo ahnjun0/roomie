@@ -192,6 +192,7 @@ async def get_roommate(
             detail={"error": "USER_NOT_FOUND", "message": "룸메이트 정보를 찾을 수 없습니다."},
         )
 
+    is_user_a = contract.userAId == current_user.id
     return RoommateResponse(
         userId=target_user.id,
         nickname=target_user.nickname,
@@ -199,6 +200,8 @@ async def get_roommate(
         nationality=target_user.nationality,
         dormNames=target_user.lifestyle.dormNames if target_user.lifestyle else "",
         chatRoomId=contract.chatRoomId,
+        endSemesterMe=contract.endSemesterA if is_user_a else contract.endSemesterB,
+        endSemesterPartner=contract.endSemesterB if is_user_a else contract.endSemesterA,
     )
 
 
@@ -207,7 +210,7 @@ async def end_semester(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """학기 끝내기 (룸메이트 연결 해제)"""
+    """학기 끝내기 (서명처럼 양쪽 모두 확인해야 관계 종료)"""
     if current_user.matchingStatus != "MATCHED":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -232,18 +235,35 @@ async def end_semester(
             detail={"error": "CONTRACT_NOT_FOUND", "message": "서명된 계약서를 찾을 수 없습니다."},
         )
 
-    target_user_id = contract.userBId if contract.userAId == current_user.id else contract.userAId
+    is_user_a = contract.userAId == current_user.id
+    target_user_id = contract.userBId if is_user_a else contract.userAId
     target_user = await db.user.find_unique(where={"id": target_user_id})
 
-    # 양쪽 유저의 matchingStatus를 SEARCHING으로 변경
-    await db.user.update_many(
-        where={"id": {"in": [current_user.id, target_user_id]}},
-        data={"matchingStatus": "SEARCHING"},
-    )
+    # 현재 유저의 endSemester 플래그만 설정
+    update_data: dict[str, bool] = {}
+    if is_user_a and not contract.endSemesterA:
+        update_data["endSemesterA"] = True
+    elif not is_user_a and not contract.endSemesterB:
+        update_data["endSemesterB"] = True
+
+    if update_data:
+        contract = await db.roommatecontract.update(
+            where={"id": contract.id},
+            data=update_data,
+        )
+
+    # 양쪽 모두 endSemester이면 관계 종료
+    both_ended = contract.endSemesterA and contract.endSemesterB
+    if both_ended:
+        await db.user.update_many(
+            where={"id": {"in": [current_user.id, target_user_id]}},
+            data={"matchingStatus": "SEARCHING"},
+        )
 
     return EndSemesterResponse(
         targetUserId=target_user_id,
         targetNickname=target_user.nickname if target_user else None,
+        bothEnded=both_ended,
     )
 
 

@@ -27,6 +27,8 @@ class ContractResponse(BaseModel):
     signatureA: bool
     signatureB: bool
     signedAt: datetime | None
+    endSemesterA: bool = False
+    endSemesterB: bool = False
 
     class Config:
         from_attributes = True

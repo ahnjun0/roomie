@@ -94,8 +94,11 @@ class RoommateResponse(BaseModel):
     nationality: str
     dormNames: str
     chatRoomId: str
+    endSemesterMe: bool
+    endSemesterPartner: bool
 
 
 class EndSemesterResponse(BaseModel):
     targetUserId: str
     targetNickname: str | None
+    bothEnded: bool

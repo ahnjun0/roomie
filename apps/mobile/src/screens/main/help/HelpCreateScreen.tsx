@@ -50,7 +50,7 @@ export function HelpCreateScreen({ navigation }: HelpCreateScreenProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header title="글쓰기" showBack />
+      <Header title="글쓰기" showBack onBack={() => navigation.goBack()} />
       
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
