@@ -2,6 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from prisma import Prisma
+from prisma.types import Json
 from prisma.models import User
 
 from app.core.database import get_db
@@ -218,10 +219,10 @@ async def init_contract(
 
     contract = await db.roommatecontract.create(
         data={
-            "chatRoomId": request.chatRoomId,
-            "userAId": user_a_id,
-            "userBId": user_b_id,
-            "contractData": contract_data,
+            "chatRoom": {"connect": {"id": request.chatRoomId}},
+            "userA": {"connect": {"id": user_a_id}},
+            "userB": {"connect": {"id": user_b_id}},
+            "contractData": Json(contract_data),
             "status": "DRAFT",
             "signatureA": False,
             "signatureB": False,
@@ -278,7 +279,7 @@ async def update_contract(
     updated_contract = await db.roommatecontract.update(
         where={"id": contract_id},
         data={
-            "contractData": request.contractData,
+            "contractData": Json(request.contractData),
             "signatureA": False,
             "signatureB": False,
             "status": "DRAFT",
