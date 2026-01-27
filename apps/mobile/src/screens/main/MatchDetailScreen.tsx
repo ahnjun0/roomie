@@ -5,12 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
-  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts';
-import { RadarChart } from 'react-native-chart-kit';
-import { Button, Card, ReviewCard, Header } from '../../components';
+import { Button, Card, ReviewCard, Header, RadarChart } from '../../components';
 import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
@@ -27,7 +25,7 @@ interface MatchDetailScreenProps {
 
 const COMPARISON_LABELS: Record<string, string> = {
   smoking: '흡연',
-  sleepSchedule: '수면 일정',
+  sleepSchedule: '수면 시간',
   noise: '소음 민감도',
   clean: '청결도',
   food: '실내 취식',
@@ -107,56 +105,28 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
 
   const { user, lifestyle } = detail;
 
+  // 4각형 레이더 차트: 소음, 청결, 식사, 잠버릇
   const chartItems = [
-    { key: 'noise', label: 'Noise' },
-    { key: 'clean', label: 'Clean' },
-    { key: 'food', label: 'Food' },
-    { key: 'sleepHabits', label: 'Habit' },
-    { key: 'sleepSchedule', label: 'Time' },
-    { key: 'temp', label: 'Temp' },
+    { key: 'noise', label: '소음' },
+    { key: 'clean', label: '청결' },
+    { key: 'food', label: '식사' },
+    { key: 'sleepHabits', label: '잠버릇' },
   ];
 
-  const toChartScore = (value: number) => {
+  const toRadarValue = (value: number) => {
     if (!Number.isFinite(value)) return 0;
     const clamped = Math.max(0, Math.min(2, value));
-    return clamped / 2;
+    return (clamped / 2) * 5;
   };
 
-  const radarLabels = chartItems.map(item => item.label);
-  const myScores = chartItems.map(item =>
-    toChartScore(Number(detail.comparison[item.key]?.me ?? 0))
-  );
-  const otherScores = chartItems.map(item =>
-    toChartScore(Number(detail.comparison[item.key]?.target ?? 0))
-  );
-
-  const chartWidth = Math.min(
-    320,
-    Dimensions.get('window').width - spacing.md * 2 - spacing.md
-  );
-
-  const myChartConfig = {
-    backgroundGradientFrom: 'transparent',
-    backgroundGradientTo: 'transparent',
-    backgroundGradientFromOpacity: 0,
-    backgroundGradientToOpacity: 0,
-    color: () => 'rgba(0, 0, 255, 0.9)',
-    labelColor: () => colors.text.primary,
-    fillShadowGradient: 'rgba(0, 0, 255, 1)',
-    fillShadowGradientOpacity: 0.5,
-    strokeWidth: 2,
-    propsForLabels: {
-      fontSize: fontSize.xs,
-    },
-  };
-
-  const otherChartConfig = {
-    ...myChartConfig,
-    color: () => 'rgba(255, 0, 0, 0.9)',
-    labelColor: () => 'transparent',
-    fillShadowGradient: 'rgba(255, 0, 0, 1)',
-    fillShadowGradientOpacity: 0.5,
-  };
+  // 레이더 차트 데이터 생성 (방어 코드 포함)
+  const radarData = detail.comparison
+    ? chartItems.map(item => ({
+        label: item.label,
+        myValue: toRadarValue(Number(detail.comparison[item.key]?.me ?? 0)),
+        otherValue: toRadarValue(Number(detail.comparison[item.key]?.target ?? 0)),
+      }))
+    : [];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -209,40 +179,15 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
         {/* 유사도 레이더 차트 */}
         <Card style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-            유사도 비교
+            성향 비교
           </Text>
-          <View style={styles.chartWrapper}>
-            <RadarChart
-              data={{ labels: radarLabels, data: myScores } as any}
-              width={chartWidth}
-              height={chartWidth}
-              chartConfig={myChartConfig as any}
-            />
-            <View style={styles.chartOverlay}>
-              <RadarChart
-                data={{ labels: radarLabels, data: otherScores } as any}
-                width={chartWidth}
-                height={chartWidth}
-                chartConfig={otherChartConfig as any}
-              />
-            </View>
-          </View>
-          <View style={styles.chartLegend}>
-            <View style={styles.chartLegendItem}>
-              <View style={[styles.chartLegendSwatch, { backgroundColor: 'rgba(0, 0, 255, 0.9)' }]} />
-              <Text style={[styles.chartLegendText, { color: colors.text.primary }]}>나</Text>
-            </View>
-            <View style={styles.chartLegendItem}>
-              <View style={[styles.chartLegendSwatch, { backgroundColor: 'rgba(255, 0, 0, 0.9)' }]} />
-              <Text style={[styles.chartLegendText, { color: colors.text.primary }]}>상대방</Text>
-            </View>
-          </View>
+          <RadarChart data={radarData} />
         </Card>
 
         {/* 상세 비교 */}
         <Card style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-            생활 습관 비교
+            생활 패턴 비교
           </Text>
           {Object.entries(detail.comparison).map(([key, item]) => (
             <View
@@ -271,10 +216,10 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
             </Text>
             <View style={styles.reviewSummary}>
               <Text style={[styles.avgScore, { color: themeColors.warning }]}>
-                ★ {detail.averageReviewScore.toFixed(1)}
+                ★{detail.averageReviewScore.toFixed(1)}
               </Text>
               <Text style={[styles.reviewCountText, { color: colors.text.tertiary }]}>
-                ({detail.reviewCount}개)
+                ({detail.reviewCount}건)
               </Text>
             </View>
           </View>
@@ -412,33 +357,5 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: fontSize.lg,
   },
-  chartWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  chartOverlay: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-  },
-  chartLegend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: spacing.lg,
-  },
-  chartLegendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  chartLegendSwatch: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  chartLegendText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-  },
 });
+

@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { Polygon, Line, Circle, Text as SvgText, G } from 'react-native-svg';
+import { View, Text, StyleSheet } from 'react-native';
+import Svg, { Polygon, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '../contexts';
-import { fontSize, colors as themeColors } from '../constants/theme';
+import { fontSize } from '../constants/theme';
 
 interface RadarChartData {
   label: string;
@@ -16,10 +16,23 @@ interface RadarChartProps {
 }
 
 export function RadarChart({ data, size = 250 }: RadarChartProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
+  const myStroke = 'rgba(59, 130, 246, 1)';
+  const myFill = 'rgba(59, 130, 246, 0.3)';
+  const otherStroke = 'rgba(239, 68, 68, 1)';
+  const otherFill = 'rgba(239, 68, 68, 0.3)';
   const center = size / 2;
   const radius = (size / 2) * 0.7;
   const levels = 5;
+
+  // 방어 코드: 데이터가 없거나 비어있으면 렌더링하지 않음
+  if (!data || data.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: colors.text.secondary }}>데이터를 불러오는 중...</Text>
+      </View>
+    );
+  }
 
   const angleStep = (2 * Math.PI) / data.length;
 
@@ -84,16 +97,16 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
         {/* Other user's polygon */}
         <Polygon
           points={otherPolygonPoints}
-          fill={`${colors.text.tertiary}40`}
-          stroke={colors.text.tertiary}
+          fill={otherFill}
+          stroke={otherStroke}
           strokeWidth={2}
         />
 
         {/* My polygon */}
         <Polygon
           points={myPolygonPoints}
-          fill={`${themeColors.primary}40`}
-          stroke={themeColors.primary}
+          fill={myFill}
+          stroke={myStroke}
           strokeWidth={2}
         />
 
@@ -104,7 +117,7 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
             cx={point.x}
             cy={point.y}
             r={4}
-            fill={themeColors.primary}
+            fill={myStroke}
           />
         ))}
 
@@ -125,14 +138,13 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
           );
         })}
       </Svg>
-
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: themeColors.primary }]} />
+          <View style={[styles.legendDot, { backgroundColor: myStroke }]} />
           <Text style={[styles.legendText, { color: colors.text.primary }]}>나</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.text.tertiary }]} />
+          <View style={[styles.legendDot, { backgroundColor: otherStroke }]} />
           <Text style={[styles.legendText, { color: colors.text.primary }]}>상대방</Text>
         </View>
       </View>
