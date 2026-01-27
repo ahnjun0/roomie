@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import RNPrint from 'react-native-print';
 import { useTheme, useAuth } from '../../contexts';
 import { Button, Header } from '../../components';
 import { api } from '../../services/api';
@@ -146,6 +147,90 @@ export function ContractScreen({ route, navigation }: ContractScreenProps) {
   const getSignatureStatus = () => {
     if (!contract) return { a: false, b: false };
     return { a: contract.signatureA, b: contract.signatureB };
+  };
+
+  const handlePrintPdf = async () => {
+    if (!contract) return;
+
+    const signedDate = contract.signedAt
+      ? new Date(contract.signedAt).toLocaleDateString('ko-KR')
+      : '-';
+
+    const fieldRows = CONTRACT_FIELDS.map((field, index) => {
+      const rawValue = contract.contractData[field.key];
+      let displayValue: string;
+      if (
+        (field.key === 'wakeUpTime' || field.key === 'lightsOutTime') &&
+        typeof rawValue === 'number'
+      ) {
+        displayValue = formatSleepHour(rawValue);
+      } else {
+        displayValue = String(rawValue ?? '미설정');
+      }
+      return `<tr>
+        <td style="padding:8px;border:1px solid #ddd;text-align:center;">${index + 1}</td>
+        <td style="padding:8px;border:1px solid #ddd;">${field.label}</td>
+        <td style="padding:8px;border:1px solid #ddd;">${displayValue}</td>
+      </tr>`;
+    }).join('');
+
+    const html = `
+      <html>
+      <head>
+        <meta charset="utf-8"/>
+        <style>
+          body { font-family: sans-serif; padding: 40px; color: #333; }
+          h1 { text-align: center; font-size: 24px; margin-bottom: 8px; }
+          .date { text-align: center; color: #666; margin-bottom: 24px; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+          th { background: #f5f5f5; padding: 10px 8px; border: 1px solid #ddd; text-align: center; }
+          .sig-section { margin-top: 32px; }
+          .sig-row { display: flex; justify-content: space-around; margin-top: 16px; }
+          .sig-item { text-align: center; }
+          .sig-status { font-weight: bold; margin-top: 4px; }
+          .footer { text-align: center; color: #999; font-size: 12px; margin-top: 40px; }
+        </style>
+      </head>
+      <body>
+        <h1>Roomie Contract</h1>
+        <p class="date">${signedDate}</p>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px;">No.</th>
+              <th>항목</th>
+              <th>내용</th>
+            </tr>
+          </thead>
+          <tbody>${fieldRows}</tbody>
+        </table>
+        <div class="sig-section">
+          <h3>서명 현황</h3>
+          <table>
+            <tr>
+              <th>사용자 A</th>
+              <th>사용자 B</th>
+            </tr>
+            <tr>
+              <td style="padding:8px;border:1px solid #ddd;text-align:center;">
+                ${contract.signatureA ? 'O 서명 완료' : 'X 미서명'}
+              </td>
+              <td style="padding:8px;border:1px solid #ddd;text-align:center;">
+                ${contract.signatureB ? 'O 서명 완료' : 'X 미서명'}
+              </td>
+            </tr>
+          </table>
+        </div>
+        <p class="footer">Roomie - Roommate Matching Service</p>
+      </body>
+      </html>
+    `;
+
+    try {
+      await RNPrint.print({ html });
+    } catch (error) {
+      console.error('PDF print error:', error);
+    }
   };
 
   if (isLoading) {
@@ -312,6 +397,17 @@ export function ContractScreen({ route, navigation }: ContractScreenProps) {
             체결일: {new Date(contract.signedAt).toLocaleDateString('ko-KR')}
           </Text>
         )}
+
+        {isSigned && (
+          <View style={styles.pdfAction}>
+            <Button
+              title="계약서 PDF 다운로드"
+              onPress={handlePrintPdf}
+              variant="secondary"
+              fullWidth
+            />
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -403,5 +499,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: fontSize.lg,
+  },
+  pdfAction: {
+    marginTop: spacing.lg,
   },
 });

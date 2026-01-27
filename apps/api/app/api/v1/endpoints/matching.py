@@ -6,6 +6,7 @@ from app.core.database import get_db
 from app.core.security import get_current_user
 from app.schemas.matching import (
     ComparisonItem,
+    EndSemesterResponse,
     MatchingDetailResponse,
     MatchingLifestyleDetail,
     MatchingListResponse,
@@ -13,6 +14,7 @@ from app.schemas.matching import (
     MatchingUserResponse,
     RadarChartData,
     ReviewSummary,
+    RoommateResponse,
     ScoreBreakdownItem,
 )
 from app.services.matching import (
@@ -145,6 +147,103 @@ async def get_matching_list(
         page=page,
         limit=limit,
         data=paginated,
+    )
+
+
+@router.get("/roommate", response_model=RoommateResponse)
+async def get_roommate(
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """현재 룸메이트 정보 조회"""
+    if current_user.matchingStatus != "MATCHED":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "NOT_MATCHED", "message": "현재 매칭된 룸메이트가 없습니다."},
+        )
+
+    # 서명 완료된 계약에서 상대방 찾기
+    contract = await db.roommatecontract.find_first(
+        where={
+            "status": "SIGNED",
+            "OR": [
+                {"userAId": current_user.id},
+                {"userBId": current_user.id},
+            ],
+        },
+        order={"signedAt": "desc"},
+    )
+
+    if not contract:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "CONTRACT_NOT_FOUND", "message": "서명된 계약서를 찾을 수 없습니다."},
+        )
+
+    target_user_id = contract.userBId if contract.userAId == current_user.id else contract.userAId
+    target_user = await db.user.find_unique(
+        where={"id": target_user_id},
+        include={"lifestyle": True},
+    )
+
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "USER_NOT_FOUND", "message": "룸메이트 정보를 찾을 수 없습니다."},
+        )
+
+    return RoommateResponse(
+        userId=target_user.id,
+        nickname=target_user.nickname,
+        studentId=target_user.studentId,
+        nationality=target_user.nationality,
+        dormNames=target_user.lifestyle.dormNames if target_user.lifestyle else "",
+        chatRoomId=contract.chatRoomId,
+    )
+
+
+@router.post("/end-semester", response_model=EndSemesterResponse)
+async def end_semester(
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """학기 끝내기 (룸메이트 연결 해제)"""
+    if current_user.matchingStatus != "MATCHED":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": "NOT_MATCHED", "message": "현재 매칭 상태가 아닙니다."},
+        )
+
+    # 서명 완료된 계약에서 상대방 찾기
+    contract = await db.roommatecontract.find_first(
+        where={
+            "status": "SIGNED",
+            "OR": [
+                {"userAId": current_user.id},
+                {"userBId": current_user.id},
+            ],
+        },
+        order={"signedAt": "desc"},
+    )
+
+    if not contract:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "CONTRACT_NOT_FOUND", "message": "서명된 계약서를 찾을 수 없습니다."},
+        )
+
+    target_user_id = contract.userBId if contract.userAId == current_user.id else contract.userAId
+    target_user = await db.user.find_unique(where={"id": target_user_id})
+
+    # 양쪽 유저의 matchingStatus를 SEARCHING으로 변경
+    await db.user.update_many(
+        where={"id": {"in": [current_user.id, target_user_id]}},
+        data={"matchingStatus": "SEARCHING"},
+    )
+
+    return EndSemesterResponse(
+        targetUserId=target_user_id,
+        targetNickname=target_user.nickname if target_user else None,
     )
 
 

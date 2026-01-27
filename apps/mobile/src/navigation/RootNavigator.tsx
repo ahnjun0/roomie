@@ -29,6 +29,7 @@ import {
   EditPreferencesScreen,
   MyReviewsScreen,
   ContractScreen,
+  RoommateReviewScreen,
   RoomBtiIntroScreen,
   RoomBtiTestScreen,
   RoomBtiResultScreen,
@@ -145,6 +146,7 @@ export function RootNavigator() {
           <Stack.Screen name="MatchDetail" component={MatchDetailScreen} />
           <Stack.Screen name="Chat" component={ChatScreen} />
           <Stack.Screen name="Contract" component={ContractScreen} />
+          <Stack.Screen name="RoommateReview" component={RoommateReviewScreen} />
 
           {/* MyPage Screens */}
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
