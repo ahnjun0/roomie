@@ -45,6 +45,10 @@ model User {
   matchResultsAsUser   MatchResult[] @relation("MatchUser")
   matchResultsAsTarget MatchResult[] @relation("MatchTarget")
 
+  // 매칭 히스토리
+  matchHistoriesAsUserA MatchHistory[] @relation("MatchHistoryUserA")
+  matchHistoriesAsUserB MatchHistory[] @relation("MatchHistoryUserB")
+
   // Room-BTI 결과
   roomBtiResult      String?   // "SCDS", "PFNI" 등 4글자 코드
   roomBtiAnimal      String?   // "부지런한 미어캣"
@@ -185,6 +189,21 @@ model RoommateContract {
   signedAt     DateTime?
 
   @@unique([chatRoomId])
+}
+
+// 6-2. 매칭 히스토리
+model MatchHistory {
+  id        String   @id @default(cuid())
+
+  userA     User     @relation("MatchHistoryUserA", fields: [userAId], references: [id])
+  userAId   String
+
+  userB     User     @relation("MatchHistoryUserB", fields: [userBId], references: [id])
+  userBId   String
+
+  matchedAt DateTime @default(now())
+
+  @@unique([userAId, userBId])
 }
 
 // 7. 학교 정보

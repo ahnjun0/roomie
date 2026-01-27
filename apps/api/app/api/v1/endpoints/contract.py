@@ -321,4 +321,13 @@ async def sign_contract(
             data={"matchingStatus": "MATCHED"},
         )
 
+        user_ids = sorted([contract.userAId, contract.userBId])
+        existing_history = await db.matchhistory.find_first(
+            where={"userAId": user_ids[0], "userBId": user_ids[1]}
+        )
+        if not existing_history:
+            await db.matchhistory.create(
+                data={"userAId": user_ids[0], "userBId": user_ids[1]}
+            )
+
     return contract
