@@ -127,7 +127,6 @@ def _build_placeholder_contract_data() -> dict[str, object]:
 @router.post("/init", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
 async def init_contract(
     request: ContractInitRequest,
-    allowMissingLifestyle: bool = Query(True),
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
@@ -180,15 +179,6 @@ async def init_contract(
     lifestyle_map = {l.userId: l for l in lifestyles}
 
     has_full_lifestyle = len(lifestyle_map) == 2
-    if not has_full_lifestyle and not allowMissingLifestyle:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "error": "LIFESTYLE_NOT_FOUND",
-                "message": "채팅방의 모든 사용자가 생활 패턴 정보를 입력해야 합니다.",
-            },
-        )
-
     if has_full_lifestyle:
         users = await db.user.find_many(where={"id": {"in": user_ids}})
         user_map = {u.id: u for u in users}
