@@ -186,13 +186,6 @@ def calculate_match_score(
             "calc_type": "scale"
         },
         {
-            "key": "light",
-            "weight_key": "weightLight",
-            "my_val": my_lifestyle.get("lightLevel", 3),
-            "target_val": target_lifestyle.get("lightLevel", 3),
-            "calc_type": "scale"
-        },
-        {
             "key": "temp",
             "weight_key": "weightTemp",
             "my_val": my_lifestyle.get("tempLevel", 3),
@@ -372,7 +365,6 @@ def generate_radar_chart_data(lifestyle: dict) -> dict:
             "noise": 50,
             "clean": 50,
             "food": 50,
-            "light": 50,
             "temp": 50,
             "time": 50,
             "habit": 50,
@@ -399,7 +391,6 @@ def generate_radar_chart_data(lifestyle: dict) -> dict:
         "noise": scale_to_100(lifestyle.get("noiseLevel", 3)),
         "clean": scale_to_100(lifestyle.get("cleanLevel", 3)),
         "food": scale_to_100(lifestyle.get("foodLevel", 3)),
-        "light": scale_to_100(lifestyle.get("lightLevel", 3)),
         "temp": scale_to_100(lifestyle.get("tempLevel", 3)),
         "time": time_score,
         "habit": habit_score,

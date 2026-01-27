@@ -107,9 +107,6 @@ def _build_contract_data(lifestyle_a, lifestyle_b) -> dict[str, object]:
         "foodPolicy": _resolve_level(
             lifestyle_a.foodLevel, lifestyle_b.foodLevel
         ),
-        "lightPolicy": _resolve_level(
-            lifestyle_a.lightLevel, lifestyle_b.lightLevel
-        ),
         "temperaturePolicy": _resolve_level(
             lifestyle_a.tempLevel, lifestyle_b.tempLevel
         ),
@@ -129,7 +126,6 @@ def _build_placeholder_contract_data() -> dict[str, object]:
         "sleepHabits": "협의 필요",
         "noisePolicy": "협의 필요",
         "foodPolicy": "협의 필요",
-        "lightPolicy": "협의 필요",
         "temperaturePolicy": "협의 필요",
         "homeVisitPolicy": "협의 필요",
     }

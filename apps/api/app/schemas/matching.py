@@ -41,7 +41,6 @@ class RadarChartData(BaseModel):
     noise: int       # 소음
     clean: int       # 청결
     food: int        # 실내취식
-    light: int       # 소등
     temp: int        # 온도
     time: int        # 취침시간
     habit: int       # 잠버릇
@@ -72,7 +71,6 @@ class MatchingLifestyleDetail(BaseModel):
     noiseLevel: int
     cleanLevel: int
     foodLevel: int
-    lightLevel: int
     tempLevel: int
     homeVisit: str | None
 

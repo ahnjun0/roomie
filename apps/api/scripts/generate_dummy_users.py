@@ -70,7 +70,6 @@ PERSONAS = [
             "noiseLevel": 1,  # 매우 예민
             "cleanLevel": 5,  # 결벽
             "foodLevel": 2,   # 취식 비선호
-            "lightLevel": 1,  # 칼소등
             "tempLevel": 3,
             "homeVisit": "MONTHLY"
         },
@@ -80,7 +79,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 5,
             "weightFood": 0,
-            "weightLight": 0,
             "weightTemp": 0
         }
     },
@@ -100,7 +98,6 @@ PERSONAS = [
             "noiseLevel": 5,   # 소음 OK
             "cleanLevel": 2,   # 청소 여유
             "foodLevel": 5,    # 야식 환영
-            "lightLevel": 5,   # 불 켜도 OK
             "tempLevel": 2,    # 추위 탐
             "homeVisit": "RARELY"
         },
@@ -110,7 +107,6 @@ PERSONAS = [
             "weightTime": 25,  # 취침 시간 중요
             "weightHabit": 0,
             "weightFood": 10,
-            "weightLight": 10,
             "weightTemp": 0
         }
     },
@@ -130,7 +126,6 @@ PERSONAS = [
             "noiseLevel": 3,
             "cleanLevel": 4,
             "foodLevel": 3,
-            "lightLevel": 2,
             "tempLevel": 4,    # 더위 탐
             "homeVisit": "BI_WEEKLY"
         },
@@ -140,7 +135,6 @@ PERSONAS = [
             "weightTime": 15,
             "weightHabit": 5,
             "weightFood": 0,
-            "weightLight": 5,
             "weightTemp": 0
         }
     },
@@ -160,7 +154,6 @@ PERSONAS = [
             "noiseLevel": 3,
             "cleanLevel": 3,
             "foodLevel": 4,
-            "lightLevel": 3,
             "tempLevel": 3,
             "homeVisit": "RARELY"
         },
@@ -170,7 +163,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 10,
             "weightFood": 5,
-            "weightLight": 5,
             "weightTemp": 0,
             "prefNationality": "FOREIGNER"
         }
@@ -191,7 +183,6 @@ PERSONAS = [
             "noiseLevel": 5,
             "cleanLevel": 3,
             "foodLevel": 4,
-            "lightLevel": 4,
             "tempLevel": 3,
             "homeVisit": "MONTHLY"
         },
@@ -201,7 +192,6 @@ PERSONAS = [
             "weightTime": 15,
             "weightHabit": 0,  # 잠버릇 상관없음
             "weightFood": 10,
-            "weightLight": 10,
             "weightTemp": 5
         }
     },
@@ -221,7 +211,6 @@ PERSONAS = [
             "noiseLevel": 2,
             "cleanLevel": 5,  # 결벽
             "foodLevel": 1,   # 취식 절대 불가
-            "lightLevel": 2,
             "tempLevel": 3,
             "homeVisit": "WEEKLY"
         },
@@ -231,7 +220,6 @@ PERSONAS = [
             "weightTime": 5,
             "weightHabit": 5,
             "weightFood": 10,
-            "weightLight": 0,
             "weightTemp": 0
         }
     },
@@ -251,7 +239,6 @@ PERSONAS = [
             "noiseLevel": 4,
             "cleanLevel": 2,
             "foodLevel": 5,
-            "lightLevel": 4,
             "tempLevel": 4,
             "homeVisit": "RARELY"
         },
@@ -261,7 +248,6 @@ PERSONAS = [
             "weightTime": 20,
             "weightHabit": 0,
             "weightFood": 15,
-            "weightLight": 10,
             "weightTemp": 5
         }
     },
@@ -281,7 +267,6 @@ PERSONAS = [
             "noiseLevel": 3,
             "cleanLevel": 3,
             "foodLevel": 4,
-            "lightLevel": 3,
             "tempLevel": 3,
             "homeVisit": "WEEKLY"
         },
@@ -291,7 +276,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 10,
             "weightFood": 5,
-            "weightLight": 5,
             "weightTemp": 0,
             "prefStudentId": "SAME"
         }
@@ -312,7 +296,6 @@ PERSONAS = [
             "noiseLevel": 2,
             "cleanLevel": 4,
             "foodLevel": 3,
-            "lightLevel": 2,
             "tempLevel": 1,  # 매우 추위 탐
             "homeVisit": "MONTHLY"
         },
@@ -322,7 +305,6 @@ PERSONAS = [
             "weightTime": 5,
             "weightHabit": 5,
             "weightFood": 0,
-            "weightLight": 0,
             "weightTemp": 20  # 온도 매우 중요
         }
     },
@@ -342,7 +324,6 @@ PERSONAS = [
             "noiseLevel": 3,
             "cleanLevel": 3,
             "foodLevel": 3,
-            "lightLevel": 3,
             "tempLevel": 5,  # 매우 더위 탐
             "homeVisit": "BI_WEEKLY"
         },
@@ -352,7 +333,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 5,
             "weightFood": 5,
-            "weightLight": 0,
             "weightTemp": 20  # 온도 매우 중요
         }
     },
@@ -374,7 +354,6 @@ PERSONAS = [
             "noiseLevel": 1,   # 매우 예민
             "cleanLevel": 4,
             "foodLevel": 2,
-            "lightLevel": 3,   # 스탠드 OK
             "tempLevel": 3,
             "homeVisit": "MONTHLY"
         },
@@ -384,7 +363,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 5,
             "weightFood": 0,
-            "weightLight": 0,
             "weightTemp": 0
         }
     },
@@ -404,7 +382,6 @@ PERSONAS = [
             "noiseLevel": 2,
             "cleanLevel": 5,
             "foodLevel": 2,
-            "lightLevel": 1,
             "tempLevel": 3,
             "homeVisit": "WEEKLY"
         },
@@ -414,7 +391,6 @@ PERSONAS = [
             "weightTime": 20,  # 취침 시간 중요
             "weightHabit": 5,
             "weightFood": 0,
-            "weightLight": 0,
             "weightTemp": 0
         }
     },
@@ -434,7 +410,6 @@ PERSONAS = [
             "noiseLevel": 2,
             "cleanLevel": 5,
             "foodLevel": 3,
-            "lightLevel": 2,
             "tempLevel": 3,
             "homeVisit": "RARELY"
         },
@@ -444,7 +419,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 5,
             "weightFood": 5,
-            "weightLight": 0,
             "weightTemp": 0
         }
     },
@@ -464,7 +438,6 @@ PERSONAS = [
             "noiseLevel": 5,
             "cleanLevel": 2,
             "foodLevel": 5,
-            "lightLevel": 5,
             "tempLevel": 4,
             "homeVisit": "BI_WEEKLY"
         },
@@ -474,7 +447,6 @@ PERSONAS = [
             "weightTime": 20,
             "weightHabit": 0,
             "weightFood": 15,
-            "weightLight": 10,
             "weightTemp": 0
         }
     },
@@ -494,7 +466,6 @@ PERSONAS = [
             "noiseLevel": 1,
             "cleanLevel": 4,
             "foodLevel": 2,
-            "lightLevel": 1,
             "tempLevel": 3,
             "homeVisit": "MONTHLY"
         },
@@ -504,7 +475,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 5,
             "weightFood": 0,
-            "weightLight": 0,
             "weightTemp": 0,
             "prefStudentId": "JUNIOR"
         }
@@ -525,7 +495,6 @@ PERSONAS = [
             "noiseLevel": 2,
             "cleanLevel": 3,
             "foodLevel": 4,
-            "lightLevel": 3,
             "tempLevel": 2,
             "homeVisit": "RARELY"
         },
@@ -535,7 +504,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 5,
             "weightFood": 5,
-            "weightLight": 5,
             "weightTemp": 0
         }
     },
@@ -555,7 +523,6 @@ PERSONAS = [
             "noiseLevel": 3,
             "cleanLevel": 4,
             "foodLevel": 3,
-            "lightLevel": 3,
             "tempLevel": 3,
             "homeVisit": "WEEKLY"
         },
@@ -565,7 +532,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 10,
             "weightFood": 5,
-            "weightLight": 5,
             "weightTemp": 0
         }
     },
@@ -585,7 +551,6 @@ PERSONAS = [
             "noiseLevel": 5,
             "cleanLevel": 2,
             "foodLevel": 4,
-            "lightLevel": 5,
             "tempLevel": 4,
             "homeVisit": "MONTHLY"
         },
@@ -595,7 +560,6 @@ PERSONAS = [
             "weightTime": 20,
             "weightHabit": 0,
             "weightFood": 10,
-            "weightLight": 10,
             "weightTemp": 5
         }
     },
@@ -615,7 +579,6 @@ PERSONAS = [
             "noiseLevel": 2,
             "cleanLevel": 4,
             "foodLevel": 3,
-            "lightLevel": 2,
             "tempLevel": 1,  # 매우 추위 탐
             "homeVisit": "BI_WEEKLY"
         },
@@ -625,7 +588,6 @@ PERSONAS = [
             "weightTime": 10,
             "weightHabit": 5,
             "weightFood": 0,
-            "weightLight": 0,
             "weightTemp": 25  # 온도 매우 중요
         }
     },
@@ -645,7 +607,6 @@ PERSONAS = [
             "noiseLevel": 4,
             "cleanLevel": 3,
             "foodLevel": 4,
-            "lightLevel": 4,
             "tempLevel": 3,
             "homeVisit": "MONTHLY"
         },
@@ -655,7 +616,6 @@ PERSONAS = [
             "weightTime": 15,
             "weightHabit": 5,
             "weightFood": 10,
-            "weightLight": 5,
             "weightTemp": 0
         }
     }

@@ -174,7 +174,6 @@ async def update_preference_weights(
     - weightFood: 실내취식
     - weightHabit: 잠버릇
     - weightTime: 취침시간
-    - weightLight: 소등
     - weightTemp: 온도
     """
     data = request.model_dump()
