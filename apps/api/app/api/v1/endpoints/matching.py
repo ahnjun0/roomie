@@ -154,6 +154,14 @@ async def get_matching_detail(
     db: Prisma = Depends(get_db),
 ):
     """매칭 상세 조회"""
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "FORBIDDEN",
+                "message": "본인에 대한 리뷰는 열람할 수 없습니다.",
+            },
+        )
     # 대상 사용자 조회
     target_user = await db.user.find_unique(
         where={"id": user_id},

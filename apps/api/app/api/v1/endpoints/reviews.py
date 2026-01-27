@@ -31,6 +31,29 @@ async def create_review(
             detail={"error": "USER_NOT_FOUND", "message": "대상 사용자를 찾을 수 없습니다."},
         )
 
+    user_ids = sorted([current_user.id, request.targetId])
+    signed_contract = await db.roommatecontract.find_first(
+        where={
+            "status": "SIGNED",
+            "OR": [
+                {"userAId": user_ids[0], "userBId": user_ids[1]},
+                {"userAId": user_ids[1], "userBId": user_ids[0]},
+            ],
+        }
+    )
+    match_history = await db.matchhistory.find_first(
+        where={"userAId": user_ids[0], "userBId": user_ids[1]}
+    )
+
+    if not signed_contract and not match_history:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "NOT_ELIGIBLE",
+                "message": "이전 룸메이트만 리뷰를 작성할 수 있습니다.",
+            },
+        )
+
     # 리뷰 생성
     review = await db.review.create(
         data={
