@@ -50,6 +50,14 @@ export function HelpListScreen({ navigation }: HelpListScreenProps) {
     fetchPosts();
   }, [fetchPosts]);
 
+  // 화면이 포커스될 때마다 데이터 새로고침 (글 작성 후 돌아왔을 때 반영)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchPosts();
+    });
+    return unsubscribe;
+  }, [navigation, fetchPosts]);
+
   const renderItem = ({ item }: { item: HelpPost }) => {
     const isSolved = item.status === 'SOLVED';
     
@@ -100,8 +108,10 @@ export function HelpListScreen({ navigation }: HelpListScreenProps) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header 
         title="게시판" 
-        rightIcon="plus" 
-        onRightPress={() => navigation.navigate('HelpCreate')} 
+        rightAction={{
+          label: '글쓰기',
+          onPress: () => navigation.navigate('HelpCreate')
+        }}
       />
 
       <View style={[styles.filterContainer, { borderBottomColor: colors.border }]}>
@@ -144,7 +154,7 @@ export function HelpListScreen({ navigation }: HelpListScreenProps) {
           contentContainerStyle={[
             styles.listContent,
             posts.length === 0 && styles.listContentEmpty,
-            { paddingBottom: insets.bottom + spacing.lg },
+            { paddingBottom: insets.bottom + spacing.lg + 56 }, // FAB space
           ]}
           refreshControl={
             <RefreshControl
@@ -155,6 +165,14 @@ export function HelpListScreen({ navigation }: HelpListScreenProps) {
           }
         />
       )}
+
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={[styles.fab, { backgroundColor: themeColors.primary, bottom: insets.bottom + spacing.lg }]}
+        onPress={() => navigation.navigate('HelpCreate')}
+        activeOpacity={0.8}>
+        <Text style={styles.fabIcon}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -242,5 +260,25 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: fontSize.md,
+  },
+  fab: {
+    position: 'absolute',
+    right: spacing.lg,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  fabIcon: {
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginTop: -2,
   },
 });

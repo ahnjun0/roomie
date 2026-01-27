@@ -167,9 +167,6 @@ async def get_messages(
         take=limit,
     )
 
-    # 오래된 순으로 정렬
-    messages.reverse()
-
     return MessageListResponse(
         data=[
             MessageResponse(

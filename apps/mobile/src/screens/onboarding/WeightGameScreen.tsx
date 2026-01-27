@@ -10,7 +10,7 @@ interface WeightGameScreenProps {
   navigation: any;
 }
 
-const TOTAL_BUDGET = 70000; // 7만원
+const TOTAL_BUDGET = 60000; // 6만원
 const UNIT_AMOUNT = 10000; // 1만원 단위
 
 export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
@@ -20,10 +20,10 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
   const insets = useSafeAreaInsets();
 
   const [isLoading, setIsLoading] = useState(false);
-  // 초기값: 각 항목 1만원씩 (총 7만원)
+  // 초기값: 각 항목 1만원씩 (총 6만원)
   // 값 의미: 3 = 3만원, 1 = 1만원, 0 = 0원
   const [weights, setWeights] = useState<Record<string, number>>({
-    noise: 2,
+    noise: 1,
     cleanliness: 1,
     food: 1,
     habit: 1,
@@ -47,7 +47,7 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
     console.log('[WeightGame] weights:', weights);
 
     if (!isValid) {
-      Alert.alert('알림', '7만원을 모두 배분해주세요.');
+      Alert.alert('알림', '6만원을 모두 배분해주세요.');
       return;
     }
 
@@ -57,7 +57,7 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
     try {
       // 가중치 데이터를 백엔드 형식으로 변환
       // 프론트엔드: 0, 1, 3 (만원 단위)
-      // 백엔드: 0-70 범위, 총합 70 (10배)
+      // 백엔드: 0-60 범위, 총합 60 (10배)
       const weightData = {
         weightNoise: weights.noise * 10,
         weightClean: weights.cleanliness * 10,
@@ -112,7 +112,7 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
 
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text.primary }]}>
-            7만원 배분 게임
+            6만원 배분 게임
           </Text>
           <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
             각 항목에 3만원, 1만원, 0원을 배분해주세요.{'\n'}

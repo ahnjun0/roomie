@@ -2,9 +2,9 @@ import json
 from datetime import datetime
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 from jose import JWTError, jwt
-from prisma import Prisma
 
 from app.core.config import settings
+from app.core.database import db
 from app.core.websocket import manager
 
 # 중요: API Router 설정
@@ -40,19 +40,16 @@ async def websocket_chat(
     연결 URL: ws://도메인/ws/chats/{방UUID}?token={액세스토큰}
     """
     
-    # 1. DB 연결
-    db = Prisma()
-    await db.connect()
-
     try:
-        # 2. 토큰 검증
+        # 1. 토큰 검증
         resolved_token = token or _extract_token_from_headers(websocket)
         user_id = await get_user_from_token(resolved_token) if resolved_token else None
         if user_id is None:
             await websocket.close(code=4003, reason="Invalid token") # 4003: Forbidden
             return
 
-        # 3. 사용자 및 채팅방 권한 확인 (접속 단계에서 바로 체크)
+        # 2. 사용자 및 채팅방 권한 확인 (접속 단계에서 바로 체크)
+        # db는 전역 인스턴스 사용 (이미 연결됨)
         user = await db.user.find_unique(where={"id": user_id})
         if not user:
             await websocket.close(code=4003, reason="User not found")
@@ -69,7 +66,7 @@ async def websocket_chat(
             await websocket.close(code=4003, reason="Not a member")
             return
 
-        # 4. 연결 수락 및 방 입장 (자동 Join)
+        # 3. 연결 수락 및 방 입장 (자동 Join)
         await manager.connect(websocket, user_id)
         manager.join_room(chat_room_id, user_id) # 여기서 바로 방에 넣음
 
@@ -86,7 +83,7 @@ async def websocket_chat(
             }
         )
 
-        # 5. 메시지 수신 루프
+        # 4. 메시지 수신 루프
         try:
             while True:
                 data = await websocket.receive_json()
@@ -138,8 +135,8 @@ async def websocket_chat(
 
     except Exception as e:
         print(f"WebSocket Error: {e}")
-        await websocket.close(code=1011) # Internal Error
-    
-    finally:
-        if db.is_connected():
-            await db.disconnect()
+        # 연결이 이미 닫혔는지 확인 후 닫기 시도
+        try:
+            await websocket.close(code=1011) # Internal Error
+        except:
+            pass

@@ -148,6 +148,12 @@ async def get_matching_list(
     )
 
 
+def _format_sleep_time(value: int) -> str:
+    """0-24 값을 HH:00 형식으로 변환 (16시 기준)"""
+    hour = (16 + value) % 24
+    return f"{hour:02d}:00"
+
+
 @router.get("/{user_id}", response_model=MatchingDetailResponse)
 async def get_matching_detail(
     user_id: str,
@@ -215,10 +221,12 @@ async def get_matching_detail(
             target=target_user.lifestyle.isSmoker,
             match=my_lifestyle.isSmoker == target_user.lifestyle.isSmoker,
         )
-        # 취침시간
-        comparison["sleepTime"] = ComparisonItem(
-            me=my_lifestyle.sleepStart,
-            target=target_user.lifestyle.sleepStart,
+        # 수면 일정 (취침 -> 기상)
+        my_schedule = f"{_format_sleep_time(my_lifestyle.sleepStart)} → {_format_sleep_time(my_lifestyle.sleepEnd)}"
+        target_schedule = f"{_format_sleep_time(target_user.lifestyle.sleepStart)} → {_format_sleep_time(target_user.lifestyle.sleepEnd)}"
+        comparison["sleepSchedule"] = ComparisonItem(
+            me=my_schedule,
+            target=target_schedule,
             match=abs(my_lifestyle.sleepStart - target_user.lifestyle.sleepStart) <= 1,
         )
         # 소음 (noiseLevel)

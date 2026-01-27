@@ -13,7 +13,6 @@ import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
 import type { MatchingDetailResponse } from '../../services/matching';
-import { formatSleepHour } from '../../utils/time';
 
 interface MatchDetailScreenProps {
   route: {
@@ -26,7 +25,7 @@ interface MatchDetailScreenProps {
 
 const COMPARISON_LABELS: Record<string, string> = {
   smoking: '흡연',
-  sleepTime: '취침 시간',
+  sleepSchedule: '수면 일정',
   noise: '소음 민감도',
   clean: '청결도',
   food: '실내 취식',
@@ -36,7 +35,6 @@ const COMPARISON_LABELS: Record<string, string> = {
 
 const formatValue = (key: string, value: any) => {
   if (typeof value === 'boolean') return value ? 'O' : 'X';
-  if (key === 'sleepTime') return formatSleepHour(Number(value));
   return value;
 };
 
@@ -109,7 +107,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
 
   // RadarChart Data Transformation
   const radarData = Object.entries(detail.comparison)
-    .filter(([key]) => !['smoking', 'sleepHabits', 'sleepTime'].includes(key))
+    .filter(([key]) => !['smoking', 'sleepHabits', 'sleepSchedule'].includes(key))
     .map(([key, item]) => ({
       label: COMPARISON_LABELS[key] || key,
       myValue: Number(item.me) * 20, // 1-5 scale to 20-100
@@ -158,16 +156,16 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
                 {detail.matchRate}%
               </Text>
               <Text style={[styles.scoreLabel, { color: colors.text.secondary }]}>
-                호환성
+                유사도
               </Text>
             </View>
           </View>
         </Card>
 
-        {/* 호환성 레이더 차트 */}
+        {/* 유사도 레이더 차트 */}
         <Card style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-            호환성 비교
+            유사도 비교
           </Text>
           <RadarChart data={radarData} />
         </Card>
