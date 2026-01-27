@@ -1,8 +1,11 @@
 export type RootStackParamList = {
   // Auth Flow
   Login: undefined;
-  VerifyEmail: { email: string };
+  SignIn: { email?: string };
+  ForgotPassword: { email?: string };
+  VerifyEmail: { email: string; mode?: 'register' | 'reset' };
   Register: { email: string; tempToken: string };
+  ResetPassword: { email: string; tempToken: string };
 
   // Onboarding Flow
   BasicInfo: undefined;

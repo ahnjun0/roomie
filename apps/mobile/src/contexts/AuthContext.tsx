@@ -20,12 +20,17 @@ interface AuthState {
   isOnboardingComplete: boolean;
 }
 
+interface SendCodeResponse {
+  userExists: boolean;
+}
+
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  sendVerificationCode: (email: string) => Promise<void>;
+  sendVerificationCode: (email: string) => Promise<SendCodeResponse>;
   verifyCode: (email: string, code: string) => Promise<string>;
+  resetPassword: (email: string, tempToken: string, newPassword: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   setUser: (user: User) => Promise<void>;
@@ -123,8 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const sendVerificationCode = useCallback(async (email: string) => {
-    await api.post(ENDPOINTS.AUTH.SEND_CODE, { email });
+  const sendVerificationCode = useCallback(async (email: string): Promise<SendCodeResponse> => {
+    const response = await api.post<{ message: string; expiresIn: number; userExists: boolean }>(
+      ENDPOINTS.AUTH.SEND_CODE,
+      { email },
+    );
+    return { userExists: response.userExists };
   }, []);
 
   const verifyCode = useCallback(
@@ -134,6 +143,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         { email, code },
       );
       return response.tempToken;
+    },
+    [],
+  );
+
+  const resetPassword = useCallback(
+    async (email: string, tempToken: string, newPassword: string): Promise<void> => {
+      await api.post(ENDPOINTS.AUTH.RESET_PASSWORD, {
+        email,
+        tempToken,
+        newPassword,
+      });
     },
     [],
   );
@@ -288,6 +308,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         sendVerificationCode,
         verifyCode,
+        resetPassword,
         refreshUser,
         setTokens,
         setUser,

@@ -24,6 +24,7 @@ class EmailSendRequest(BaseModel):
 class EmailSendResponse(BaseModel):
     message: str
     expiresIn: int = 300
+    userExists: bool = False
 
 
 class EmailVerifyRequest(BaseModel):
@@ -67,6 +68,16 @@ class TokenRefreshRequest(BaseModel):
 class TokenResponse(BaseModel):
     accessToken: str
     refreshToken: str
+
+
+class ResetPasswordRequest(BaseModel):
+    tempToken: str
+    email: EmailStr
+    newPassword: str
+
+
+class ResetPasswordResponse(BaseModel):
+    message: str
 
 
 # ============== User ==============
