@@ -21,8 +21,9 @@ export type RootStackParamList = {
   MainTabs: undefined;
 
   // Stack Screens (accessible from tabs)
-  MatchDetail: { userId: number };
-  Chat: { chatRoomId: string; userId: number; userName?: string };
+  MatchDetail: { userId: string };
+  Chat: { chatRoomId: string; userId: string; userName?: string };
+  Contract: { contractId: string };
   EditProfile: undefined;
   EditLifestyle: undefined;
   EditPreferences: undefined;

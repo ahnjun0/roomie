@@ -26,6 +26,7 @@ export { EditProfileScreen } from './main/EditProfileScreen';
 export { EditLifestyleScreen } from './main/EditLifestyleScreen';
 export { EditPreferencesScreen } from './main/EditPreferencesScreen';
 export { MyReviewsScreen } from './main/MyReviewsScreen';
+export { ContractScreen } from './main/ContractScreen';
 
 // Help Center Screens
 export { HelpListScreen } from './main/help/HelpListScreen';
