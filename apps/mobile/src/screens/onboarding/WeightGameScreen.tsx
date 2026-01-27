@@ -10,8 +10,8 @@ interface WeightGameScreenProps {
   navigation: any;
 }
 
-const TOTAL_BUDGET = 50000;
-const UNIT_AMOUNT = 10000;
+const TOTAL_BUDGET = 70000; // 7만원
+const UNIT_AMOUNT = 10000; // 1만원 단위
 
 export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
   const { colors } = useTheme();
@@ -20,11 +20,16 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
   const insets = useSafeAreaInsets();
 
   const [isLoading, setIsLoading] = useState(false);
+  // 초기값: 각 항목 1만원씩 (총 7만원)
+  // 값 의미: 3 = 3만원, 1 = 1만원, 0 = 0원
   const [weights, setWeights] = useState<Record<string, number>>({
-    smoking: 1,
-    sleep: 1,
-    cleanliness: 1,
     noise: 1,
+    cleanliness: 1,
+    food: 1,
+    habit: 1,
+    time: 1,
+    light: 1,
+    temp: 1,
   });
 
   const totalAllocated = Object.values(weights).reduce(
@@ -43,7 +48,7 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
     console.log('[WeightGame] weights:', weights);
 
     if (!isValid) {
-      Alert.alert('알림', '5만원을 모두 배분해주세요.');
+      Alert.alert('알림', '7만원을 모두 배분해주세요.');
       return;
     }
 
@@ -51,17 +56,17 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
     console.log('[WeightGame] Starting profile submission...');
 
     try {
-      // 가중치 데이터를 백엔드 형식으로 변환 (총합 50이 되도록)
-      // 프론트엔드: 0-5 범위, 총합 5 (50000원 / 10000원)
-      // 백엔드: 0-50 범위, 총합 50
+      // 가중치 데이터를 백엔드 형식으로 변환
+      // 프론트엔드: 0, 1, 3 (만원 단위)
+      // 백엔드: 0-70 범위, 총합 70 (10배)
       const weightData = {
         weightNoise: weights.noise * 10,
         weightClean: weights.cleanliness * 10,
-        weightFood: 0, // 프론트엔드에서 미사용
-        weightHabit: weights.smoking * 10, // 흡연 → 잠버릇으로 매핑
-        weightTime: weights.sleep * 10, // 수면 → 취침시간으로 매핑
-        weightLight: 0, // 프론트엔드에서 미사용
-        weightTemp: 0, // 프론트엔드에서 미사용
+        weightFood: weights.food * 10,
+        weightHabit: weights.habit * 10,
+        weightTime: weights.time * 10,
+        weightLight: weights.light * 10,
+        weightTemp: weights.temp * 10,
       };
       console.log('[WeightGame] weightData:', weightData);
 
@@ -89,7 +94,7 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
-        title="가중치 게임"
+        title="중요도 설정"
         showBack
         onBack={() => navigation.goBack()}
       />
@@ -101,13 +106,19 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
         ]}>
         <ProgressBar {...ONBOARDING_STEPS.WEIGHT_GAME} />
 
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: themeColors.primary }]}>
+            이것만은 양보 못 해
+          </Text>
+        </View>
+
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.text.primary }]}>
-            5만원 배분 게임
+            7만원 배분 게임
           </Text>
           <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-            가상의 5만원을 중요하다고 생각하는 항목에 배분해주세요.
-            배분 금액이 높을수록 해당 항목이 매칭에서 중요하게 반영됩니다.
+            각 항목에 3만원, 1만원, 0원을 배분해주세요.{'\n'}
+            배분 금액이 높을수록 해당 조건이 중요하게 반영됩니다.
           </Text>
         </View>
 
@@ -119,24 +130,10 @@ export function WeightGameScreen({ navigation }: WeightGameScreenProps) {
           unitAmount={UNIT_AMOUNT}
         />
 
-        {!isValid && (
-          <Text style={[styles.hint, { color: themeColors.warning }]}>
-            남은 금액: ₩{(TOTAL_BUDGET - totalAllocated).toLocaleString()}
-          </Text>
-        )}
-
-        {/* 디버그 정보 */}
-        <Text style={{ color: colors.text.secondary, fontSize: 12, marginTop: 8 }}>
-          [DEBUG] isValid: {isValid ? 'true' : 'false'}, total: {totalAllocated}, isLoading: {isLoading ? 'true' : 'false'}
-        </Text>
-
         <View style={styles.footer}>
           <Button
             title="프로필 완성"
-            onPress={() => {
-              console.log('[WeightGame] Button pressed!');
-              handleComplete();
-            }}
+            onPress={handleComplete}
             disabled={!isValid}
             loading={isLoading}
             fullWidth
@@ -156,8 +153,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
   },
-  header: {
+  sectionHeader: {
     marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  header: {
     marginBottom: spacing.xl,
   },
   title: {
@@ -168,12 +172,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: fontSize.md,
     lineHeight: fontSize.md * 1.5,
-  },
-  hint: {
-    fontSize: fontSize.md,
-    textAlign: 'center',
-    marginTop: spacing.lg,
-    fontWeight: fontWeight.medium,
   },
   footer: {
     marginTop: spacing.xl,

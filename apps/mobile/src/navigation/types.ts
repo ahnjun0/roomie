@@ -12,8 +12,9 @@ export type RootStackParamList = {
   DormitorySelect: undefined;
   CoreHabits: undefined;
   LifestyleScale: undefined;
-  RoommatePreferences: undefined;
   SleepPatterns: undefined;
+  RoommatePreferences: undefined;
+  PreferredLifestyle: undefined;
   WeightGame: undefined;
 
   // Main App

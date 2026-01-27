@@ -3,24 +3,24 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useOnboarding } from '../../contexts';
 import { Button, ScaleSelector, Header, ProgressBar } from '../../components';
-import { spacing, fontSize, fontWeight } from '../../constants/theme';
-import { LIFESTYLE_SCALES, ONBOARDING_STEPS } from '../../constants/data';
+import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
+import { PREFERRED_LIFESTYLE_SCALES, ONBOARDING_STEPS } from '../../constants/data';
 
-interface LifestyleScaleScreenProps {
+interface PreferredLifestyleScreenProps {
   navigation: any;
 }
 
-export function LifestyleScaleScreen({ navigation }: LifestyleScaleScreenProps) {
+export function PreferredLifestyleScreen({ navigation }: PreferredLifestyleScreenProps) {
   const { colors } = useTheme();
   const { data, updateData } = useOnboarding();
   const insets = useSafeAreaInsets();
 
   const [scales, setScales] = useState({
-    noiseLevel: data.noiseLevel,
-    cleanliness: data.cleanliness,
-    indoorEating: data.indoorEating,
-    lightsOut: data.lightsOut,
-    temperature: data.temperature,
+    prefNoiseLevel: data.prefNoiseLevel,
+    prefCleanliness: data.prefCleanliness,
+    prefIndoorEating: data.prefIndoorEating,
+    prefLightsOut: data.prefLightsOut,
+    prefTemperature: data.prefTemperature,
   });
 
   const handleScaleChange = (key: string, value: number) => {
@@ -29,13 +29,13 @@ export function LifestyleScaleScreen({ navigation }: LifestyleScaleScreenProps) 
 
   const handleNext = () => {
     updateData(scales);
-    navigation.navigate('SleepPatterns');
+    navigation.navigate('WeightGame');
   };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
-        title="생활 방식"
+        title="원하는 생활 방식"
         showBack
         onBack={() => navigation.goBack()}
       />
@@ -45,17 +45,23 @@ export function LifestyleScaleScreen({ navigation }: LifestyleScaleScreenProps) 
           styles.content,
           { paddingBottom: insets.bottom + spacing.lg },
         ]}>
-        <ProgressBar {...ONBOARDING_STEPS.LIFESTYLE_SCALE} />
+        <ProgressBar {...ONBOARDING_STEPS.PREFERRED_LIFESTYLE} />
+
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: themeColors.primary }]}>
+            이런 사람이면 좋겠어요
+          </Text>
+        </View>
 
         <Text style={[styles.title, { color: colors.text.primary }]}>
-          생활 방식을 평가해주세요
+          원하는 룸메이트의 생활 방식
         </Text>
         <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-          1~5 단계로 선택해주세요
+          함께 살고 싶은 룸메이트의 생활 방식을 선택해주세요
         </Text>
 
         <View style={styles.form}>
-          {LIFESTYLE_SCALES.map(scale => (
+          {PREFERRED_LIFESTYLE_SCALES.map(scale => (
             <ScaleSelector
               key={scale.key}
               label={scale.label}
@@ -83,11 +89,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
   },
+  sectionHeader: {
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  sectionTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
     marginBottom: spacing.xs,
-    marginTop: spacing.lg,
   },
   subtitle: {
     fontSize: fontSize.md,

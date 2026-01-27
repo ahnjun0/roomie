@@ -3,20 +3,47 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts';
 import { spacing, borderRadius, fontSize, fontWeight, colors as themeColors } from '../constants/theme';
 
+interface WeightOption {
+  label: string;
+  title: string;
+  desc: string;
+}
+
 interface WeightCategory {
   key: string;
+  emoji: string;
   label: string;
-  icon?: string;
+  tag: string;
+  options: {
+    high: WeightOption;
+    mid: WeightOption;
+    low: WeightOption;
+  };
 }
 
 interface WeightAllocatorProps {
   categories: readonly WeightCategory[] | WeightCategory[];
-  values: Record<string, number>;
+  values: Record<string, number>; // 3 = 3만원, 1 = 1만원, 0 = 0원
   onChange: (key: string, value: number) => void;
   totalBudget: number;
   unitAmount: number;
-  currencySymbol?: string;
 }
+
+// 선택된 금액에 따른 색상
+const getOptionColor = (value: number, selected: boolean) => {
+  if (!selected) return { bg: 'transparent', border: '#E0E0E0', text: '#9E9E9E' };
+
+  switch (value) {
+    case 3: // 3만원 - 완벽한 룸메 (primary)
+      return { bg: themeColors.primary + '15', border: themeColors.primary, text: themeColors.primary };
+    case 1: // 1만원 - 적당한 인간미 (yellow/orange)
+      return { bg: '#FFF3E0', border: '#FF9800', text: '#F57C00' };
+    case 0: // 0원 - 지옥의 룸메 (gray)
+      return { bg: '#F5F5F5', border: '#9E9E9E', text: '#757575' };
+    default:
+      return { bg: 'transparent', border: '#E0E0E0', text: '#9E9E9E' };
+  }
+};
 
 export function WeightAllocator({
   categories,
@@ -24,7 +51,6 @@ export function WeightAllocator({
   onChange,
   totalBudget,
   unitAmount,
-  currencySymbol = '₩',
 }: WeightAllocatorProps) {
   const { colors } = useTheme();
 
@@ -33,21 +59,30 @@ export function WeightAllocator({
     0,
   );
   const remaining = totalBudget - totalAllocated;
+  const isComplete = remaining === 0;
 
-  const handleIncrement = (key: string) => {
-    if (remaining >= unitAmount) {
-      onChange(key, (values[key] || 0) + 1);
+  const handleSelect = (key: string, value: number) => {
+    const currentValue = values[key] || 1;
+    const diff = (value - currentValue) * unitAmount;
+
+    // 예산 초과 체크 (값을 올릴 때만)
+    if (diff > 0 && diff > remaining) {
+      return;
     }
+
+    onChange(key, value);
   };
 
-  const handleDecrement = (key: string) => {
-    if ((values[key] || 0) > 0) {
-      onChange(key, (values[key] || 0) - 1);
-    }
+  const getSelectedOption = (category: WeightCategory) => {
+    const value = values[category.key];
+    if (value === 3) return category.options.high;
+    if (value === 0) return category.options.low;
+    return category.options.mid;
   };
 
   return (
     <View style={styles.container}>
+      {/* 남은 금액 표시 */}
       <View style={[styles.budgetContainer, { backgroundColor: colors.surface }]}>
         <Text style={[styles.budgetLabel, { color: colors.text.secondary }]}>
           남은 금액
@@ -55,62 +90,133 @@ export function WeightAllocator({
         <Text
           style={[
             styles.budgetAmount,
-            { color: remaining > 0 ? themeColors.primary : themeColors.success },
+            { color: isComplete ? themeColors.success : themeColors.primary },
           ]}>
-          {currencySymbol}
-          {remaining.toLocaleString()}
+          ₩{remaining.toLocaleString()}
         </Text>
+        {!isComplete && (
+          <Text style={[styles.budgetHint, { color: colors.text.tertiary }]}>
+            7만원을 모두 배분해주세요
+          </Text>
+        )}
       </View>
 
+      {/* 카테고리 카드들 */}
       <View style={styles.categoriesContainer}>
         {categories.map(category => {
-          const allocated = (values[category.key] || 0) * unitAmount;
+          const currentValue = values[category.key] ?? 1;
+          const selectedOption = getSelectedOption(category);
+
           return (
             <View
               key={category.key}
-              style={[styles.categoryRow, { borderColor: colors.border }]}>
-              <View style={styles.categoryInfo}>
-                <Text style={[styles.categoryLabel, { color: colors.text.primary }]}>
-                  {category.label}
-                </Text>
-                <Text style={[styles.categoryAmount, { color: themeColors.primary }]}>
-                  {currencySymbol}
-                  {allocated.toLocaleString()}
-                </Text>
+              style={[styles.categoryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* 카드 헤더 */}
+              <View style={styles.cardHeader}>
+                {/* 이미지/아이콘 영역 */}
+                <View style={[styles.iconContainer, { backgroundColor: colors.surface }]}>
+                  <Text style={styles.emoji}>{category.emoji}</Text>
+                </View>
+                <View style={styles.headerText}>
+                  <View style={styles.labelRow}>
+                    <Text style={[styles.categoryLabel, { color: colors.text.primary }]}>
+                      {category.label}
+                    </Text>
+                    <View style={[styles.tag, { backgroundColor: themeColors.primary + '20' }]}>
+                      <Text style={[styles.tagText, { color: themeColors.primary }]}>
+                        {category.tag}
+                      </Text>
+                    </View>
+                  </View>
+                  {/* 선택된 옵션 설명 */}
+                  <Text style={[styles.selectedTitle, { color: colors.text.primary }]}>
+                    "{selectedOption.title}"
+                  </Text>
+                  <Text style={[styles.selectedDesc, { color: colors.text.secondary }]}>
+                    {selectedOption.desc}
+                  </Text>
+                </View>
               </View>
-              <View style={styles.controls}>
+
+              {/* 3만원 / 1만원 / 0원 선택 버튼들 */}
+              <View style={styles.optionsRow}>
+                {/* 3만원 버튼 */}
                 <TouchableOpacity
                   style={[
-                    styles.controlButton,
+                    styles.optionButton,
                     {
-                      backgroundColor:
-                        values[category.key] > 0 ? colors.surface : colors.border,
+                      backgroundColor: getOptionColor(3, currentValue === 3).bg,
+                      borderColor: getOptionColor(3, currentValue === 3).border,
                     },
                   ]}
-                  onPress={() => handleDecrement(category.key)}
-                  disabled={!values[category.key]}>
+                  onPress={() => handleSelect(category.key, 3)}
+                  disabled={currentValue !== 3 && remaining < (3 - currentValue) * unitAmount}>
                   <Text
                     style={[
-                      styles.controlText,
-                      { color: colors.text.primary },
+                      styles.optionAmount,
+                      { color: getOptionColor(3, currentValue === 3).text },
                     ]}>
-                    -
+                    3만원
+                  </Text>
+                  <Text
+                    style={[
+                      styles.optionLabel,
+                      { color: getOptionColor(3, currentValue === 3).text },
+                    ]}>
+                    {category.options.high.label}
                   </Text>
                 </TouchableOpacity>
-                <Text style={[styles.countText, { color: colors.text.primary }]}>
-                  {values[category.key] || 0}
-                </Text>
+
+                {/* 1만원 버튼 */}
                 <TouchableOpacity
                   style={[
-                    styles.controlButton,
+                    styles.optionButton,
                     {
-                      backgroundColor:
-                        remaining >= unitAmount ? themeColors.primary : colors.border,
+                      backgroundColor: getOptionColor(1, currentValue === 1).bg,
+                      borderColor: getOptionColor(1, currentValue === 1).border,
                     },
                   ]}
-                  onPress={() => handleIncrement(category.key)}
-                  disabled={remaining < unitAmount}>
-                  <Text style={styles.controlTextWhite}>+</Text>
+                  onPress={() => handleSelect(category.key, 1)}>
+                  <Text
+                    style={[
+                      styles.optionAmount,
+                      { color: getOptionColor(1, currentValue === 1).text },
+                    ]}>
+                    1만원
+                  </Text>
+                  <Text
+                    style={[
+                      styles.optionLabel,
+                      { color: getOptionColor(1, currentValue === 1).text },
+                    ]}>
+                    {category.options.mid.label}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* 0원 버튼 */}
+                <TouchableOpacity
+                  style={[
+                    styles.optionButton,
+                    {
+                      backgroundColor: getOptionColor(0, currentValue === 0).bg,
+                      borderColor: getOptionColor(0, currentValue === 0).border,
+                    },
+                  ]}
+                  onPress={() => handleSelect(category.key, 0)}>
+                  <Text
+                    style={[
+                      styles.optionAmount,
+                      { color: getOptionColor(0, currentValue === 0).text },
+                    ]}>
+                    0원
+                  </Text>
+                  <Text
+                    style={[
+                      styles.optionLabel,
+                      { color: getOptionColor(0, currentValue === 0).text },
+                    ]}>
+                    {category.options.low.label}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -138,52 +244,81 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xxxl,
     fontWeight: fontWeight.bold,
   },
+  budgetHint: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+  },
   categoriesContainer: {
-    gap: spacing.sm,
+    gap: spacing.md,
   },
-  categoryRow: {
+  categoryCard: {
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    padding: spacing.md,
+  },
+  cardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
+    marginBottom: spacing.md,
   },
-  categoryInfo: {
+  iconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.md,
+  },
+  emoji: {
+    fontSize: 28,
+  },
+  headerText: {
     flex: 1,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
   },
   categoryLabel: {
     fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  tag: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  tagText: {
+    fontSize: fontSize.xs,
     fontWeight: fontWeight.medium,
   },
-  categoryAmount: {
-    fontSize: fontSize.sm,
-    marginTop: spacing.xs,
-  },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  controlButton: {
-    width: 36,
-    height: 36,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  controlText: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  controlTextWhite: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: '#FFFFFF',
-  },
-  countText: {
-    fontSize: fontSize.lg,
+  selectedTitle: {
+    fontSize: fontSize.md,
     fontWeight: fontWeight.semibold,
-    minWidth: 24,
-    textAlign: 'center',
+    marginBottom: 2,
+  },
+  selectedDesc: {
+    fontSize: fontSize.sm,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  optionButton: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+    alignItems: 'center',
+  },
+  optionAmount: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.bold,
+    marginBottom: 2,
+  },
+  optionLabel: {
+    fontSize: fontSize.xs,
   },
 });

@@ -11,8 +11,9 @@ export { BasicInfoScreen } from './onboarding/BasicInfoScreen';
 export { DormitorySelectScreen } from './onboarding/DormitorySelectScreen';
 export { CoreHabitsScreen } from './onboarding/CoreHabitsScreen';
 export { LifestyleScaleScreen } from './onboarding/LifestyleScaleScreen';
-export { RoommatePreferencesScreen } from './onboarding/RoommatePreferencesScreen';
 export { SleepPatternsScreen } from './onboarding/SleepPatternsScreen';
+export { RoommatePreferencesScreen } from './onboarding/RoommatePreferencesScreen';
+export { PreferredLifestyleScreen } from './onboarding/PreferredLifestyleScreen';
 export { WeightGameScreen } from './onboarding/WeightGameScreen';
 
 // Main Screens
