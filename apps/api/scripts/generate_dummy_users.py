@@ -15,10 +15,10 @@
     python -m scripts.generate_dummy_users --reset
 
     # 특정 개수만 생성
-    python -m scripts.generate_dummy_users --limit 5
+    python -m scripts.generate_dummy_users --limit 50
 
 기능:
-    - 20명의 페르소나 기반 더미 유저 생성
+    - 학교별(KAIST, 부산대 등) 200명의 랜덤 페르소나 기반 더미 유저 생성
     - 각 유저별 lifestyle, preference 자동 생성
     - API 모드 / DB 직접 연결 모드 지원
 """
@@ -37,13 +37,13 @@ from cuid2 import cuid_wrapper
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from prisma import Prisma
+from scripts.dummy_personas import generate_random_personas
 
 # CUID2 생성기
 cuid_generator = cuid_wrapper()
 
 # 기본 설정
 DEFAULT_PASSWORD = "test1234"
-DUMMY_EMAIL_DOMAIN = "@kaist.ac.kr"
 WEIGHT_TOTAL = 60
 WEIGHT_KEYS = [
     "weightNoise",
@@ -79,620 +79,41 @@ def normalize_weights(preference: dict) -> dict:
     return {**preference, **scaled}
 
 
-
-# 20명의 페르소나 정의
-PERSONAS = [
-    # ========== 남성 (10명) ==========
-    {
-        "nickname": "조용한모범생",
-        "email": "quiet_student@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 21,
-        "studentId": 24,
-        "lifestyle": {
-            "dormNames": "사랑관,소망관",
-            "isSmoker": False,
-            "sleepStart": 23,
-            "sleepEnd": 7,
-            "sleepHabits": "NONE",
-            "noiseLevel": 1,  # 매우 예민
-            "cleanLevel": 5,  # 결벽
-            "foodLevel": 2,   # 취식 비선호
-            "tempLevel": 3,
-            "homeVisit": "MONTHLY"
-        },
-        "preference": {
-            "weightNoise": 20,
-            "weightClean": 15,
-            "weightTime": 10,
-            "weightHabit": 5,
-            "weightFood": 0,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "새벽게이머",
-        "email": "night_gamer@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 22,
-        "studentId": 23,
-        "lifestyle": {
-            "dormNames": "성실관,진리관",
-            "isSmoker": False,
-            "sleepStart": 28,  # 새벽 4시
-            "sleepEnd": 12,
-            "sleepHabits": "NONE",
-            "noiseLevel": 5,   # 소음 OK
-            "cleanLevel": 2,   # 청소 여유
-            "foodLevel": 5,    # 야식 환영
-            "tempLevel": 2,    # 추위 탐
-            "homeVisit": "RARELY"
-        },
-        "preference": {
-            "weightNoise": 0,
-            "weightClean": 5,
-            "weightTime": 25,  # 취침 시간 중요
-            "weightHabit": 0,
-            "weightFood": 10,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "운동광",
-        "email": "fitness_lover@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 23,
-        "studentId": 22,
-        "lifestyle": {
-            "dormNames": "사랑관,성실관",
-            "isSmoker": False,
-            "sleepStart": 22,  # 밤 10시
-            "sleepEnd": 6,
-            "sleepHabits": "NONE",
-            "noiseLevel": 3,
-            "cleanLevel": 4,
-            "foodLevel": 3,
-            "tempLevel": 4,    # 더위 탐
-            "homeVisit": "BI_WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 10,
-            "weightClean": 15,
-            "weightTime": 15,
-            "weightHabit": 5,
-            "weightFood": 0,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "외국인친구",
-        "email": "foreign_friend@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "FOREIGNER",
-        "age": 24,
-        "studentId": 23,
-        "lifestyle": {
-            "dormNames": "희망관,사랑관",
-            "isSmoker": False,
-            "sleepStart": 24,
-            "sleepEnd": 8,
-            "sleepHabits": "TALKING",  # 잠꼬대
-            "noiseLevel": 3,
-            "cleanLevel": 3,
-            "foodLevel": 4,
-            "tempLevel": 3,
-            "homeVisit": "RARELY"
-        },
-        "preference": {
-            "weightNoise": 10,
-            "weightClean": 10,
-            "weightTime": 10,
-            "weightHabit": 10,
-            "weightFood": 5,
-            "weightTemp": 0,
-            "prefNationality": "FOREIGNER"
-        }
-    },
-    {
-        "nickname": "코골이대장",
-        "email": "snoring_king@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 22,
-        "studentId": 24,
-        "lifestyle": {
-            "dormNames": "진리관,성실관",
-            "isSmoker": False,
-            "sleepStart": 25,
-            "sleepEnd": 9,
-            "sleepHabits": "SNORING,TOSSING",
-            "noiseLevel": 5,
-            "cleanLevel": 3,
-            "foodLevel": 4,
-            "tempLevel": 3,
-            "homeVisit": "MONTHLY"
-        },
-        "preference": {
-            "weightNoise": 0,
-            "weightClean": 10,
-            "weightTime": 15,
-            "weightHabit": 0,  # 잠버릇 상관없음
-            "weightFood": 10,
-            "weightTemp": 5
-        }
-    },
-    {
-        "nickname": "깔끔쟁이",
-        "email": "clean_freak@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 21,
-        "studentId": 24,
-        "lifestyle": {
-            "dormNames": "소망관,사랑관",
-            "isSmoker": False,
-            "sleepStart": 24,
-            "sleepEnd": 8,
-            "sleepHabits": "NONE",
-            "noiseLevel": 2,
-            "cleanLevel": 5,  # 결벽
-            "foodLevel": 1,   # 취식 절대 불가
-            "tempLevel": 3,
-            "homeVisit": "WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 5,
-            "weightClean": 25,  # 청결 매우 중요
-            "weightTime": 5,
-            "weightHabit": 5,
-            "weightFood": 10,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "자취러",
-        "email": "independence@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 25,
-        "studentId": 21,
-        "lifestyle": {
-            "dormNames": "희망관",
-            "isSmoker": True,  # 흡연자
-            "sleepStart": 26,
-            "sleepEnd": 10,
-            "sleepHabits": "NONE",
-            "noiseLevel": 4,
-            "cleanLevel": 2,
-            "foodLevel": 5,
-            "tempLevel": 4,
-            "homeVisit": "RARELY"
-        },
-        "preference": {
-            "weightNoise": 0,
-            "weightClean": 0,
-            "weightTime": 20,
-            "weightHabit": 0,
-            "weightFood": 15,
-            "weightTemp": 5
-        }
-    },
-    {
-        "nickname": "동기사랑",
-        "email": "same_year@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 20,
-        "studentId": 25,
-        "lifestyle": {
-            "dormNames": "사랑관,소망관,성실관",
-            "isSmoker": False,
-            "sleepStart": 25,
-            "sleepEnd": 9,
-            "sleepHabits": "TOSSING",
-            "noiseLevel": 3,
-            "cleanLevel": 3,
-            "foodLevel": 4,
-            "tempLevel": 3,
-            "homeVisit": "WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 10,
-            "weightClean": 10,
-            "weightTime": 10,
-            "weightHabit": 10,
-            "weightFood": 5,
-            "weightTemp": 0,
-            "prefStudentId": "SAME"
-        }
-    },
-    {
-        "nickname": "추위왕",
-        "email": "cold_lover@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 22,
-        "studentId": 23,
-        "lifestyle": {
-            "dormNames": "진리관,사랑관",
-            "isSmoker": False,
-            "sleepStart": 24,
-            "sleepEnd": 8,
-            "sleepHabits": "NONE",
-            "noiseLevel": 2,
-            "cleanLevel": 4,
-            "foodLevel": 3,
-            "tempLevel": 1,  # 매우 추위 탐
-            "homeVisit": "MONTHLY"
-        },
-        "preference": {
-            "weightNoise": 10,
-            "weightClean": 10,
-            "weightTime": 5,
-            "weightHabit": 5,
-            "weightFood": 0,
-            "weightTemp": 20  # 온도 매우 중요
-        }
-    },
-    {
-        "nickname": "더위왕",
-        "email": "heat_lover@kaist.ac.kr",
-        "gender": "MALE",
-        "nationality": "KOREAN",
-        "age": 23,
-        "studentId": 22,
-        "lifestyle": {
-            "dormNames": "성실관,진리관",
-            "isSmoker": False,
-            "sleepStart": 25,
-            "sleepEnd": 9,
-            "sleepHabits": "GRINDING",  # 이갈이
-            "noiseLevel": 3,
-            "cleanLevel": 3,
-            "foodLevel": 3,
-            "tempLevel": 5,  # 매우 더위 탐
-            "homeVisit": "BI_WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 5,
-            "weightClean": 5,
-            "weightTime": 10,
-            "weightHabit": 5,
-            "weightFood": 5,
-            "weightTemp": 20  # 온도 매우 중요
-        }
-    },
-
-    # ========== 여성 (10명) ==========
-    {
-        "nickname": "새벽공부벌레",
-        "email": "study_worm@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 21,
-        "studentId": 24,
-        "lifestyle": {
-            "dormNames": "지혜관,신뢰관",
-            "isSmoker": False,
-            "sleepStart": 27,  # 새벽 3시
-            "sleepEnd": 10,
-            "sleepHabits": "NONE",
-            "noiseLevel": 1,   # 매우 예민
-            "cleanLevel": 4,
-            "foodLevel": 2,
-            "tempLevel": 3,
-            "homeVisit": "MONTHLY"
-        },
-        "preference": {
-            "weightNoise": 25,  # 소음 매우 중요
-            "weightClean": 10,
-            "weightTime": 10,
-            "weightHabit": 5,
-            "weightFood": 0,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "아침형인간",
-        "email": "morning_person@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 22,
-        "studentId": 23,
-        "lifestyle": {
-            "dormNames": "아름관,지혜관",
-            "isSmoker": False,
-            "sleepStart": 22,  # 밤 10시
-            "sleepEnd": 6,
-            "sleepHabits": "NONE",
-            "noiseLevel": 2,
-            "cleanLevel": 5,
-            "foodLevel": 2,
-            "tempLevel": 3,
-            "homeVisit": "WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 10,
-            "weightClean": 15,
-            "weightTime": 20,  # 취침 시간 중요
-            "weightHabit": 5,
-            "weightFood": 0,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "깔끔유학생",
-        "email": "clean_intl@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "FOREIGNER",
-        "age": 23,
-        "studentId": 23,
-        "lifestyle": {
-            "dormNames": "여울관,신뢰관",
-            "isSmoker": False,
-            "sleepStart": 24,
-            "sleepEnd": 8,
-            "sleepHabits": "NONE",
-            "noiseLevel": 2,
-            "cleanLevel": 5,
-            "foodLevel": 3,
-            "tempLevel": 3,
-            "homeVisit": "RARELY"
-        },
-        "preference": {
-            "weightNoise": 10,
-            "weightClean": 20,
-            "weightTime": 10,
-            "weightHabit": 5,
-            "weightFood": 5,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "파티걸",
-        "email": "party_girl@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 21,
-        "studentId": 24,
-        "lifestyle": {
-            "dormNames": "지혜관,아름관",
-            "isSmoker": False,
-            "sleepStart": 27,
-            "sleepEnd": 11,
-            "sleepHabits": "TALKING",
-            "noiseLevel": 5,
-            "cleanLevel": 2,
-            "foodLevel": 5,
-            "tempLevel": 4,
-            "homeVisit": "BI_WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 0,
-            "weightClean": 5,
-            "weightTime": 20,
-            "weightHabit": 0,
-            "weightFood": 15,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "조용한선배",
-        "email": "quiet_senior@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 25,
-        "studentId": 21,
-        "lifestyle": {
-            "dormNames": "여울관",
-            "isSmoker": False,
-            "sleepStart": 23,
-            "sleepEnd": 7,
-            "sleepHabits": "NONE",
-            "noiseLevel": 1,
-            "cleanLevel": 4,
-            "foodLevel": 2,
-            "tempLevel": 3,
-            "homeVisit": "MONTHLY"
-        },
-        "preference": {
-            "weightNoise": 25,
-            "weightClean": 10,
-            "weightTime": 10,
-            "weightHabit": 5,
-            "weightFood": 0,
-            "weightTemp": 0,
-            "prefStudentId": "JUNIOR"
-        }
-    },
-    {
-        "nickname": "집순이",
-        "email": "homebody@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 22,
-        "studentId": 23,
-        "lifestyle": {
-            "dormNames": "신뢰관,지혜관",
-            "isSmoker": False,
-            "sleepStart": 25,
-            "sleepEnd": 9,
-            "sleepHabits": "TOSSING",
-            "noiseLevel": 2,
-            "cleanLevel": 3,
-            "foodLevel": 4,
-            "tempLevel": 2,
-            "homeVisit": "RARELY"
-        },
-        "preference": {
-            "weightNoise": 15,
-            "weightClean": 10,
-            "weightTime": 10,
-            "weightHabit": 5,
-            "weightFood": 5,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "본가러버",
-        "email": "home_lover@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 20,
-        "studentId": 25,
-        "lifestyle": {
-            "dormNames": "아름관,지혜관,신뢰관",
-            "isSmoker": False,
-            "sleepStart": 24,
-            "sleepEnd": 8,
-            "sleepHabits": "NONE",
-            "noiseLevel": 3,
-            "cleanLevel": 4,
-            "foodLevel": 3,
-            "tempLevel": 3,
-            "homeVisit": "WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 10,
-            "weightClean": 10,
-            "weightTime": 10,
-            "weightHabit": 10,
-            "weightFood": 5,
-            "weightTemp": 0
-        }
-    },
-    {
-        "nickname": "알람무시녀",
-        "email": "alarm_ignore@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 22,
-        "studentId": 23,
-        "lifestyle": {
-            "dormNames": "지혜관,신뢰관",
-            "isSmoker": False,
-            "sleepStart": 26,
-            "sleepEnd": 10,
-            "sleepHabits": "SNORING",
-            "noiseLevel": 5,
-            "cleanLevel": 2,
-            "foodLevel": 4,
-            "tempLevel": 4,
-            "homeVisit": "MONTHLY"
-        },
-        "preference": {
-            "weightNoise": 0,
-            "weightClean": 5,
-            "weightTime": 20,
-            "weightHabit": 0,
-            "weightFood": 10,
-            "weightTemp": 5
-        }
-    },
-    {
-        "nickname": "온도민감녀",
-        "email": "temp_sensitive@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 21,
-        "studentId": 24,
-        "lifestyle": {
-            "dormNames": "아름관,여울관",
-            "isSmoker": False,
-            "sleepStart": 24,
-            "sleepEnd": 8,
-            "sleepHabits": "NONE",
-            "noiseLevel": 2,
-            "cleanLevel": 4,
-            "foodLevel": 3,
-            "tempLevel": 1,  # 매우 추위 탐
-            "homeVisit": "BI_WEEKLY"
-        },
-        "preference": {
-            "weightNoise": 5,
-            "weightClean": 5,
-            "weightTime": 10,
-            "weightHabit": 5,
-            "weightFood": 0,
-            "weightTemp": 25  # 온도 매우 중요
-        }
-    },
-    {
-        "nickname": "흡연여성",
-        "email": "smoking_woman@kaist.ac.kr",
-        "gender": "FEMALE",
-        "nationality": "KOREAN",
-        "age": 24,
-        "studentId": 22,
-        "lifestyle": {
-            "dormNames": "여울관",
-            "isSmoker": True,  # 흡연자
-            "sleepStart": 26,
-            "sleepEnd": 10,
-            "sleepHabits": "TALKING",
-            "noiseLevel": 4,
-            "cleanLevel": 3,
-            "foodLevel": 4,
-            "tempLevel": 3,
-            "homeVisit": "MONTHLY"
-        },
-        "preference": {
-            "weightNoise": 5,
-            "weightClean": 10,
-            "weightTime": 15,
-            "weightHabit": 5,
-            "weightFood": 10,
-            "weightTemp": 0
-        }
-    }
-]
-
-
-async def create_dummy_users_db(db: Prisma, personas: list, reset: bool = False):
-    """DB 직접 연결 모드로 더미 유저 생성"""
-    # KAIST 학교 조회
-    school = await db.school.find_unique(where={"name": "KAIST"})
-    if not school:
-        print("❌ KAIST 학교 데이터가 없습니다. 먼저 seeds.py를 실행하세요.")
-        return
-
-    # reset 모드: 기존 더미 유저 삭제
+async def create_dummy_users_db(db: Prisma, personas: list, school_id: int, reset: bool = False):
+    """DB 직접 연결 모드로 특정 학교의 더미 유저 생성"""
+    
+    # reset 모드: 기존 더미 유저 삭제 (전체 대상)
     if reset:
         print("🗑️  기존 더미 유저 삭제 중...")
-        dummy_emails = [p["email"] for p in PERSONAS]
-        for email in dummy_emails:
-            user = await db.user.find_unique(where={"email": email})
-            if user:
-                # 관련 데이터 먼저 삭제
-                await db.userlifestyle.delete_many(where={"userId": user.id})
-                await db.userpreference.delete_many(where={"userId": user.id})
-                await db.review.delete_many(where={"reviewerId": user.id})
-                await db.review.delete_many(where={"targetId": user.id})
-                await db.chatparticipant.delete_many(where={"userId": user.id})
-                await db.chatmessage.delete_many(where={"senderId": user.id})
-                await db.matchresult.delete_many(where={"userId": user.id})
-                await db.matchresult.delete_many(where={"targetUserId": user.id})
-                await db.user.delete(where={"id": user.id})
+        # 닉네임이 'User_'로 시작하는 모든 유저 삭제
+        dummy_users = await db.user.find_many(where={"nickname": {"startsWith": "User_"}})
+        
+        for user in dummy_users:
+            await db.userlifestyle.delete_many(where={"userId": user.id})
+            await db.userpreference.delete_many(where={"userId": user.id})
+            await db.review.delete_many(where={"reviewerId": user.id})
+            await db.review.delete_many(where={"targetId": user.id})
+            await db.chatparticipant.delete_many(where={"userId": user.id})
+            await db.chatmessage.delete_many(where={"senderId": user.id})
+            await db.matchhistory.delete_many(where={"OR": [{"userAId": user.id}, {"userBId": user.id}]})
+            await db.roommatecontract.delete_many(where={"OR": [{"userAId": user.id}, {"userBId": user.id}]})
+            await db.matchresult.delete_many(where={"userId": user.id})
+            await db.matchresult.delete_many(where={"targetUserId": user.id})
+            await db.user.delete(where={"id": user.id})
         print("  ✓ 삭제 완료")
 
     created_count = 0
     skipped_count = 0
 
     for persona in personas:
-        # 이미 존재하는 유저 확인
         existing = await db.user.find_unique(where={"email": persona["email"]})
         if existing:
-            print(f"  ✓ 이미 존재: {persona['nickname']}")
             skipped_count += 1
             continue
 
-        # 유저 생성
         user = await db.user.create(
             data={
-                "id": cuid_generator(),  # CUID2로 ID 생성
+                "id": cuid_generator(),
                 "email": persona["email"],
                 "nickname": persona["nickname"],
                 "password": hash_password(DEFAULT_PASSWORD),
@@ -700,11 +121,10 @@ async def create_dummy_users_db(db: Prisma, personas: list, reset: bool = False)
                 "nationality": persona["nationality"],
                 "age": persona["age"],
                 "studentId": persona["studentId"],
-                "schoolId": school.id
+                "schoolId": school_id
             }
         )
 
-        # Lifestyle 생성
         lifestyle_data = persona["lifestyle"]
         await db.userlifestyle.create(
             data={
@@ -713,7 +133,6 @@ async def create_dummy_users_db(db: Prisma, personas: list, reset: bool = False)
             }
         )
 
-        # Preference 생성
         preference_data = normalize_weights(persona["preference"])
         await db.userpreference.create(
             data={
@@ -721,11 +140,9 @@ async def create_dummy_users_db(db: Prisma, personas: list, reset: bool = False)
                 **preference_data
             }
         )
-
-        print(f"  + 생성: {persona['nickname']} ({persona['gender']})")
         created_count += 1
 
-    print(f"\n✅ 완료: {created_count}명 생성, {skipped_count}명 스킵")
+    return created_count, skipped_count
 
 
 async def create_dummy_users_api(base_url: str, personas: list):
@@ -735,17 +152,6 @@ async def create_dummy_users_api(base_url: str, personas: list):
     async with httpx.AsyncClient(timeout=30.0) as client:
         print(f"🌐 서버에 연결 중: {base_url}")
 
-        # 서버 상태 확인
-        try:
-            health = await client.get(f"{base_url.rstrip('/')}/health")
-            if health.status_code != 200:
-                print(f"❌ 서버 응답 없음: {health.status_code}")
-                return
-        except httpx.ConnectError:
-            print(f"❌ 서버에 연결할 수 없습니다: {base_url}")
-            return
-
-        # Admin API로 bulk 생성 요청
         try:
             normalized = []
             for persona in personas:
@@ -755,20 +161,26 @@ async def create_dummy_users_api(base_url: str, personas: list):
                         "preference": normalize_weights(persona["preference"]),
                     }
                 )
-            response = await client.post(
-                admin_url,
-                json={"personas": normalized, "password": DEFAULT_PASSWORD},
-                timeout=60.0
-            )
+            batch_size = 50
+            total_created = 0
+            
+            for i in range(0, len(normalized), batch_size):
+                batch = normalized[i:i+batch_size]
+                response = await client.post(
+                    admin_url,
+                    json={"personas": batch, "password": DEFAULT_PASSWORD},
+                    timeout=60.0
+                )
 
-            if response.status_code == 200:
-                result = response.json()
-                print(f"\n✅ 완료: {result.get('created', 0)}명 생성, {result.get('skipped', 0)}명 스킵")
-            elif response.status_code == 404:
-                print("❌ Admin API가 없습니다. 서버에 /api/v1/admin/dummy-users 엔드포인트를 추가하세요.")
-                print("   또는 --api 옵션 없이 DB 직접 연결 모드를 사용하세요.")
-            else:
-                print(f"❌ 오류: {response.status_code} - {response.text}")
+                if response.status_code == 200:
+                    result = response.json()
+                    total_created += result.get('created', 0)
+                    print(f"  Batch {i//batch_size + 1}: {result.get('created', 0)} created")
+                else:
+                    print(f"❌ 배치 전송 실패: {response.status_code} - {response.text}")
+
+            print(f"\n✅ 완료: 총 {total_created}명 생성")
+            
         except Exception as e:
             print(f"❌ API 호출 실패: {e}")
 
@@ -776,39 +188,11 @@ async def create_dummy_users_api(base_url: str, personas: list):
 def parse_args():
     """CLI 인자 파싱"""
     parser = argparse.ArgumentParser(
-        description="더미 유저 데이터 생성 스크립트",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-예시:
-  python -m scripts.generate_dummy_users                    # 로컬 DB 직접 연결
-  python -m scripts.generate_dummy_users --api http://hjxarchive.cloud:8000
-  python -m scripts.generate_dummy_users --reset            # 기존 데이터 삭제 후 재생성
-  python -m scripts.generate_dummy_users --limit 5          # 5명만 생성
-        """
+        description="더미 유저 데이터 생성 스크립트"
     )
-    parser.add_argument(
-        "--api",
-        type=str,
-        metavar="URL",
-        help="API 모드: 서버 URL (예: http://hjxarchive.cloud:8000)"
-    )
-    parser.add_argument(
-        "--reset",
-        action="store_true",
-        help="기존 더미 유저 삭제 후 재생성"
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        metavar="N",
-        help="생성할 유저 수 제한"
-    )
-    parser.add_argument(
-        "--list",
-        action="store_true",
-        dest="list_personas",
-        help="생성 가능한 페르소나 목록 출력"
-    )
+    parser.add_argument("--api", type=str, metavar="URL")
+    parser.add_argument("--reset", action="store_true")
+    parser.add_argument("--limit", type=int, metavar="N", default=200)
     return parser.parse_args()
 
 
@@ -816,37 +200,53 @@ async def main():
     """메인 실행 함수"""
     args = parse_args()
 
-    # 페르소나 목록 출력
-    if args.list_personas:
-        print("📋 생성 가능한 페르소나 목록:\n")
-        for i, p in enumerate(PERSONAS, 1):
-            print(f"  {i:2}. {p['nickname']:12} ({p['gender']:6}) - {p['email']}")
-        print(f"\n총 {len(PERSONAS)}명")
-        return
+    db = Prisma()
+    await db.connect()
 
-    # 생성할 페르소나 선택
-    personas = PERSONAS[:args.limit] if args.limit else PERSONAS
+    try:
+        # 학교 목록 조회
+        schools = await db.school.find_many(
+            where={"name": {"in": ["KAIST", "부산대학교"]}},
+            include={"dorms": True}
+        )
+        
+        if not schools:
+            print("❌ 대학교 데이터가 없습니다. 먼저 seeds.py를 실행하세요.")
+            return
 
-    print("👥 더미 유저 생성 시작...\n")
-    print(f"   대상: {len(personas)}명")
-    print(f"   모드: {'API' if args.api else 'DB 직접 연결'}")
-    print(f"   리셋: {'예' if args.reset else '아니오'}\n")
+        print(f"👥 더미 유저 생성 시작... (학교: {[s.name for s in schools]})
+")
 
-    if args.api:
-        # API 모드
-        await create_dummy_users_api(args.api, personas)
-    else:
-        # DB 직접 연결 모드
-        db = Prisma()
-        await db.connect()
+        for school in schools:
+            print(f"🏫 {school.name} ({school.domain}) 처리 중...")
+            
+            # 기숙사 목록 추출
+            dorms = [d.name for d in school.dorms]
+            
+            # 페르소나 생성
+            personas = generate_random_personas(
+                count=args.limit, 
+                email_domain=school.domain, 
+                dorm_list=dorms
+            )
 
-        try:
-            await create_dummy_users_db(db, personas, reset=args.reset)
-        except Exception as e:
-            print(f"❌ 오류 발생: {e}")
-            raise
-        finally:
-            await db.disconnect()
+            if args.api:
+                # API 모드
+                await create_dummy_users_api(args.api, personas)
+            else:
+                # DB 직접 연결
+                c, s = await create_dummy_users_db(db, personas, school.id, reset=args.reset)
+                print(f"  ✓ {school.name}: {c}명 생성, {s}명 스킵")
+                # reset은 첫 번째 학교에서만 수행하도록 (아니면 매번 하면 이전 학교 거 지워짐)
+                args.reset = False 
+
+        print("\n✅ 모든 작업 완료")
+
+    except Exception as e:
+        print(f"❌ 오류 발생: {e}")
+        raise
+    finally:
+        await db.disconnect()
 
 
 if __name__ == "__main__":

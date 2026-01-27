@@ -99,7 +99,7 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
 
   const handleSave = async () => {
     if (!isWeightValid) {
-      Alert.alert('알림', '7만원을 모두 배분해주세요.');
+      Alert.alert('알림', '6만원을 모두 배분해주세요.');
       return;
     }
 
@@ -181,7 +181,7 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
 
         {/* 가중치 설정 */}
         <Text style={[styles.sectionHeader, { color: themeColors.primary }]}>
-          중요도 설정 (7만원 배분)
+          중요도 설정 (6만원 배분)
         </Text>
         <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
           각 항목에 3만원, 1만원, 0원을 배분해주세요.

@@ -70,4 +70,7 @@ jobs:
             # 학교/기숙사 초기 데이터 seed (멱등성 보장 - 이미 있는 데이터는 skip)
             docker exec roomie-api python -m scripts.seeds
 
+            # 더미 유저 생성 (이미 있는 경우 스킵됨)
+            docker exec roomie-api python -m scripts.generate_dummy_users
+
             docker image prune -f
