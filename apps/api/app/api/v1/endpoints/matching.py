@@ -60,6 +60,7 @@ async def get_matching_list(
         where={
             "id": {"not": current_user.id},
             "gender": current_user.gender,
+            "matchingStatus": "SEARCHING",
             "lifestyle": {
                 "isSmoker": my_lifestyle.isSmoker,  # 흡연자끼리, 비흡연자끼리
             },
