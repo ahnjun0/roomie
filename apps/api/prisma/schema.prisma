@@ -57,6 +57,8 @@ model User {
   matchingStatus MatchingStatus @default(SEARCHING)
 
   createdAt   DateTime @default(now())
+  contractsAsUserA RoommateContract[] @relation("ContractUserA")
+  contractsAsUserB RoommateContract[] @relation("ContractUserB")
 }
 
 // 3. 나의 생활 패턴 (Fact) - (Screen 3, 4, 5, 7)
@@ -131,6 +133,7 @@ model ChatRoom {
   messages     ChatMessage[]
 
   createdAt DateTime @default(now())
+  contract RoommateContract?
 }
 
 model ChatParticipant {
