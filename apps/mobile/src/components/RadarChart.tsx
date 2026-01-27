@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Svg, { Polygon, Line, Circle, Text as SvgText, G } from 'react-native-svg';
+import { View, Text, StyleSheet } from 'react-native';
+import Svg, { Polygon, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { useTheme } from '../contexts';
-import { fontSize, colors as themeColors } from '../constants/theme';
+import { fontSize } from '../constants/theme';
 
 interface RadarChartData {
   label: string;
@@ -16,7 +16,11 @@ interface RadarChartProps {
 }
 
 export function RadarChart({ data, size = 250 }: RadarChartProps) {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
+  const myStroke = 'rgba(0, 0, 255, 0.9)';
+  const myFill = 'rgba(0, 0, 255, 0.5)';
+  const otherStroke = 'rgba(255, 0, 0, 0.9)';
+  const otherFill = 'rgba(255, 0, 0, 0.5)';
   const center = size / 2;
   const radius = (size / 2) * 0.7;
   const levels = 5;
@@ -84,16 +88,16 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
         {/* Other user's polygon */}
         <Polygon
           points={otherPolygonPoints}
-          fill={`${colors.text.tertiary}40`}
-          stroke={colors.text.tertiary}
+          fill={otherFill}
+          stroke={otherStroke}
           strokeWidth={2}
         />
 
         {/* My polygon */}
         <Polygon
           points={myPolygonPoints}
-          fill={`${themeColors.primary}40`}
-          stroke={themeColors.primary}
+          fill={myFill}
+          stroke={myStroke}
           strokeWidth={2}
         />
 
@@ -104,7 +108,7 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
             cx={point.x}
             cy={point.y}
             r={4}
-            fill={themeColors.primary}
+            fill={myStroke}
           />
         ))}
 
@@ -125,12 +129,16 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
           );
         })}
       </Svg>
-
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: themeColors.primary }]} />
-          <Text style={[styles.legendText, { color: colors.text.primary }]}>나</Text>
+          <View style={[styles.legendDot, { backgroundColor: myStroke }]} />
+          <Text style={[styles.legendText, { color: colors.text.primary }]}>Me</Text>
         </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: otherStroke }]} />
+          <Text style={[styles.legendText, { color: colors.text.primary }]}>Other</Text>
+        </View>
+      </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: colors.text.tertiary }]} />
           <Text style={[styles.legendText, { color: colors.text.primary }]}>상대방</Text>
