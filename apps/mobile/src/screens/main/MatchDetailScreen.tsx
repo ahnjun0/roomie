@@ -24,13 +24,13 @@ interface MatchDetailScreenProps {
 }
 
 const COMPARISON_LABELS: Record<string, string> = {
-  smoking: '?�연',
-  sleepSchedule: '?�면 ?�정',
-  noise: '?�음 민감??,
-  clean: '�?��??,
-  food: '?�내 취식',
-  temp: '?�도',
-  sleepHabits: '?�버�?,
+  smoking: '흡연',
+  sleepSchedule: '수면 시간',
+  noise: '소음 민감도',
+  clean: '청결도',
+  food: '실내 취식',
+  temp: '온도',
+  sleepHabits: '잠버릇',
 };
 
 const formatValue = (key: string, value: any) => {
@@ -97,7 +97,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
     return (
       <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
         <Text style={[styles.errorText, { color: colors.text.secondary }]}>
-          ?�로?�을 불러?????�습?�다
+          프로필을 불러올 수 없습니다
         </Text>
       </View>
     );
@@ -105,13 +105,12 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
 
   const { user, lifestyle } = detail;
 
+  // 4각형 레이더 차트: 소음, 청결, 식사, 잠버릇
   const chartItems = [
-    { key: 'noise', label: 'Noise' },
-    { key: 'clean', label: 'Clean' },
-    { key: 'food', label: 'Food' },
-    { key: 'sleepHabits', label: 'Habit' },
-    { key: 'sleepSchedule', label: 'Time' },
-    { key: 'temp', label: 'Temp' },
+    { key: 'noise', label: '소음' },
+    { key: 'clean', label: '청결' },
+    { key: 'food', label: '식사' },
+    { key: 'sleepHabits', label: '잠버릇' },
   ];
 
   const toRadarValue = (value: number) => {
@@ -120,16 +119,19 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
     return (clamped / 2) * 5;
   };
 
-  const radarData = chartItems.map(item => ({
-    label: item.label,
-    myValue: toRadarValue(Number(detail.comparison[item.key]?.me ?? 0)),
-    otherValue: toRadarValue(Number(detail.comparison[item.key]?.target ?? 0)),
-  }));
+  // 레이더 차트 데이터 생성 (방어 코드 포함)
+  const radarData = detail.comparison
+    ? chartItems.map(item => ({
+        label: item.label,
+        myValue: toRadarValue(Number(detail.comparison[item.key]?.me ?? 0)),
+        otherValue: toRadarValue(Number(detail.comparison[item.key]?.target ?? 0)),
+      }))
+    : [];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Header
-        title="?�세 ?�로??
+        title="상세 프로필"
         showBack
         onBack={() => navigation.goBack()}
       />
@@ -139,7 +141,7 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
           styles.content,
           { paddingBottom: insets.bottom + spacing.lg },
         ]}>
-        {/* ?�로???�더 */}
+        {/* 프로필 헤더 */}
         <Card style={styles.profileCard}>
           <View style={styles.profileHeader}>
             <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
@@ -152,10 +154,10 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
                 {user.nickname}
               </Text>
               <Text style={[styles.subInfo, { color: colors.text.secondary }]}>
-                {user.studentId}?�번 | {lifestyle?.dormNames}
+                {user.studentId}학번 | {lifestyle?.dormNames}
               </Text>
               <Text style={[styles.subInfo, { color: colors.text.tertiary }]}>
-                {user.nationality} | {user.gender === 'MALE' ? '?�성' : '?�성'}
+                {user.nationality} | {user.gender === 'MALE' ? '남성' : '여성'}
               </Text>
             </View>
             <View
@@ -168,24 +170,24 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
                 {detail.matchRate}%
               </Text>
               <Text style={[styles.scoreLabel, { color: colors.text.secondary }]}>
-                ?�사??
+                유사도
               </Text>
             </View>
           </View>
         </Card>
 
-        {/* ?�사???�이??차트 */}
+        {/* 유사도 레이더 차트 */}
         <Card style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-            ?�사??비교
+            성향 비교
           </Text>
           <RadarChart data={radarData} />
         </Card>
 
-        {/* ?�세 비교 */}
+        {/* 상세 비교 */}
         <Card style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-            ?�활 ?��? 비교
+            생활 패턴 비교
           </Text>
           {Object.entries(detail.comparison).map(([key, item]) => (
             <View
@@ -196,28 +198,28 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
               </Text>
               <View style={styles.comparisonValues}>
                 <Text style={[styles.comparisonValue, { color: themeColors.primary }]}>
-                  ?? {formatValue(key, item.me)}
+                  나: {formatValue(key, item.me)}
                 </Text>
                 <Text style={[styles.comparisonValue, { color: colors.text.tertiary }]}>
-                  ?��?: {formatValue(key, item.target)}
+                  상대: {formatValue(key, item.target)}
                 </Text>
               </View>
             </View>
           ))}
         </Card>
 
-        {/* 리뷰 ?�션 */}
+        {/* 리뷰 섹션 */}
         <Card style={styles.section}>
           <View style={styles.reviewHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
-              ?�전 룸메?�트 리뷰
+              이전 룸메이트 리뷰
             </Text>
             <View style={styles.reviewSummary}>
               <Text style={[styles.avgScore, { color: themeColors.warning }]}>
-                ??{detail.averageReviewScore.toFixed(1)}
+                ★{detail.averageReviewScore.toFixed(1)}
               </Text>
               <Text style={[styles.reviewCountText, { color: colors.text.tertiary }]}>
-                ({detail.reviewCount}�?
+                ({detail.reviewCount}건)
               </Text>
             </View>
           </View>
@@ -233,13 +235,13 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
             ))
           ) : (
             <Text style={[styles.noReviews, { color: colors.text.tertiary }]}>
-              ?�직 ?�성??리뷰가 ?�습?�다
+              아직 작성된 리뷰가 없습니다
             </Text>
           )}
         </Card>
 
         <Button
-          title="?�?�하�?
+          title="대화하기"
           onPress={handleChat}
           fullWidth
         />

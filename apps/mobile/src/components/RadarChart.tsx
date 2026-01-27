@@ -17,13 +17,22 @@ interface RadarChartProps {
 
 export function RadarChart({ data, size = 250 }: RadarChartProps) {
   const { colors } = useTheme();
-  const myStroke = 'rgba(0, 0, 255, 0.9)';
-  const myFill = 'rgba(0, 0, 255, 0.5)';
-  const otherStroke = 'rgba(255, 0, 0, 0.9)';
-  const otherFill = 'rgba(255, 0, 0, 0.5)';
+  const myStroke = 'rgba(59, 130, 246, 1)';
+  const myFill = 'rgba(59, 130, 246, 0.3)';
+  const otherStroke = 'rgba(239, 68, 68, 1)';
+  const otherFill = 'rgba(239, 68, 68, 0.3)';
   const center = size / 2;
   const radius = (size / 2) * 0.7;
   const levels = 5;
+
+  // 방어 코드: 데이터가 없거나 비어있으면 렌더링하지 않음
+  if (!data || data.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: colors.text.secondary }}>데이터를 불러오는 중...</Text>
+      </View>
+    );
+  }
 
   const angleStep = (2 * Math.PI) / data.length;
 
@@ -132,15 +141,10 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: myStroke }]} />
-          <Text style={[styles.legendText, { color: colors.text.primary }]}>Me</Text>
+          <Text style={[styles.legendText, { color: colors.text.primary }]}>나</Text>
         </View>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: otherStroke }]} />
-          <Text style={[styles.legendText, { color: colors.text.primary }]}>Other</Text>
-        </View>
-      </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: colors.text.tertiary }]} />
           <Text style={[styles.legendText, { color: colors.text.primary }]}>상대방</Text>
         </View>
       </View>
