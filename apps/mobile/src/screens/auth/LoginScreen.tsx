@@ -9,6 +9,7 @@ import {
   Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useAuth } from '../../contexts';
@@ -137,6 +138,13 @@ export function LoginScreen({ navigation }: Props) {
         ]}
         keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
+          <View style={[styles.logoBadge, { backgroundColor: themeColors.primaryLight }]}>
+            <Image
+              source={require('../../../assets/icon-original.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+          </View>
           <Text style={[styles.logo, { color: themeColors.primary }]}>ROOMIE</Text>
           <Text style={[styles.title, { color: colors.text.primary }]}>
             학교 이메일로 시작하기
@@ -251,6 +259,19 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.xxl,
+    alignItems: 'center',
+  },
+  logoBadge: {
+    width: 84,
+    height: 84,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
+  logoImage: {
+    width: 56,
+    height: 56,
   },
   logo: {
     fontSize: 36,
