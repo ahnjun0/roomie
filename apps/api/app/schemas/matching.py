@@ -106,3 +106,25 @@ class EndSemesterResponse(BaseModel):
     targetUserId: str
     targetNickname: str | None
     bothEnded: bool
+
+
+# ============== Connections (대화 중 / 지난 룸메이트) ==============
+
+
+class ConnectionUser(BaseModel):
+    userId: str
+    nickname: str | None
+    chatRoomId: str
+    lastMessage: str | None = None
+    lastMessageAt: datetime | None = None
+
+
+class PastRoommateUser(BaseModel):
+    userId: str
+    nickname: str | None
+    studentId: int
+
+
+class ConnectionsResponse(BaseModel):
+    activeChats: list[ConnectionUser]
+    pastRoommates: list[PastRoommateUser]

@@ -4,6 +4,8 @@ import {
   Text,
   StyleSheet,
   FlatList,
+  ScrollView,
+  TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
   Alert,
@@ -41,6 +43,20 @@ interface RoommateInfo {
   endSemesterPartner: boolean;
 }
 
+interface ConnectionUser {
+  userId: string;
+  nickname: string | null;
+  chatRoomId: string;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+}
+
+interface PastRoommateUser {
+  userId: string;
+  nickname: string | null;
+  studentId: number;
+}
+
 interface MatchingDashboardScreenProps {
   navigation: any;
 }
@@ -55,6 +71,11 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Connections state
+  const [activeChats, setActiveChats] = useState<ConnectionUser[]>([]);
+  const [pastRoommates, setPastRoommates] = useState<PastRoommateUser[]>([]);
 
   // Roommate state (for MATCHED status)
   const [roommate, setRoommate] = useState<RoommateInfo | null>(null);
@@ -82,6 +103,19 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
     }
   }, []);
 
+  const fetchConnections = useCallback(async () => {
+    try {
+      const response = await api.get<{
+        activeChats: ConnectionUser[];
+        pastRoommates: PastRoommateUser[];
+      }>(ENDPOINTS.MATCHING.CONNECTIONS);
+      setActiveChats(response.activeChats ?? []);
+      setPastRoommates(response.pastRoommates ?? []);
+    } catch (error) {
+      console.error('Failed to fetch connections:', error);
+    }
+  }, []);
+
   const fetchMatches = useCallback(async (pageNum: number = 1, refresh: boolean = false) => {
     try {
       if (refresh) {
@@ -93,6 +127,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       );
 
       const items = response.data ?? [];
+      setTotalCount(response.total ?? 0);
 
       if (refresh || pageNum === 1) {
         setMatches(items);
@@ -115,14 +150,16 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       fetchRoommate();
     } else {
       fetchMatches(1, true);
+      fetchConnections();
     }
-  }, [isMatched, fetchRoommate, fetchMatches]);
+  }, [isMatched, fetchRoommate, fetchMatches, fetchConnections]);
 
   const handleRefresh = () => {
     if (isMatched) {
       fetchRoommate();
     } else {
       fetchMatches(1, true);
+      fetchConnections();
     }
   };
 
@@ -194,10 +231,98 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
   );
 
   const renderHeader = () => (
-    <View style={styles.listHeader}>
-      <Text style={[styles.resultCount, { color: colors.text.secondary }]}>
-        {matches?.length ?? 0}명의 룸메이트 후보
-      </Text>
+    <View>
+      {/* Active Chats Section */}
+      {activeChats.length > 0 && (
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            대화 중인 상대
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalScroll}
+          >
+            {activeChats.map(chat => (
+              <TouchableOpacity
+                key={chat.userId}
+                style={[styles.connectionCard, { backgroundColor: colors.card }]}
+                onPress={() => navigation.navigate('Chat', {
+                  chatRoomId: chat.chatRoomId,
+                  userId: chat.userId,
+                  userName: chat.nickname,
+                })}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.connectionAvatar, { backgroundColor: themeColors.primary + '20' }]}>
+                  <Text style={[styles.connectionAvatarText, { color: themeColors.primary }]}>
+                    {chat.nickname?.charAt(0) || '?'}
+                  </Text>
+                </View>
+                <Text
+                  style={[styles.connectionName, { color: colors.text.primary }]}
+                  numberOfLines={1}
+                >
+                  {chat.nickname ?? '알 수 없음'}
+                </Text>
+                {chat.lastMessage && (
+                  <Text
+                    style={[styles.connectionSubtext, { color: colors.text.tertiary }]}
+                    numberOfLines={1}
+                  >
+                    {chat.lastMessage}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Past Roommates Section */}
+      {pastRoommates.length > 0 && (
+        <View style={styles.sectionContainer}>
+          <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
+            지난 룸메이트
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.horizontalScroll}
+          >
+            {pastRoommates.map(rm => (
+              <TouchableOpacity
+                key={rm.userId}
+                style={[styles.connectionCard, { backgroundColor: colors.card }]}
+                onPress={() => navigation.navigate('MatchDetail', { userId: rm.userId })}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.connectionAvatar, { backgroundColor: themeColors.info + '20' }]}>
+                  <Text style={[styles.connectionAvatarText, { color: themeColors.info }]}>
+                    {rm.nickname?.charAt(0) || '?'}
+                  </Text>
+                </View>
+                <Text
+                  style={[styles.connectionName, { color: colors.text.primary }]}
+                  numberOfLines={1}
+                >
+                  {rm.nickname ?? '알 수 없음'}
+                </Text>
+                <Text style={[styles.connectionSubtext, { color: colors.text.tertiary }]}>
+                  {rm.studentId}학번
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      {/* Result Count */}
+      <View style={styles.listHeader}>
+        <Text style={[styles.resultCount, { color: colors.text.secondary }]}>
+          {totalCount}명의 룸메이트 후보
+        </Text>
+      </View>
     </View>
   );
 
@@ -355,6 +480,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },
+  // Connections sections
+  sectionContainer: {
+    marginBottom: spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.bold,
+    marginBottom: spacing.sm,
+  },
+  horizontalScroll: {
+    gap: spacing.sm,
+  },
+  connectionCard: {
+    width: 100,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+  },
+  connectionAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  connectionAvatarText: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+  },
+  connectionName: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  connectionSubtext: {
+    fontSize: fontSize.xs,
+    textAlign: 'center',
+  },
+  // Match list
   listHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
