@@ -75,7 +75,7 @@ interface WeightData {
 interface OnboardingContextType {
   data: OnboardingData;
   updateData: (updates: Partial<OnboardingData>) => void;
-  submitRegistration: () => Promise<RegisterResponse>;
+  submitRegistration: (overrides?: Partial<OnboardingData>) => Promise<RegisterResponse>;
   submitBasicInfo: () => Promise<void>;
   submitLifestyle: () => Promise<void>;
   submitPreferences: (weights: WeightData) => Promise<void>;
@@ -115,6 +115,7 @@ const initialData: OnboardingData = {
   sensitivity: 3,
 };
 
+
 const OnboardingContext = createContext<OnboardingContextType | undefined>(
   undefined,
 );
@@ -130,26 +131,28 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setData(initialData);
   }, []);
 
-  const submitRegistration = useCallback(async (): Promise<RegisterResponse> => {
+  const submitRegistration = useCallback(async (overrides?: Partial<OnboardingData>): Promise<RegisterResponse> => {
+    const finalData = { ...data, ...overrides };
+
     // 필수 데이터 확인
-    if (!data.email || !data.password || !data.tempToken || !data.nickname) {
+    if (!finalData.email || !finalData.password || !finalData.tempToken || !finalData.nickname) {
       throw new Error('이메일, 비밀번호, 인증 토큰, 닉네임이 필요합니다.');
     }
-    if (!data.gender || !data.nationality || !data.age || !data.studentId) {
+    if (!finalData.gender || !finalData.nationality || !finalData.age || !finalData.studentId) {
       throw new Error('기본 정보를 모두 입력해주세요.');
     }
 
     const response = await api.post<RegisterResponse>(ENDPOINTS.AUTH.REGISTER, {
-      email: data.email,
-      password: data.password,
-      tempToken: data.tempToken,
-      nickname: data.nickname,
-      gender: data.gender,
-      nationality: data.nationality,
-      age: data.age,
-      studentId: typeof data.studentId === 'string'
-        ? parseInt(data.studentId, 10) % 100
-        : data.studentId,
+      email: finalData.email,
+      password: finalData.password,
+      tempToken: finalData.tempToken,
+      nickname: finalData.nickname,
+      gender: finalData.gender,
+      nationality: finalData.nationality,
+      age: finalData.age,
+      studentId: typeof finalData.studentId === 'string'
+        ? parseInt(finalData.studentId, 10) % 100
+        : finalData.studentId,
     });
 
     return response;

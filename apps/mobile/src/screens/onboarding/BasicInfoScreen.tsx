@@ -39,13 +39,15 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
     localData.studentId.length === 2;
 
   const handleNext = async () => {
-    // 먼저 로컬 데이터를 OnboardingContext에 저장
-    updateData({
+    const newData = {
       gender: localData.gender as 'MALE' | 'FEMALE',
       nationality: localData.nationality,
       age: parseInt(localData.age, 10),
       studentId: parseInt(localData.studentId, 10),
-    });
+    };
+
+    // 먼저 로컬 데이터를 OnboardingContext에 저장
+    updateData(newData);
 
     if (isRegistrationMode) {
       // 회원가입 모드: API 호출
@@ -53,7 +55,7 @@ export function BasicInfoScreen({ navigation }: BasicInfoScreenProps) {
       setError('');
 
       try {
-        const response = await submitRegistration();
+        const response = await submitRegistration(newData);
 
         // 토큰 설정 후 전체 사용자 정보 가져오기
         api.setAccessToken(response.accessToken);

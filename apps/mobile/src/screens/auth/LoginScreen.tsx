@@ -112,9 +112,18 @@ export function LoginScreen({ navigation }: Props) {
     navigation.navigate('SignIn', { email });
   };
 
-  const handleGoToResetPassword = () => {
-    setShowExistingUserModal(false);
-    navigation.navigate('VerifyEmail', { email, mode: 'reset' });
+  const handleGoToResetPassword = async () => {
+    setIsLoading(true);
+    try {
+      await sendVerificationCode(email, 'reset');
+      setShowExistingUserModal(false);
+      navigation.navigate('VerifyEmail', { email, mode: 'reset' });
+    } catch (err: any) {
+      setError(err.message || '인증 코드 발송에 실패했습니다.');
+      setShowExistingUserModal(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
