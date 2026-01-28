@@ -39,6 +39,12 @@ export type RootStackParamList = {
   HelpCreate: undefined;
   HelpDetail: { postId: string };
 
+  // Delivery
+  DeliveryList: undefined;
+  DeliveryForm: undefined;
+  DeliveryDetail: { postId: string };
+  DeliveryGroupChat: { postId: string; postTitle?: string };
+
   // Room-BTI Screens
   RoomBtiIntro: undefined;
   RoomBtiTest: undefined;

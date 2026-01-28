@@ -85,4 +85,14 @@ export const ENDPOINTS = {
     GET: (id: string) => `/help/${id}`,
     UPDATE_STATUS: (id: string) => `/help/${id}/status`,
   },
+
+  // Delivery
+  DELIVERY: {
+    LIST: '/delivery',
+    CREATE: '/delivery',
+    GET: (id: string) => `/delivery/${id}`,
+    JOIN: (id: string) => `/delivery/${id}/join`,
+    LEAVE: (id: string) => `/delivery/${id}/leave`,
+    CLOSE: (id: string) => `/delivery/${id}/close`,
+  },
 } as const;

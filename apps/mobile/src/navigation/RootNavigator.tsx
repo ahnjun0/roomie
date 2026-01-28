@@ -36,6 +36,10 @@ import {
   HelpListScreen,
   HelpCreateScreen,
   HelpDetailScreen,
+  DeliveryListScreen,
+  DeliveryFormScreen,
+  DeliveryDetailScreen,
+  DeliveryGroupChatScreen,
 } from '../screens';
 import { colors } from '../constants/theme';
 
@@ -161,6 +165,12 @@ export function RootNavigator() {
           {/* Help Center */}
           <Stack.Screen name="HelpCreate" component={HelpCreateScreen} />
           <Stack.Screen name="HelpDetail" component={HelpDetailScreen} />
+
+          {/* Delivery */}
+          <Stack.Screen name="DeliveryList" component={DeliveryListScreen} />
+          <Stack.Screen name="DeliveryForm" component={DeliveryFormScreen} />
+          <Stack.Screen name="DeliveryDetail" component={DeliveryDetailScreen} />
+          <Stack.Screen name="DeliveryGroupChat" component={DeliveryGroupChatScreen} />
         </>
       )}
     </Stack.Navigator>
