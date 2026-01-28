@@ -95,13 +95,16 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       setIsLoading(true);
       const response = await api.get<RoommateInfo>(ENDPOINTS.MATCHING.ROOMMATE);
       setRoommate(response);
-    } catch (error) {
-      console.error('Failed to fetch roommate:', error);
+    } catch (error: any) {
+      // 서버에서 이미 SEARCHING으로 변경된 경우 사용자 상태 동기화
+      if (error?.message?.includes('NOT_MATCHED')) {
+        await refreshUser();
+      }
       setRoommate(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [refreshUser]);
 
   const fetchConnections = useCallback(async () => {
     try {

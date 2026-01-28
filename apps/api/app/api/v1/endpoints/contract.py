@@ -20,6 +20,29 @@ from app.schemas.contract import (
 router = APIRouter()
 
 
+async def _contract_with_nicknames(contract, db: Prisma) -> ContractResponse:
+    """Contract에 유저 닉네임을 포함한 응답 생성"""
+    users = await db.user.find_many(
+        where={"id": {"in": [contract.userAId, contract.userBId]}}
+    )
+    user_map = {u.id: u for u in users}
+    return ContractResponse(
+        id=contract.id,
+        chatRoomId=contract.chatRoomId,
+        userAId=contract.userAId,
+        userBId=contract.userBId,
+        nicknameA=user_map.get(contract.userAId, None) and user_map[contract.userAId].nickname,
+        nicknameB=user_map.get(contract.userBId, None) and user_map[contract.userBId].nickname,
+        status=contract.status,
+        contractData=contract.contractData,
+        signatureA=contract.signatureA,
+        signatureB=contract.signatureB,
+        signedAt=contract.signedAt,
+        endSemesterA=contract.endSemesterA,
+        endSemesterB=contract.endSemesterB,
+    )
+
+
 def _wrap_json(data: dict):
     if Json:
         return Json(data)
@@ -153,7 +176,7 @@ async def get_contract_by_chat_room(
             detail={"error": "FORBIDDEN", "message": "계약서에 접근할 권한이 없습니다."},
         )
 
-    return contract
+    return await _contract_with_nicknames(contract, db)
 
 
 @router.post("/init", response_model=ContractResponse, status_code=status.HTTP_201_CREATED)
@@ -260,7 +283,7 @@ async def init_contract(
         }
     )
 
-    return contract
+    return await _contract_with_nicknames(contract, db)
 
 
 @router.get("/{contract_id}", response_model=ContractResponse)
@@ -283,7 +306,7 @@ async def get_contract(
             detail={"error": "FORBIDDEN", "message": "계약서에 접근할 권한이 없습니다."},
         )
 
-    return contract
+    return await _contract_with_nicknames(contract, db)
 
 
 @router.put("/{contract_id}", response_model=ContractResponse)
@@ -318,7 +341,7 @@ async def update_contract(
         },
     )
 
-    return updated_contract
+    return await _contract_with_nicknames(updated_contract, db)
 
 
 @router.post("/{contract_id}/sign", response_model=ContractResponse)
@@ -373,4 +396,4 @@ async def sign_contract(
                 data={"userAId": user_ids[0], "userBId": user_ids[1]}
             )
 
-    return contract
+    return await _contract_with_nicknames(contract, db)

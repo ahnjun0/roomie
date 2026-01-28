@@ -126,8 +126,8 @@ ROOM_BTI_ANIMALS = {
         "description": "사교적이고 자유분방하며 아침형인 당신! 활발하고 적응력이 좋아서 누구와도 잘 어울려요. 에너지 넘치는 아침형!",
     },
     "SFDI": {
-        "animal": "느긋한 카피바라",
-        "imageKey": "capybara",
+        "animal": "느긋한 호랑이",
+        "imageKey": "tiger",
         "description": "사교적이고 자유분방하며 아침형이면서 둔감한 당신! 어디서든 잘 적응하고 스트레스 없이 지내는 타입이에요.",
     },
     "SFNS": {

@@ -35,6 +35,7 @@ export const ENDPOINTS = {
     DETAIL: (userId: string | number) => `/matching/${userId}`,
     ROOMMATE: '/matching/roommate',
     END_SEMESTER: '/matching/end-semester',
+    FINALIZE_SEMESTER: '/matching/finalize-semester',
   },
 
   // Chats

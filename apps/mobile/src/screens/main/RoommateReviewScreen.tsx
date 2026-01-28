@@ -37,8 +37,14 @@ export function RoommateReviewScreen({ route, navigation }: RoommateReviewScreen
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const goBackToDashboard = () => {
-    refreshUser();
+  const goBackToDashboard = async () => {
+    try {
+      // 양쪽 모두 endSemester이면 매칭 해제
+      await api.post(ENDPOINTS.MATCHING.FINALIZE_SEMESTER);
+    } catch {
+      // finalize 실패해도 대시보드로 이동
+    }
+    await refreshUser();
     navigation.dispatch(
       CommonActions.reset({
         index: 0,

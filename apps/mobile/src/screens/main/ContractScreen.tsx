@@ -23,6 +23,8 @@ interface Contract {
   chatRoomId: string;
   userAId: string;
   userBId: string;
+  nicknameA: string | null;
+  nicknameB: string | null;
   status: 'DRAFT' | 'SIGNED';
   contractData: Record<string, any>;
   signatureA: boolean;
@@ -208,8 +210,8 @@ export function ContractScreen({ route, navigation }: ContractScreenProps) {
           <h3>서명 현황</h3>
           <table>
             <tr>
-              <th>사용자 A</th>
-              <th>사용자 B</th>
+              <th>${contract.nicknameA ?? '사용자 A'}</th>
+              <th>${contract.nicknameB ?? '사용자 B'}</th>
             </tr>
             <tr>
               <td style="padding:8px;border:1px solid #ddd;text-align:center;">
@@ -299,7 +301,7 @@ export function ContractScreen({ route, navigation }: ContractScreenProps) {
           <View style={styles.signatureRow}>
             <View style={styles.signatureItem}>
               <Text style={[styles.signatureLabel, { color: colors.text.secondary }]}>
-                사용자 A
+                {contract.nicknameA ?? '사용자 A'}
               </Text>
               <Text style={[
                 styles.signatureValue,
@@ -310,7 +312,7 @@ export function ContractScreen({ route, navigation }: ContractScreenProps) {
             </View>
             <View style={styles.signatureItem}>
               <Text style={[styles.signatureLabel, { color: colors.text.secondary }]}>
-                사용자 B
+                {contract.nicknameB ?? '사용자 B'}
               </Text>
               <Text style={[
                 styles.signatureValue,
