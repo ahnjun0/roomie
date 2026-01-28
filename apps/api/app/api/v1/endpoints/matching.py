@@ -274,19 +274,54 @@ async def end_semester(
             data=update_data,
         )
 
-    # 양쪽 모두 endSemester이면 관계 종료
+    # 양쪽 모두 endSemester인지 확인 (상태 전환은 finalize에서 수행)
     both_ended = contract.endSemesterA and contract.endSemesterB
-    if both_ended:
-        await db.user.update_many(
-            where={"id": {"in": [current_user.id, target_user_id]}},
-            data={"matchingStatus": "SEARCHING"},
-        )
 
     return EndSemesterResponse(
         targetUserId=target_user_id,
         targetNickname=target_user.nickname if target_user else None,
         bothEnded=both_ended,
     )
+
+
+@router.post("/finalize-semester")
+async def finalize_semester(
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """평가 완료 후 매칭 상태를 SEARCHING으로 전환
+
+    리뷰 작성/건너뛰기 후 호출되며, 양쪽 모두 endSemester인 경우에만 전환합니다.
+    """
+    if current_user.matchingStatus != "MATCHED":
+        return {"finalized": False, "message": "이미 매칭이 해제되었습니다."}
+
+    contract = await db.roommatecontract.find_first(
+        where={
+            "status": "SIGNED",
+            "OR": [
+                {"userAId": current_user.id},
+                {"userBId": current_user.id},
+            ],
+        },
+        order={"signedAt": "desc"},
+    )
+
+    if not contract:
+        return {"finalized": False, "message": "계약서를 찾을 수 없습니다."}
+
+    both_ended = contract.endSemesterA and contract.endSemesterB
+    if not both_ended:
+        return {"finalized": False, "message": "상대방이 아직 학기 끝내기를 하지 않았습니다."}
+
+    target_user_id = contract.userBId if contract.userAId == current_user.id else contract.userAId
+
+    await db.user.update_many(
+        where={"id": {"in": [current_user.id, target_user_id]}},
+        data={"matchingStatus": "SEARCHING"},
+    )
+
+    return {"finalized": True, "message": "매칭이 해제되었습니다."}
 
 
 @router.get("/connections", response_model=ConnectionsResponse)

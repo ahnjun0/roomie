@@ -73,7 +73,7 @@ model User {
 // 3. 나의 생활 패턴 (Fact) - (Screen 3, 4, 5, 7)
 model UserLifestyle {
   id        Int     @id @default(autoincrement())
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String  @unique
 
   // 기숙사 (복수 선택 가능 - 쉼표로 구분)
@@ -99,7 +99,7 @@ model UserLifestyle {
 // 4. 선호 조건 & 5만원 게임 가중치 (Preference) - (Screen 6, 7, 8)
 model UserPreference {
   id        Int     @id @default(autoincrement())
-  user      User    @relation(fields: [userId], references: [id])
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String  @unique
 
   // 기본 선호 (Screen 6)
@@ -120,10 +120,10 @@ model UserPreference {
 model Review {
   id        Int      @id @default(autoincrement())
 
-  reviewer    User @relation("WrittenReviews", fields: [reviewerId], references: [id])
+  reviewer    User @relation("WrittenReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
   reviewerId  String
 
-  target      User @relation("ReceivedReviews", fields: [targetId], references: [id])
+  target      User @relation("ReceivedReviews", fields: [targetId], references: [id], onDelete: Cascade)
   targetId    String
   
   content   String   // "청소를 잘해요"
@@ -149,7 +149,7 @@ model ChatParticipant {
   chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
   chatRoomId String
 
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
 
   joinedAt   DateTime @default(now())
@@ -163,7 +163,7 @@ model ChatMessage {
   chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
   chatRoomId String
 
-  sender     User     @relation(fields: [senderId], references: [id])
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
   senderId   String
 
   content    String
@@ -183,7 +183,7 @@ model DeliveryPost {
   maxParticipants Int
   isClosed        Boolean  @default(false)
 
-  author          User     @relation("DeliveryAuthor", fields: [authorId], references: [id])
+  author          User     @relation("DeliveryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   authorId        String
 
   participants    DeliveryParticipant[]
@@ -199,7 +199,7 @@ model DeliveryParticipant {
   deliveryPost   DeliveryPost @relation(fields: [deliveryPostId], references: [id])
   deliveryPostId String
 
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
 
   joinedAt       DateTime     @default(now())
@@ -214,7 +214,7 @@ model DeliveryMessage {
   deliveryPost   DeliveryPost @relation(fields: [deliveryPostId], references: [id])
   deliveryPostId String
 
-  sender         User     @relation(fields: [senderId], references: [id])
+  sender         User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
   senderId       String
 
   content        String
@@ -229,10 +229,10 @@ model RoommateContract {
   chatRoom     ChatRoom @relation(fields: [chatRoomId], references: [id])
   chatRoomId   String
 
-  userA        User     @relation("ContractUserA", fields: [userAId], references: [id])
+  userA        User     @relation("ContractUserA", fields: [userAId], references: [id], onDelete: Cascade)
   userAId      String
 
-  userB        User     @relation("ContractUserB", fields: [userBId], references: [id])
+  userB        User     @relation("ContractUserB", fields: [userBId], references: [id], onDelete: Cascade)
   userBId      String
 
   status       ContractStatus @default(DRAFT)
@@ -252,10 +252,10 @@ model RoommateContract {
 model MatchHistory {
   id        String   @id @default(cuid())
 
-  userA     User     @relation("MatchHistoryUserA", fields: [userAId], references: [id])
+  userA     User     @relation("MatchHistoryUserA", fields: [userAId], references: [id], onDelete: Cascade)
   userAId   String
 
-  userB     User     @relation("MatchHistoryUserB", fields: [userBId], references: [id])
+  userB     User     @relation("MatchHistoryUserB", fields: [userBId], references: [id], onDelete: Cascade)
   userBId   String
 
   matchedAt DateTime @default(now())
@@ -294,10 +294,10 @@ model Dorm {
 model MatchResult {
   id           Int      @id @default(autoincrement())
 
-  user         User     @relation("MatchUser", fields: [userId], references: [id])
+  user         User     @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
   userId       String
 
-  targetUser   User     @relation("MatchTarget", fields: [targetUserId], references: [id])
+  targetUser   User     @relation("MatchTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
   targetUserId String
 
   score        Float    // 매칭 점수 (0-100)
@@ -314,7 +314,7 @@ model MatchResult {
 model HelpPost {
   id        String   @id                // CUID2 (앱에서 생성)
 
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
 
   category  HelpCategory              // BUG(벌레퇴치), REPAIR(고장신고)
