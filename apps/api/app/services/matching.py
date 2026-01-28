@@ -1,9 +1,11 @@
 """
-매칭 알고리즘 서비스 (v3)
+매칭 알고리즘 서비스 (v3.1)
 
 핵심 로직:
 1. 6만원 게임 가중치 시스템: BASE_WEIGHT + 베팅액으로 가중치 결정
 2. 6개 카테고리별 유사도 계산
+   - 수면 시간: 단순 시작시간 비교 -> 겹치는 수면 시간 비율(Overlap)로 변경
+   - 수면 습관: 심각도 점수 -> 태그 기반 페널티 방식으로 변경
 3. 가중 평균으로 최종 점수 산출
 
 공식: Total Score = (Σ(유사도 × 가중치) / Σ가중치) × 100
@@ -12,48 +14,20 @@
 # ============== 상수 정의 ==============
 BASE_WEIGHT = 10.0      # 0원 베팅해도 기본 가중치 10
 MAX_SCALE_DIFF = 4.0    # 1~5점 척도의 최대 차이
-MAX_TIME_DIFF = 240.0   # 취침시간 최대 허용 차이 (분, 4시간)
 
 
 # ============== 변환 함수 ==============
 
-def get_habit_severity(sleep_habits: str | None) -> int:
-    """
-    잠버릇 태그를 심각도 점수(1~5)로 변환
-
-    1: 없음(조용함)
-    2: 뒤척임
-    3: 잠꼬대
-    4: 이갈이
-    5: 코골이
-    """
-    if not sleep_habits or sleep_habits == "NONE":
-        return 1
-
-    severity = 1
-    if "TOSSING" in sleep_habits:
-        severity = max(severity, 2)
-    if "TALKING" in sleep_habits:
-        severity = max(severity, 3)
-    if "GRINDING" in sleep_habits:
-        severity = max(severity, 4)
-    if "SNORING" in sleep_habits:
-        severity = max(severity, 5)
-
-    return severity
-
-
 def convert_sleep_to_minutes(sleep_hour: int) -> int:
     """
     sleepStart (0~30) → 분 단위 (0~1439)로 변환
-
-    예시:
-    - 23 = 밤 11시 = 23*60 = 1380분
-    - 24 = 자정 = 0분
-    - 26 = 새벽 2시 = 120분
+    기준: 16:00 (value=0) ~ 16:00 다음날 (value=24)
     """
-    if sleep_hour >= 24:
-        return (sleep_hour - 24) * 60
+    # 0 -> 16:00 -> 16*60 = 960분
+    # 8 -> 24:00 (00:00) -> 24*60 = 1440분 (다음날 0시)
+    
+    # 계산의 편의를 위해 절대 분(Absolute Minutes)으로 변환
+    # 0(16:00)을 0분으로 잡고 계산하는 것이 overlap 계산에 유리함
     return sleep_hour * 60
 
 
@@ -62,55 +36,91 @@ def convert_sleep_to_minutes(sleep_hour: int) -> int:
 def calc_scale_similarity(my_val: int, target_val: int) -> float:
     """
     1~5 척도 항목의 유사도 계산 (궁합형)
-
-    차이 0 → 유사도 1.0 (100점)
-    차이 1 → 유사도 0.75 (75점)
-    차이 2 → 유사도 0.5 (50점)
-    차이 4 → 유사도 0.0 (0점)
+    차이 0 → 1.0, 차이 1 → 0.75, ...
     """
     diff = abs(my_val - target_val)
     return max(0.0, 1.0 - (diff / MAX_SCALE_DIFF))
 
 
-def calc_time_similarity(my_sleep: int, target_sleep: int) -> float:
+def calc_time_overlap(my_start: int, my_end: int, target_start: int, target_end: int) -> float:
     """
-    취침시간 유사도 계산 (분 단위)
-
-    24시간 순환을 고려 (23시와 01시는 2시간 차이)
-    4시간(240분) 이상 차이나면 유사도 0
+    수면 시간 겹침 비율 계산 (Overlap Ratio)
+    
+    두 사용자의 수면 구간이 얼마나 겹치는지 계산합니다.
+    점수 = (겹치는 시간) / (더 긴 수면 시간)
+    
+    예:
+    나: 23:00~07:00 (8시간)
+    상대: 01:00~09:00 (8시간)
+    겹침: 01:00~07:00 (6시간)
+    점수: 6 / 8 = 0.75
     """
-    my_min = convert_sleep_to_minutes(my_sleep)
-    target_min = convert_sleep_to_minutes(target_sleep)
+    # 값 보정 (end가 start보다 작으면 다음날로 처리되어야 함. 
+    # 입력값(0~30) 자체가 이미 다음날을 포함하므로(24 이상 가능), 
+    # start < end 가 보장된다고 가정하거나 보정 필요)
+    
+    # 입력값은 0~30 범위. 
+    # 만약 23~7 이면 입력값은 start=7(23시), end=15(07시) -> 7 < 15 정상
+    # 만약 새벽형이라 start=26(02시), end=34(10시) -> 26 < 34 정상
+    
+    # 겹치는 구간 계산
+    overlap_start = max(my_start, target_start)
+    overlap_end = min(my_end, target_end)
+    
+    overlap_duration = max(0, overlap_end - overlap_start)
+    
+    my_duration = my_end - my_start
+    target_duration = target_end - target_start
+    
+    # 기준 시간: 둘 중 더 긴 수면 시간 (합집합 아님, 기준 분모)
+    # 또는 합집합(Union)을 쓸 수도 있으나, 일반적으로 Max Duration 기준이 직관적
+    base_duration = max(my_duration, target_duration)
+    
+    if base_duration == 0:
+        return 0.0
+        
+    return min(1.0, overlap_duration / base_duration)
 
-    diff = abs(my_min - target_min)
 
-    # 24시간 순환 처리 (23시-01시 = 2시간)
-    if diff > 720:
-        diff = 1440 - diff
-
-    return max(0.0, 1.0 - (diff / MAX_TIME_DIFF))
-
-
-def calc_habit_similarity(target_severity: int) -> float:
+def calc_habit_similarity(target_habits_str: str | None) -> float:
     """
-    잠버릇 유사도 계산 (절대평가)
-
-    상대방이 조용할수록 높은 점수
-    - 심각도 1 (조용함) → 유사도 1.0
-    - 심각도 5 (코골이) → 유사도 0.0
-
-    ※ 내 잠버릇은 고려하지 않음 (상대가 나를 평가할 때 사용됨)
+    잠버릇 태그 기반 유사도 계산 (Penalty System)
+    
+    상대방의 잠버릇에 따라 점수를 차감합니다.
+    - 없음(NONE) 또는 비어있음: 100점 (1.0)
+    - 코골이(SNORING), 이갈이(GRINDING): 큰 감점 (-0.4)
+    - 잠꼬대(TALKING): 중간 감점 (-0.2)
+    - 뒤척임(TOSSING): 작은 감점 (-0.1)
+    
+    최소 점수는 0점.
     """
-    return max(0.0, 1.0 - ((target_severity - 1) / MAX_SCALE_DIFF))
+    if not target_habits_str or "NONE" in target_habits_str:
+        return 1.0
+        
+    habits = target_habits_str.split(",")
+    score = 1.0
+    
+    for habit in habits:
+        habit = habit.strip()
+        if habit == "SNORING":
+            score -= 0.4
+        elif habit == "GRINDING":
+            score -= 0.4
+        elif habit == "TALKING":
+            score -= 0.2
+        elif habit == "TOSSING":
+            score -= 0.1
+            
+    return max(0.0, score)
 
 
 def get_status_text(similarity: float) -> str:
     """유사도에 따른 상태 텍스트 반환"""
-    if similarity >= 1.0:
+    if similarity >= 0.9:
         return "Perfect"
-    elif similarity >= 0.75:
+    elif similarity >= 0.7:
         return "Good"
-    elif similarity >= 0.5:
+    elif similarity >= 0.4:
         return "Okay"
     else:
         return "Bad"
@@ -127,26 +137,6 @@ def calculate_match_score(
 ) -> dict:
     """
     두 사용자 간의 매칭 점수를 계산합니다.
-
-    Args:
-        my_lifestyle: 현재 사용자의 생활 패턴
-        my_preference: 현재 사용자의 희망 조건 및 가중치
-        target_lifestyle: 후보의 생활 패턴
-        target_user: 후보의 기본 정보 (nationality, studentId)
-        current_user: 현재 사용자의 기본 정보 (nationality, studentId) - 학번 비교용
-
-    Returns:
-        {
-            "total_match_rate": 87.5,  # 0-100 사이 점수
-            "breakdown": {
-                "noise": {"score": 100, "weight": 40.0, "status": "Perfect"},
-                ...
-            },
-            "preferenceBonus": {
-                "nationality": {"matched": True, "bonus": 3},
-                "studentId": {"matched": True, "bonus": 5}
-            }
-        }
     """
     if not my_lifestyle or not target_lifestyle:
         return {
@@ -164,6 +154,7 @@ def calculate_match_score(
     # ============== 6개 카테고리 처리 ==============
 
     categories = [
+        # 1. 척도형 항목 (Noise, Clean, Food, Temp)
         {
             "key": "noise",
             "weight_key": "weightNoise",
@@ -192,18 +183,21 @@ def calculate_match_score(
             "target_val": target_lifestyle.get("tempLevel", 3),
             "calc_type": "scale"
         },
+        # 2. 수면 시간 (Overlap)
         {
             "key": "time",
             "weight_key": "weightTime",
-            "my_val": my_lifestyle.get("sleepStart", 24),
-            "target_val": target_lifestyle.get("sleepStart", 24),
+            # dict 전체를 전달하여 start/end 모두 사용
+            "my_val": my_lifestyle, 
+            "target_val": target_lifestyle,
             "calc_type": "time"
         },
+        # 3. 잠버릇 (Penalty)
         {
             "key": "habit",
             "weight_key": "weightHabit",
-            "my_val": get_habit_severity(my_lifestyle.get("sleepHabits")),
-            "target_val": get_habit_severity(target_lifestyle.get("sleepHabits")),
+            "my_val": None, # 내 잠버릇은 매칭 점수에 영향 X (상대가 나를 볼 때 반영됨)
+            "target_val": target_lifestyle.get("sleepHabits"),
             "calc_type": "habit"
         },
     ]
@@ -214,13 +208,19 @@ def calculate_match_score(
         weight = BASE_WEIGHT + bet_amount
 
         # 유사도 계산
+        similarity = 0.0
+        
         if cat["calc_type"] == "time":
-            similarity = calc_time_similarity(cat["my_val"], cat["target_val"])
+            my_ls = cat["my_val"]
+            target_ls = cat["target_val"]
+            similarity = calc_time_overlap(
+                my_ls.get("sleepStart", 24), my_ls.get("sleepEnd", 32),
+                target_ls.get("sleepStart", 24), target_ls.get("sleepEnd", 32)
+            )
         elif cat["calc_type"] == "habit":
-            # 잠버릇은 상대방의 심각도만 고려 (절대평가)
             similarity = calc_habit_similarity(cat["target_val"])
         else:
-            # scale 타입: 나와 상대의 차이 (상대평가)
+            # scale 타입
             similarity = calc_scale_similarity(cat["my_val"], cat["target_val"])
 
         # 점수 합산
@@ -235,24 +235,20 @@ def calculate_match_score(
         }
 
     # ============== 보너스 점수 (국적/학번 선호) ==============
-    # 선호 조건은 Hard Filter가 아닌 Soft Score로 처리
-    # 조건이 맞으면 가산점, 안 맞아도 감점 없음 (0점)
     bonus = 0.0
     preference_bonus = {}
 
-    # 국적 선호 보너스 (최대 +3점)
+    # 국적 선호
     pref_nationality = pref.get("prefNationality")
     target_nationality = target_user.get("nationality")
     nationality_matched = False
 
     if pref_nationality:
-        # 선호 국적이 설정된 경우
         if pref_nationality == target_nationality:
             bonus += 3
             nationality_matched = True
     else:
-        # 국적 무관 (null) - 보너스 없음, 감점도 없음
-        nationality_matched = True  # 무관이므로 "매칭됨"으로 처리
+        nationality_matched = True # 무관
 
     preference_bonus["nationality"] = {
         "preference": pref_nationality,
@@ -261,28 +257,24 @@ def calculate_match_score(
         "bonus": 3 if nationality_matched and pref_nationality else 0
     }
 
-    # 학번 선호 보너스 (최대 +5점)
-    pref_student_id = pref.get("prefStudentId")  # "SAME", "SENIOR", "JUNIOR", "ANY", None
+    # 학번 선호
+    pref_student_id = pref.get("prefStudentId")
     target_student_id = target_user.get("studentId")
     my_student_id = current_user.get("studentId") if current_user else None
     student_matched = False
 
     if pref_student_id == "ANY" or pref_student_id is None:
-        # 학번 무관 - 가산점 부여
         bonus += 2
         student_matched = True
     elif pref_student_id == "SAME" and my_student_id is not None:
-        # 동기 선호: 나와 같은 학번이면 가산점
         if target_student_id == my_student_id:
             bonus += 5
             student_matched = True
     elif pref_student_id == "SENIOR" and my_student_id is not None:
-        # 선배 선호: 나보다 낮은 학번 (더 오래된 = 선배)
         if target_student_id is not None and target_student_id < my_student_id:
             bonus += 5
             student_matched = True
     elif pref_student_id == "JUNIOR" and my_student_id is not None:
-        # 후배 선호: 나보다 높은 학번 (더 최근 = 후배)
         if target_student_id is not None and target_student_id > my_student_id:
             bonus += 5
             student_matched = True
@@ -292,7 +284,7 @@ def calculate_match_score(
         "myStudentId": my_student_id,
         "targetStudentId": target_student_id,
         "matched": student_matched,
-        "bonus": bonus - preference_bonus["nationality"]["bonus"]  # 학번 보너스만 추출
+        "bonus": bonus - preference_bonus["nationality"]["bonus"]
     }
 
     # ============== 최종 점수 계산 ==============
@@ -327,14 +319,13 @@ def generate_keywords(lifestyle: dict, user: dict) -> list[str]:
 
         # 취침 시간
         sleep_start = lifestyle.get("sleepStart", 24)
-        if sleep_start <= 23:
-            keywords.append(f"{sleep_start}시취침")
-        elif sleep_start == 24:
-            keywords.append("12시취침")
-        elif sleep_start <= 26:
-            keywords.append("새벽취침")
+        # 0=16시, 8=24시(자정), 12=04시
+        if sleep_start <= 7: # ~23시
+            keywords.append("일찍취침")
+        elif sleep_start <= 10: # ~02시
+            keywords.append("평범취침")
         else:
-            keywords.append("늦은취침")
+            keywords.append("새벽취침")
 
         # 청결도
         clean_level = lifestyle.get("cleanLevel", 3)
@@ -357,7 +348,6 @@ def generate_keywords(lifestyle: dict, user: dict) -> list[str]:
 def generate_radar_chart_data(lifestyle: dict) -> dict:
     """
     레이더 차트용 데이터 생성
-
     각 항목을 0-100 스케일로 변환
     """
     if not lifestyle:
@@ -374,18 +364,17 @@ def generate_radar_chart_data(lifestyle: dict) -> dict:
     def scale_to_100(val: int) -> int:
         return round((val - 1) / 4 * 100)
 
-    # 취침시간 → 0-100 (23시=0, 새벽3시=100)
+    # 취침시간 → 0-100 (일찍 잘수록 낮음? 아니면 늦게 잘수록 높음?)
+    # 시각적 표현을 위해 늦게 잘수록 높은 값으로 매핑
+    # 0(16시) ~ 24(16시)
     sleep_start = lifestyle.get("sleepStart", 24)
-    if sleep_start <= 23:
-        time_score = 0
-    elif sleep_start >= 27:
-        time_score = 100
-    else:
-        time_score = round((sleep_start - 23) / 4 * 100)
+    # 20시(4) ~ 04시(12) 사이를 0~100으로 정규화 예시
+    # 너무 일찍 자거나 너무 늦게 자는 경우도 있으므로 전체 범위 매핑
+    time_score = round((sleep_start / 24) * 100)
 
-    # 잠버릇 심각도 → 0-100 (반전: 조용할수록 높은 점수)
-    habit_severity = get_habit_severity(lifestyle.get("sleepHabits"))
-    habit_score = 100 - scale_to_100(habit_severity)
+    # 잠버릇 심각도 (Penalty 방식과 유사하게 역산)
+    # 조용함(100) ~ 시끄러움(0)
+    habit_score = int(calc_habit_similarity(lifestyle.get("sleepHabits")) * 100)
 
     return {
         "noise": scale_to_100(lifestyle.get("noiseLevel", 3)),
@@ -400,13 +389,6 @@ def generate_radar_chart_data(lifestyle: dict) -> dict:
 def check_dormitory_overlap(my_dorms: str, target_dorms: str) -> bool:
     """
     두 사용자의 기숙사 지원 목록에 교집합이 있는지 확인
-
-    Args:
-        my_dorms: "성실관,봉사관"
-        target_dorms: "봉사관,진리관"
-
-    Returns:
-        True if 교집합 존재
     """
     if not my_dorms or not target_dorms:
         return False

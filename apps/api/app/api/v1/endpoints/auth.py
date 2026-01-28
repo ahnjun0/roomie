@@ -42,10 +42,22 @@ cuid_generator = cuid_wrapper()
 async def send_verification_code(request: EmailSendRequest, db: Prisma = Depends(get_db)):
     """인증번호 발송"""
     email = request.email
+    mode = request.mode
 
     # 이메일 존재 여부 확인
     existing_user = await db.user.find_unique(where={"email": email})
     user_exists = existing_user is not None
+
+    # 회원가입 모드인데 이미 가입된 사용자면 이메일을 보내지 않고 바로 응답
+    if mode == "register" and user_exists:
+        return EmailSendResponse(message="이미 가입된 이메일입니다.", expiresIn=0, userExists=True)
+
+    # 비밀번호 재설정 모드인데 사용자가 없으면 에러
+    if mode == "reset" and not user_exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error": "USER_NOT_FOUND", "message": "가입되지 않은 이메일입니다."},
+        )
 
     # 인증 코드 생성 및 저장
     code = generate_verification_code()

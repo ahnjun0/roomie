@@ -28,7 +28,7 @@ interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  sendVerificationCode: (email: string) => Promise<SendCodeResponse>;
+  sendVerificationCode: (email: string, mode?: 'register' | 'reset') => Promise<SendCodeResponse>;
   verifyCode: (email: string, code: string) => Promise<string>;
   resetPassword: (email: string, tempToken: string, newPassword: string) => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -129,10 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const sendVerificationCode = useCallback(async (email: string): Promise<SendCodeResponse> => {
+  const sendVerificationCode = useCallback(async (email: string, mode: 'register' | 'reset' = 'register'): Promise<SendCodeResponse> => {
     const response = await api.post<{ message: string; expiresIn: number; userExists: boolean }>(
       ENDPOINTS.AUTH.SEND_CODE,
-      { email },
+      { email, mode },
     );
     return { userExists: response.userExists };
   }, []);

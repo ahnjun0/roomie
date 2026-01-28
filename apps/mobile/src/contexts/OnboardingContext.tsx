@@ -75,45 +75,14 @@ interface WeightData {
 interface OnboardingContextType {
   data: OnboardingData;
   updateData: (updates: Partial<OnboardingData>) => void;
-  submitRegistration: () => Promise<RegisterResponse>;
+  submitRegistration: (overrides?: Partial<OnboardingData>) => Promise<RegisterResponse>;
   submitBasicInfo: () => Promise<void>;
   submitLifestyle: () => Promise<void>;
   submitPreferences: (weights: WeightData) => Promise<void>;
   resetData: () => void;
 }
 
-const initialData: OnboardingData = {
-  // [DEV] 개발 및 UI 테스트를 위해 초기값을 설정합니다.
-  // 이렇게 하면 앱을 새로고침해도 이메일 인증 단계를 건너뛰고 가입/온보딩 화면을 테스트할 수 있습니다.
-  email: 'test@univ.ac.kr',
-  password: 'password123',
-  tempToken: 'mock-temp-token-dev', 
-  nickname: 'RoomieUser',
-
-  gender: null,
-  nationality: null,
-  age: null,
-  studentId: null,
-
-  selectedDormitories: [],
-  selectedDormitoryNames: '',
-  isSmoker: null,
-  sleepHabits: [],
-  noiseLevel: 3,
-  cleanliness: 3,
-  indoorEating: 3,
-  temperature: 3,
-  preferredNationality: 'ANY',
-  preferredStudentYear: 'ANY',
-  prefNoiseLevel: 3,
-  prefCleanliness: 3,
-  prefIndoorEating: 3,
-  prefTemperature: 3,
-  sleepStart: 12, // 오전 12시 기본값
-  sleepEnd: 18, // 오전 6시 기본값
-  homeVisitFrequency: null,
-  sensitivity: 3,
-};
+// ... (initialData definition)
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(
   undefined,
@@ -130,26 +99,28 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     setData(initialData);
   }, []);
 
-  const submitRegistration = useCallback(async (): Promise<RegisterResponse> => {
+  const submitRegistration = useCallback(async (overrides?: Partial<OnboardingData>): Promise<RegisterResponse> => {
+    const finalData = { ...data, ...overrides };
+
     // 필수 데이터 확인
-    if (!data.email || !data.password || !data.tempToken || !data.nickname) {
+    if (!finalData.email || !finalData.password || !finalData.tempToken || !finalData.nickname) {
       throw new Error('이메일, 비밀번호, 인증 토큰, 닉네임이 필요합니다.');
     }
-    if (!data.gender || !data.nationality || !data.age || !data.studentId) {
+    if (!finalData.gender || !finalData.nationality || !finalData.age || !finalData.studentId) {
       throw new Error('기본 정보를 모두 입력해주세요.');
     }
 
     const response = await api.post<RegisterResponse>(ENDPOINTS.AUTH.REGISTER, {
-      email: data.email,
-      password: data.password,
-      tempToken: data.tempToken,
-      nickname: data.nickname,
-      gender: data.gender,
-      nationality: data.nationality,
-      age: data.age,
-      studentId: typeof data.studentId === 'string'
-        ? parseInt(data.studentId, 10) % 100
-        : data.studentId,
+      email: finalData.email,
+      password: finalData.password,
+      tempToken: finalData.tempToken,
+      nickname: finalData.nickname,
+      gender: finalData.gender,
+      nationality: finalData.nationality,
+      age: finalData.age,
+      studentId: typeof finalData.studentId === 'string'
+        ? parseInt(finalData.studentId, 10) % 100
+        : finalData.studentId,
     });
 
     return response;
