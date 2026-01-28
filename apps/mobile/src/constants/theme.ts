@@ -1,8 +1,8 @@
 // 앱 테마 상수
 export const colors = {
-  primary: '#13b6ec',
-  primaryDark: '#0a9fd4',
-  primaryLight: '#40c6f0',
+  primary: '#0f9f8f',
+  primaryDark: '#0b7f73',
+  primaryLight: '#4cc5b6',
 
   // Background
   background: {
@@ -45,25 +45,25 @@ export const colors = {
   },
 
   // Status
-  success: '#4CAF50',
-  warning: '#FFC107',
-  error: '#F44336',
-  info: '#2196F3',
+  success: '#16a34a',
+  warning: '#f59e0b',
+  error: '#ef4444',
+  info: '#0ea5a4',
 
   // Match score colors
-  matchHigh: '#4CAF50',
-  matchMedium: '#FFC107',
-  matchLow: '#F44336',
+  matchHigh: '#16a34a',
+  matchMedium: '#f59e0b',
+  matchLow: '#ef4444',
 
   // Tags
   tag: {
     background: {
-      light: '#E3F2FD',
-      dark: '#1E3A5F',
+      light: '#e6f6f4',
+      dark: '#123c39',
     },
     text: {
-      light: '#1976D2',
-      dark: '#64B5F6',
+      light: '#0f766e',
+      dark: '#5eead4',
     },
   },
 } as const;
