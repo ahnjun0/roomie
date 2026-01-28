@@ -62,10 +62,14 @@ async def list_delivery_posts(
     db: Prisma = Depends(get_db),
 ):
     """배달 파티 모집글 목록"""
-    posts = await db.deliverypost.find_many(
-        order={"createdAt": "desc"},
-        include={"author": True, "participants": True},
-    )
+    try:
+        posts = await db.deliverypost.find_many(
+            order={"createdAt": "desc"},
+            include={"author": True, "participants": True},
+        )
+    except Exception:
+        # 테이블이 아직 마이그레이션되지 않은 경우 빈 목록 반환
+        return DeliveryPostListResponse(data=[])
 
     return DeliveryPostListResponse(
         data=[

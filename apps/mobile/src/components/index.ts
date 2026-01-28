@@ -18,3 +18,4 @@ export { Header } from './Header';
 export { Dropdown } from './Dropdown';
 export { RoomBtiBadge } from './RoomBtiBadge';
 export { TimeRangeSlider } from './TimeRangeSlider';
+export { GradientBackground } from './GradientBackground';

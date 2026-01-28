@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
@@ -13,8 +14,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useAuth } from '../../contexts';
-import { Button, Input } from '../../components';
 import { spacing, fontSize, fontWeight, colors as themeColors } from '../../constants/theme';
+import { GradientBackground } from '../../components';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/types';
 
@@ -128,123 +129,129 @@ export function LoginScreen({ navigation }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors.background }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl },
-        ]}
-        keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <View style={[styles.logoBadge, { backgroundColor: themeColors.primaryLight }]}>
+    <GradientBackground>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl },
+          ]}
+          keyboardShouldPersistTaps="handled">
+          <View style={styles.header}>
             <Image
-              source={require('../../../assets/icon-original.png')}
+              source={require('../../../assets/icon-logo.png')}
               style={styles.logoImage}
               resizeMode="contain"
             />
+            <Text style={styles.title}>
+              학교 이메일로 시작하기
+            </Text>
+            <Text style={styles.subtitle}>
+              안전한 매칭을 위해 학교 이메일 인증이 필요합니다
+            </Text>
           </View>
-          <Text style={[styles.logo, { color: themeColors.primary }]}>ROOMIE</Text>
-          <Text style={[styles.title, { color: colors.text.primary }]}>
-            학교 이메일로 시작하기
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.text.secondary }]}>
-            안전한 매칭을 위해 학교 이메일 인증이 필요합니다
-          </Text>
-        </View>
 
-        <View style={styles.form}>
-          <Input
-            label="학교 이메일"
-            placeholder="example@university.ac.kr"
-            value={email}
-            onChangeText={text => {
-              setEmail(text);
-              setError('');
-            }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            error={error}
-          />
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>학교 이메일</Text>
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="example@university.ac.kr"
+                  placeholderTextColor="rgba(255,255,255,0.4)"
+                  value={email}
+                  onChangeText={text => {
+                    setEmail(text);
+                    setError('');
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            </View>
 
-          {schoolName && (
-            <Text style={[styles.schoolBadge, { color: themeColors.primary }]}>
-              {schoolName} Roomie로 확인되었습니다!
-            </Text>
-          )}
-
-          <Button
-            title="인증 코드 받기"
-            onPress={handleSendCode}
-            loading={isLoading}
-            fullWidth
-          />
-        </View>
-
-        <View style={styles.footer}>
-          <TouchableOpacity onPress={() => navigation.navigate('SignIn', {})}>
-            <Text style={[styles.footerText, { color: colors.text.tertiary }]}>
-              이미 계정이 있으신가요?{' '}
-              <Text style={{ color: themeColors.primary, fontWeight: fontWeight.semibold }}>
-                로그인
+            {schoolName && (
+              <Text style={styles.schoolBadge}>
+                {schoolName} Roomie로 확인되었습니다!
               </Text>
+            )}
+
+            <TouchableOpacity
+              style={[styles.sendButton, (isLoading) && styles.sendButtonDisabled]}
+              onPress={handleSendCode}
+              disabled={isLoading}
+              activeOpacity={0.8}>
+              <Text style={styles.sendButtonText}>
+                {isLoading ? '전송 중...' : '인증 코드 받기'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.footer}>
+            <TouchableOpacity onPress={() => navigation.navigate('SignIn', {})}>
+              <Text style={styles.footerText}>
+                이미 계정이 있으신가요?{' '}
+                <Text style={styles.footerLink}>로그인</Text>
+              </Text>
+            </TouchableOpacity>
+            <Text style={[styles.termsText, { marginTop: spacing.md }]}>
+              가입하면 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
             </Text>
-          </TouchableOpacity>
-          <Text style={[styles.termsText, { color: colors.text.tertiary, marginTop: spacing.md }]}>
-            가입하면 서비스 이용약관 및 개인정보 처리방침에 동의하게 됩니다.
-          </Text>
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
 
-      {/* 이미 가입된 이메일 모달 */}
-      <Modal
-        visible={showExistingUserModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowExistingUserModal(false)}>
-        <TouchableWithoutFeedback onPress={() => setShowExistingUserModal(false)}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-                <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
-                  이미 가입된 이메일입니다
-                </Text>
-                <Text style={[styles.modalMessage, { color: colors.text.secondary }]}>
-                  {email}로 이미 가입된 계정이 있습니다.{'\n'}
-                  어떻게 하시겠어요?
-                </Text>
+        {/* 이미 가입된 이메일 모달 */}
+        <Modal
+          visible={showExistingUserModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowExistingUserModal(false)}>
+          <TouchableWithoutFeedback onPress={() => setShowExistingUserModal(false)}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                  <Text style={[styles.modalTitle, { color: colors.text.primary }]}>
+                    이미 가입된 이메일입니다
+                  </Text>
+                  <Text style={[styles.modalMessage, { color: colors.text.secondary }]}>
+                    {email}로 이미 가입된 계정이 있습니다.{'\n'}
+                    어떻게 하시겠어요?
+                  </Text>
 
-                <View style={styles.modalButtons}>
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={[styles.modalButton, { backgroundColor: themeColors.primary }]}
+                      onPress={handleGoToLogin}>
+                      <Text style={styles.modalButtonTextPrimary}>로그인하기</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.modalButton, styles.modalButtonOutline, { borderColor: themeColors.primary }]}
+                      onPress={handleGoToResetPassword}>
+                      <Text style={[styles.modalButtonTextSecondary, { color: themeColors.primary }]}>
+                        비밀번호 재설정
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
                   <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: themeColors.primary }]}
-                    onPress={handleGoToLogin}>
-                    <Text style={styles.modalButtonTextPrimary}>로그인하기</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.modalButtonOutline, { borderColor: themeColors.primary }]}
-                    onPress={handleGoToResetPassword}>
-                    <Text style={[styles.modalButtonTextSecondary, { color: themeColors.primary }]}>
-                      비밀번호 재설정
+                    style={styles.modalCancelButton}
+                    onPress={() => setShowExistingUserModal(false)}>
+                    <Text style={[styles.modalCancelText, { color: colors.text.tertiary }]}>
+                      취소
                     </Text>
                   </TouchableOpacity>
                 </View>
-
-                <TouchableOpacity
-                  style={styles.modalCancelButton}
-                  onPress={() => setShowExistingUserModal(false)}>
-                  <Text style={[styles.modalCancelText, { color: colors.text.tertiary }]}>
-                    취소
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-    </KeyboardAvoidingView>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      </KeyboardAvoidingView>
+    </GradientBackground>
   );
 }
 
@@ -261,43 +268,75 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
     alignItems: 'center',
   },
-  logoBadge: {
-    width: 84,
-    height: 84,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
   logoImage: {
-    width: 56,
-    height: 56,
-  },
-  logo: {
-    fontSize: 36,
-    fontWeight: fontWeight.bold,
+    width: 300,
+    height: 100,
     marginBottom: spacing.lg,
-    textAlign: 'center',
   },
   title: {
     fontSize: fontSize.xxl,
     fontWeight: fontWeight.bold,
     marginBottom: spacing.sm,
     textAlign: 'center',
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: fontSize.md,
     textAlign: 'center',
     lineHeight: fontSize.md * 1.5,
+    color: 'rgba(255,255,255,0.75)',
   },
   form: {
     marginBottom: spacing.xxl,
+  },
+  inputContainer: {
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    marginBottom: spacing.xs,
+    color: 'rgba(255,255,255,0.85)',
+  },
+  inputWrapper: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+  },
+  inputField: {
+    paddingVertical: spacing.md,
+    fontSize: fontSize.md,
+    color: '#FFFFFF',
+  },
+  errorText: {
+    fontSize: fontSize.xs,
+    marginTop: spacing.xs,
+    color: '#fecaca',
   },
   schoolBadge: {
     fontSize: fontSize.md,
     fontWeight: fontWeight.bold,
     textAlign: 'center',
     marginBottom: spacing.md,
+    color: '#FFFFFF',
+  },
+  sendButton: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    minHeight: 48,
+  },
+  sendButtonDisabled: {
+    opacity: 0.6,
+  },
+  sendButtonText: {
+    color: themeColors.primary,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
   },
   footer: {
     alignItems: 'center',
@@ -306,11 +345,17 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: fontSize.sm,
     textAlign: 'center',
+    color: 'rgba(255,255,255,0.6)',
+  },
+  footerLink: {
+    color: '#FFFFFF',
+    fontWeight: fontWeight.semibold,
   },
   termsText: {
     fontSize: fontSize.xs,
     textAlign: 'center',
     lineHeight: fontSize.xs * 1.5,
+    color: 'rgba(255,255,255,0.45)',
   },
   // Modal styles
   modalOverlay: {
