@@ -154,7 +154,7 @@ export function LoginScreen({ navigation }: Props) {
 
           {schoolName && (
             <Text style={[styles.schoolBadge, { color: themeColors.primary }]}>
-              {schoolName} Roomie
+              {schoolName} Roomie로 확인되었습니다!
             </Text>
           )}
 

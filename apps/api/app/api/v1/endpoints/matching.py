@@ -295,88 +295,94 @@ async def get_connections(
     db: Prisma = Depends(get_db),
 ):
     """현재 대화 중인 상대 및 지난 룸메이트 조회"""
-
-    # 1. Active chats: 내가 참여한 채팅방에서 SIGNED 계약이 없는 상대 조회
-    participations = await db.chatparticipant.find_many(
-        where={"userId": current_user.id},
-        include={
-            "chatRoom": {
-                "include": {
-                    "participants": {
-                        "include": {"user": True},
-                    },
-                    "contract": True,
-                    "messages": {
-                        "orderBy": {"createdAt": "desc"},
-                        "take": 1,
-                    },
+    try:
+        # 1. Active chats: 내가 참여한 채팅방에서 SIGNED 계약이 없는 상대 조회
+        participations = await db.chatparticipant.find_many(
+            where={"userId": current_user.id},
+            include={
+                "chatRoom": {
+                    "include": {
+                        "participants": {
+                            "include": {"user": True},
+                        },
+                        "contract": True,
+                        "messages": {
+                            "order": {"createdAt": "desc"},
+                            "take": 1,
+                        },
+                    }
                 }
-            }
-        },
-    )
+            },
+        )
 
-    active_chats = []
-    for p in participations:
-        chat_room = p.chatRoom
-        # SIGNED 계약이 있으면 이미 룸메이트이므로 스킵
-        if chat_room.contract and chat_room.contract.status == "SIGNED":
-            continue
+        active_chats = []
+        for p in participations:
+            chat_room = p.chatRoom
+            # SIGNED 계약이 있으면 이미 룸메이트이므로 스킵
+            if chat_room.contract and chat_room.contract.status == "SIGNED":
+                continue
 
-        # 상대방 찾기
-        other_user = None
-        for participant in chat_room.participants:
-            if participant.userId != current_user.id:
-                other_user = participant.user
-                break
+            # 상대방 찾기
+            other_user = None
+            for participant in chat_room.participants:
+                if participant.userId != current_user.id:
+                    other_user = participant.user
+                    break
 
-        if other_user:
-            last_msg = chat_room.messages[0] if chat_room.messages else None
-            active_chats.append(
-                ConnectionUser(
-                    userId=other_user.id,
-                    nickname=other_user.nickname,
-                    chatRoomId=chat_room.id,
-                    lastMessage=last_msg.content if last_msg else None,
-                    lastMessageAt=last_msg.createdAt if last_msg else None,
-                )
-            )
-
-    # 2. Past roommates: MatchHistory에서 조회
-    histories = await db.matchhistory.find_many(
-        where={
-            "OR": [
-                {"userAId": current_user.id},
-                {"userBId": current_user.id},
-            ]
-        },
-        order={"matchedAt": "desc"},
-    )
-
-    past_roommate_ids = []
-    for h in histories:
-        other_id = h.userBId if h.userAId == current_user.id else h.userAId
-        if other_id not in past_roommate_ids:
-            past_roommate_ids.append(other_id)
-
-    past_roommates = []
-    if past_roommate_ids:
-        users = await db.user.find_many(where={"id": {"in": past_roommate_ids}})
-        user_map = {u.id: u for u in users}
-        for uid in past_roommate_ids:
-            u = user_map.get(uid)
-            if u:
-                past_roommates.append(
-                    PastRoommateUser(
-                        userId=u.id,
-                        nickname=u.nickname,
-                        studentId=u.studentId,
+            if other_user:
+                last_msg = chat_room.messages[0] if chat_room.messages else None
+                active_chats.append(
+                    ConnectionUser(
+                        userId=other_user.id,
+                        nickname=other_user.nickname,
+                        chatRoomId=chat_room.id,
+                        lastMessage=last_msg.content if last_msg else None,
+                        lastMessageAt=last_msg.createdAt if last_msg else None,
                     )
                 )
 
-    return ConnectionsResponse(
-        activeChats=active_chats,
-        pastRoommates=past_roommates,
-    )
+        # 2. Past roommates: MatchHistory에서 조회
+        histories = await db.matchhistory.find_many(
+            where={
+                "OR": [
+                    {"userAId": current_user.id},
+                    {"userBId": current_user.id},
+                ]
+            },
+            order={"matchedAt": "desc"},
+        )
+
+        past_roommate_ids = []
+        for h in histories:
+            other_id = h.userBId if h.userAId == current_user.id else h.userAId
+            if other_id not in past_roommate_ids:
+                past_roommate_ids.append(other_id)
+
+        past_roommates = []
+        if past_roommate_ids:
+            users = await db.user.find_many(where={"id": {"in": past_roommate_ids}})
+            user_map = {u.id: u for u in users}
+            for uid in past_roommate_ids:
+                u = user_map.get(uid)
+                if u:
+                    past_roommates.append(
+                        PastRoommateUser(
+                            userId=u.id,
+                            nickname=u.nickname,
+                            studentId=u.studentId,
+                        )
+                    )
+
+        return ConnectionsResponse(
+            activeChats=active_chats,
+            pastRoommates=past_roommates,
+        )
+    except Exception as e:
+        print(f"Error fetching connections: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch connections: {str(e)}",
+        )
 
 
 def _format_sleep_time(value: int) -> str:
