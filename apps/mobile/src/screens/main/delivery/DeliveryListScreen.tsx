@@ -55,6 +55,14 @@ const getCategoryLabel = (category: string): string => {
   return found?.label || category;
 };
 
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const yy = String(date.getFullYear()).slice(-2);
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yy}/${mm}/${dd}`;
+};
+
 export function DeliveryListScreen({ navigation }: DeliveryListScreenProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -154,7 +162,7 @@ export function DeliveryListScreen({ navigation }: DeliveryListScreenProps) {
             {item.author.nickname || '익명'}
           </Text>
           <Text style={[styles.dateText, { color: colors.text.tertiary }]}>
-            {new Date(item.createdAt).toLocaleDateString()}
+            {formatDate(item.createdAt)}
           </Text>
         </View>
       </TouchableOpacity>

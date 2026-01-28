@@ -56,6 +56,14 @@ const CATEGORY_COLORS: Record<string, string> = {
   OTHER: '#95A5A6',
 };
 
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  const yy = String(date.getFullYear()).slice(-2);
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${yy}/${mm}/${dd}`;
+};
+
 export function DeliveryDetailScreen({
   navigation,
   route,
@@ -236,7 +244,7 @@ export function DeliveryDetailScreen({
             {post.author.nickname || '익명'}
           </Text>
           <Text style={[styles.metaText, { color: colors.text.tertiary }]}>
-            {new Date(post.createdAt).toLocaleString()}
+            {formatDate(post.createdAt)}
           </Text>
         </View>
 
