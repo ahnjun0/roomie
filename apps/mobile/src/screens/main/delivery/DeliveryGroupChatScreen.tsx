@@ -128,6 +128,18 @@ export function DeliveryGroupChatScreen({
               ...prev,
             ];
           });
+
+          // Show notification if message is from others and screen is not focused
+          const isFromOther = String(msg.senderId) !== String(user?.id);
+          const shouldNotify = isFromOther && (!isFocusedRef.current || appStateRef.current !== 'active');
+
+          if (shouldNotify) {
+            showChatNotification({
+              title: `배달 팟: ${postTitle || '새 메시지'}`,
+              body: `${msg.senderNickname || '익명'}: ${msg.content}`,
+              data: { postId, type: 'delivery' },
+            });
+          }
         } else if (data.type === 'system') {
           const systemData = data.data as { message: string; userId?: string };
           const systemMessage: ChatMessage = {
