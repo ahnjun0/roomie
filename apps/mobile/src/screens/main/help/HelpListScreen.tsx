@@ -117,7 +117,7 @@ export function HelpListScreen({ navigation }: HelpListScreenProps) {
       <View style={[styles.filterContainer, { borderBottomColor: colors.border }]}>
         <TouchableOpacity
           style={[
-            styles.filterButton, 
+            styles.filterButton,
             !selectedCategory && { backgroundColor: themeColors.primary }
           ]}
           onPress={() => setSelectedCategory(undefined)}>
@@ -125,7 +125,7 @@ export function HelpListScreen({ navigation }: HelpListScreenProps) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[
-            styles.filterButton, 
+            styles.filterButton,
             selectedCategory === 'BUG' && { backgroundColor: themeColors.primary }
           ]}
           onPress={() => setSelectedCategory('BUG')}>
@@ -133,11 +133,17 @@ export function HelpListScreen({ navigation }: HelpListScreenProps) {
         </TouchableOpacity>
         <TouchableOpacity
           style={[
-            styles.filterButton, 
+            styles.filterButton,
             selectedCategory === 'REPAIR' && { backgroundColor: themeColors.primary }
           ]}
           onPress={() => setSelectedCategory('REPAIR')}>
           <Text style={[styles.filterText, selectedCategory === 'REPAIR' ? { color: '#fff' } : { color: colors.text.secondary }]}>고장신고</Text>
+        </TouchableOpacity>
+        <View style={styles.filterSpacer} />
+        <TouchableOpacity
+          style={[styles.deliveryButton]}
+          onPress={() => navigation.navigate('DeliveryList')}>
+          <Text style={styles.deliveryButtonText}>배달 팟</Text>
         </TouchableOpacity>
       </View>
 
@@ -201,6 +207,20 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
+  },
+  filterSpacer: {
+    flex: 1,
+  },
+  deliveryButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    backgroundColor: '#FF6B35',
+  },
+  deliveryButtonText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    color: '#fff',
   },
   listContent: {
     padding: spacing.md,
