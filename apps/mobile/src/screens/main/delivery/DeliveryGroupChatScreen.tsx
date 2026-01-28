@@ -10,11 +10,15 @@ import {
   Alert,
   TouchableOpacity,
   Linking,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 import { useTheme, useAuth } from '../../../contexts';
 import { ChatInput, Header } from '../../../components';
 import { getDeliveryPost } from '../../../services/delivery';
+import { showChatNotification } from '../../../services/notification';
 import { WS_BASE_URL } from '../../../constants/api';
 import {
   DeliveryPost,
@@ -56,13 +60,27 @@ export function DeliveryGroupChatScreen({
   const { colors } = useTheme();
   const { user, accessToken } = useAuth();
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const flatListRef = useRef<FlatList>(null);
   const ws = useRef<WebSocket | null>(null);
+  const isFocusedRef = useRef(isFocused);
+  const appStateRef = useRef(AppState.currentState);
 
   const [post, setPost] = useState<DeliveryPost | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    isFocusedRef.current = isFocused;
+  }, [isFocused]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      appStateRef.current = nextState;
+    });
+    return () => subscription.remove();
+  }, []);
 
   useEffect(() => {
     fetchPost();
