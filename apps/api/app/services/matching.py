@@ -82,36 +82,46 @@ def calc_time_overlap(my_start: int, my_end: int, target_start: int, target_end:
     return min(1.0, overlap_duration / base_duration)
 
 
-def calc_habit_similarity(target_habits_str: str | None) -> float:
+def calc_habit_similarity(target_habits_str: str | None, my_noise_level: int = 3) -> float:
     """
-    잠버릇 태그 기반 유사도 계산 (Penalty System)
+    잠버릇 태그 기반 유사도 계산 (Dynamic Penalty System)
     
-    상대방의 잠버릇에 따라 점수를 차감합니다.
-    - 없음(NONE) 또는 비어있음: 100점 (1.0)
-    - 코골이(SNORING), 이갈이(GRINDING): 큰 감점 (-0.4)
-    - 잠꼬대(TALKING): 중간 감점 (-0.2)
-    - 뒤척임(TOSSING): 작은 감점 (-0.1)
+    상대방의 잠버릇에 따라 점수를 차감하며, 나의 소음 민감도에 따라 페널티가 가중됩니다.
     
-    최소 점수는 0점.
+    기본 페널티:
+    - 코골이(SNORING), 이갈이(GRINDING): 0.4
+    - 잠꼬대(TALKING): 0.2
+    - 뒤척임(TOSSING): 0.1
+    
+    민감도 보정 (Multiplier):
+    - 민감도 1 (둔감): 0.6x (페널티 감소)
+    - 민감도 3 (보통): 1.0x (기본)
+    - 민감도 5 (예민): 1.4x (페널티 증가)
     """
     if not target_habits_str or "NONE" in target_habits_str:
         return 1.0
         
     habits = target_habits_str.split(",")
-    score = 1.0
+    base_score = 1.0
+    total_penalty = 0.0
+    
+    # 민감도에 따른 가중치 (1~5 -> 0.6~1.4)
+    sensitivity_multiplier = 1.0 + (my_noise_level - 3) * 0.2
     
     for habit in habits:
         habit = habit.strip()
         if habit == "SNORING":
-            score -= 0.4
+            total_penalty += 0.4
         elif habit == "GRINDING":
-            score -= 0.4
+            total_penalty += 0.4
         elif habit == "TALKING":
-            score -= 0.2
+            total_penalty += 0.2
         elif habit == "TOSSING":
-            score -= 0.1
+            total_penalty += 0.1
             
-    return max(0.0, score)
+    # 최종 페널티 적용
+    final_penalty = total_penalty * sensitivity_multiplier
+    return max(0.0, base_score - final_penalty)
 
 
 def get_status_text(similarity: float) -> str:
@@ -150,6 +160,9 @@ def calculate_match_score(
 
     # 가중치 가져오기 (preference에서)
     pref = my_preference or {}
+    
+    # 나의 소음 민감도 (잠버릇 계산용)
+    my_noise_level = my_lifestyle.get("noiseLevel", 3)
 
     # ============== 6개 카테고리 처리 ==============
 
@@ -158,7 +171,7 @@ def calculate_match_score(
         {
             "key": "noise",
             "weight_key": "weightNoise",
-            "my_val": my_lifestyle.get("noiseLevel", 3),
+            "my_val": my_noise_level,
             "target_val": target_lifestyle.get("noiseLevel", 3),
             "calc_type": "scale"
         },
@@ -192,11 +205,11 @@ def calculate_match_score(
             "target_val": target_lifestyle,
             "calc_type": "time"
         },
-        # 3. 잠버릇 (Penalty)
+        # 3. 잠버릇 (Dynamic Penalty)
         {
             "key": "habit",
             "weight_key": "weightHabit",
-            "my_val": None, # 내 잠버릇은 매칭 점수에 영향 X (상대가 나를 볼 때 반영됨)
+            "my_val": None, 
             "target_val": target_lifestyle.get("sleepHabits"),
             "calc_type": "habit"
         },
@@ -218,7 +231,8 @@ def calculate_match_score(
                 target_ls.get("sleepStart", 24), target_ls.get("sleepEnd", 32)
             )
         elif cat["calc_type"] == "habit":
-            similarity = calc_habit_similarity(cat["target_val"])
+            # 나의 소음 민감도를 반영하여 페널티 계산
+            similarity = calc_habit_similarity(cat["target_val"], my_noise_level)
         else:
             # scale 타입
             similarity = calc_scale_similarity(cat["my_val"], cat["target_val"])
