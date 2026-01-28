@@ -282,8 +282,13 @@ async def end_semester(
             data=update_data,
         )
 
-    # 양쪽 모두 endSemester인지 확인 (상태 전환은 finalize에서 수행)
+    # 양쪽 모두 endSemester이면 관계 종료
     both_ended = contract.endSemesterA and contract.endSemesterB
+    if both_ended:
+        await db.user.update_many(
+            where={"id": {"in": [current_user.id, target_user_id]}},
+            data={"matchingStatus": "SEARCHING"},
+        )
 
     return EndSemesterResponse(
         targetUserId=target_user_id,
