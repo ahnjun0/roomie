@@ -135,7 +135,11 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       if (refresh || pageNum === 1) {
         setMatches(items);
       } else {
-        setMatches(prev => [...prev, ...items]);
+        setMatches(prev => {
+          const existingIds = new Set(prev.map(item => item.id));
+          const newItems = items.filter(item => !existingIds.has(item.id));
+          return [...prev, ...newItems];
+        });
       }
 
       setHasMore(items.length === 10);
