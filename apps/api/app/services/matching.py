@@ -1,19 +1,23 @@
 """
-매칭 알고리즘 서비스 (v3.1)
+매칭 알고리즘 서비스 (v3.2)
 
 핵심 로직:
 1. 6만원 게임 가중치 시스템: BASE_WEIGHT + 베팅액으로 가중치 결정
 2. 6개 카테고리별 유사도 계산
-   - 수면 시간: 단순 시작시간 비교 -> 겹치는 수면 시간 비율(Overlap)로 변경
-   - 수면 습관: 심각도 점수 -> 태그 기반 페널티 방식으로 변경
+   - 수면 시간: 겹치는 수면 시간 비율(Overlap)
+   - 수면 습관: 태그 기반 페널티 방식
 3. 가중 평균으로 최종 점수 산출
+4. Rarity Bonus: TF-IDF 기반 희소 특성 매칭 보너스 (척도 4종 + 수면시간)
 
-공식: Total Score = (Σ(유사도 × 가중치) / Σ가중치) × 100
+공식: Total Score = (Σ(유사도 × 가중치) / Σ가중치) × 100 + preferenceBonus + rarityBonus
 """
+
+import math
 
 # ============== 상수 정의 ==============
 BASE_WEIGHT = 10.0      # 0원 베팅해도 기본 가중치 10
 MAX_SCALE_DIFF = 4.0    # 1~5점 척도의 최대 차이
+RARITY_ALPHA = 3.0      # Rarity Bonus 최대값 (100점 만점 중 최대 3점)
 
 
 # ============== 변환 함수 ==============
@@ -136,6 +140,114 @@ def get_status_text(similarity: float) -> str:
         return "Bad"
 
 
+# ============== Rarity Bonus (TF-IDF 기반) ==============
+
+def compute_distributions(all_lifestyles: list[dict]) -> dict:
+    """
+    전체 유저의 라이프스타일 값 분포를 계산합니다.
+
+    반환값:
+    {
+        "noise": {1: 3, 2: 5, 3: 20, 4: 8, 5: 2},
+        "clean": {...},
+        "food": {...},
+        "temp": {...},
+        "time_bucket": {3: 5, 4: 15, 5: 10, ...},  # 2시간 단위 버킷
+        "_total": 38
+    }
+    """
+    distributions: dict = {
+        "noise": {},
+        "clean": {},
+        "food": {},
+        "temp": {},
+        "time_bucket": {},
+    }
+    total = len(all_lifestyles)
+
+    for ls in all_lifestyles:
+        for key, field in [
+            ("noise", "noiseLevel"),
+            ("clean", "cleanLevel"),
+            ("food", "foodLevel"),
+            ("temp", "tempLevel"),
+        ]:
+            val = ls.get(field, 3)
+            distributions[key][val] = distributions[key].get(val, 0) + 1
+
+        # 수면 시작시간을 2시간 단위 버킷으로 그룹화
+        # sleepStart 0~30 → bucket 0~15
+        sleep_start = ls.get("sleepStart", 8)
+        bucket = sleep_start // 2
+        distributions["time_bucket"][bucket] = distributions["time_bucket"].get(bucket, 0) + 1
+
+    distributions["_total"] = total
+    return distributions
+
+
+def _calc_rarity_bonus(
+    category_results: list[dict],
+    distributions: dict,
+) -> float:
+    """
+    희소 특성 매칭 보너스를 계산합니다.
+
+    유사도가 높은 항목(≥0.5)에 대해, 상대방의 해당 값이 전체 분포에서
+    얼마나 희소한지를 IDF로 측정하고 보너스를 부여합니다.
+
+    IDF = log(N / count) / log(N)  →  0.0 ~ 1.0 범위로 정규화
+    보너스 = RARITY_ALPHA × mean(similarity × idf)  →  0.0 ~ 3.0
+
+    Parameters:
+        category_results: 각 카테고리의 유사도와 값 정보
+            [{"key": "noise", "similarity": 0.75, "target_val": 1}, ...]
+        distributions: compute_distributions()의 반환값
+
+    Returns:
+        0.0 ~ RARITY_ALPHA 범위의 보너스 점수
+    """
+    if not distributions or distributions.get("_total", 0) < 5:
+        return 0.0
+
+    total = distributions["_total"]
+    rarity_scores = []
+
+    for cat in category_results:
+        key = cat["key"]
+        similarity = cat["similarity"]
+
+        # 유사도가 낮으면(0.5 미만) 희소성 보너스를 줄 의미가 없음
+        if similarity < 0.5:
+            continue
+
+        if key in ("noise", "clean", "food", "temp"):
+            target_val = cat["target_val"]
+            dist = distributions.get(key, {})
+            count = dist.get(target_val, total)
+        elif key == "time":
+            target_start = cat.get("target_start", 8)
+            bucket = target_start // 2
+            dist = distributions.get("time_bucket", {})
+            count = dist.get(bucket, total)
+        else:
+            # habit은 Rarity Bonus 대상이 아님
+            continue
+
+        # IDF: log(N/count) / log(N) → 0~1 정규화
+        if count > 0 and total > 1:
+            idf = math.log(total / count) / math.log(total)
+        else:
+            idf = 0.0
+
+        rarity_scores.append(similarity * idf)
+
+    if not rarity_scores:
+        return 0.0
+
+    avg_rarity = sum(rarity_scores) / len(rarity_scores)
+    return RARITY_ALPHA * avg_rarity
+
+
 # ============== 메인 매칭 알고리즘 ==============
 
 def calculate_match_score(
@@ -144,6 +256,7 @@ def calculate_match_score(
     target_lifestyle: dict,
     target_user: dict,
     current_user: dict | None = None,
+    distributions: dict | None = None,
 ) -> dict:
     """
     두 사용자 간의 매칭 점수를 계산합니다.
@@ -157,6 +270,7 @@ def calculate_match_score(
     total_weighted_score = 0.0
     total_weight_sum = 0.0
     breakdown = {}
+    rarity_data: list[dict] = []
 
     # 가중치 가져오기 (preference에서)
     pref = my_preference or {}
@@ -248,6 +362,17 @@ def calculate_match_score(
             "status": get_status_text(similarity)
         }
 
+        # Rarity Bonus 계산용 데이터 수집
+        rarity_entry: dict = {"key": cat["key"], "similarity": similarity}
+        if cat["calc_type"] == "scale":
+            rarity_entry["target_val"] = cat["target_val"]
+        elif cat["calc_type"] == "time":
+            rarity_entry["target_start"] = cat["target_val"].get("sleepStart", 8)
+        rarity_data.append(rarity_entry)
+
+    # ============== Rarity Bonus (희소 특성 매칭) ==============
+    rarity_bonus = _calc_rarity_bonus(rarity_data, distributions) if distributions else 0.0
+
     # ============== 보너스 점수 (국적/학번 선호) ==============
     bonus = 0.0
     preference_bonus = {}
@@ -309,14 +434,15 @@ def calculate_match_score(
         }
 
     base_score = (total_weighted_score / total_weight_sum) * 100
-    final_score = min(100, base_score + bonus)
+    final_score = min(100, base_score + bonus + rarity_bonus)
 
     return {
         "total_match_rate": round(final_score, 1),
         "breakdown": breakdown,
         "preferenceBonus": preference_bonus,
+        "rarityBonus": round(rarity_bonus, 2),
         "baseScore": round(base_score, 1),
-        "totalBonus": round(bonus, 1),
+        "totalBonus": round(bonus + rarity_bonus, 1),
     }
 
 

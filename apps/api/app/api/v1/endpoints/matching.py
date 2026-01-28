@@ -25,6 +25,7 @@ from app.schemas.matching import (
 from app.services.matching import (
     calculate_match_score,
     check_dormitory_overlap,
+    compute_distributions,
     generate_keywords,
     generate_radar_chart_data,
 )
@@ -76,6 +77,11 @@ async def get_matching_list(
         include={"lifestyle": True, "preference": True},
     )
 
+    # Rarity Bonus용 전체 유저 분포 계산
+    all_lifestyles_raw = await db.userlifestyle.find_many()
+    all_lifestyles_dicts = [ls.model_dump() for ls in all_lifestyles_raw]
+    distributions = compute_distributions(all_lifestyles_dicts)
+
     # 매칭 점수 계산
     results = []
     my_lifestyle_dict = my_lifestyle.model_dump() if my_lifestyle else None
@@ -117,6 +123,7 @@ async def get_matching_list(
             target_lifestyle_dict,
             target_user_dict,
             current_user_dict,
+            distributions,
         )
 
         # 역방향 매칭 점수: 상대 → 나
@@ -127,6 +134,7 @@ async def get_matching_list(
             my_lifestyle_dict,
             current_user_dict,
             target_user_dict,
+            distributions,
         )
 
         # 기하평균으로 양방향 매칭 점수 산출
@@ -469,6 +477,11 @@ async def get_matching_detail(
     my_preference = await db.userpreference.find_unique(where={"userId": current_user.id})
     target_preference = await db.userpreference.find_unique(where={"userId": target_user.id})
 
+    # Rarity Bonus용 전체 유저 분포 계산
+    all_lifestyles_raw = await db.userlifestyle.find_many()
+    all_lifestyles_dicts = [ls.model_dump() for ls in all_lifestyles_raw]
+    distributions = compute_distributions(all_lifestyles_dicts)
+
     # 매칭 점수 계산
     my_lifestyle_dict = my_lifestyle.model_dump() if my_lifestyle else {}
     my_preference_dict = my_preference.model_dump() if my_preference else {}
@@ -492,6 +505,7 @@ async def get_matching_detail(
         target_lifestyle_dict,
         target_user_dict,
         current_user_dict,
+        distributions,
     )
 
     # 역방향: 상대 → 나
@@ -501,6 +515,7 @@ async def get_matching_detail(
         my_lifestyle_dict,
         current_user_dict,
         target_user_dict,
+        distributions,
     )
 
     # 기하평균
