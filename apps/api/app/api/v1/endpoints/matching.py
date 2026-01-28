@@ -307,7 +307,7 @@ async def get_connections(
                         },
                         "contract": True,
                         "messages": {
-                            "order_by": {"createdAt": "desc"},
+                            "orderBy": {"createdAt": "desc"},
                             "take": 1,
                         },
                     }
