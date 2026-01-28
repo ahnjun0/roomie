@@ -17,10 +17,12 @@ interface RadarChartProps {
 
 export function RadarChart({ data, size = 250 }: RadarChartProps) {
   const { colors } = useTheme();
-  const myStroke = 'rgba(59, 130, 246, 1)';
-  const myFill = 'rgba(59, 130, 246, 0.3)';
-  const otherStroke = 'rgba(239, 68, 68, 1)';
-  const otherFill = 'rgba(239, 68, 68, 0.3)';
+  const myStroke = '#0f9f8f';
+  const myFill = 'rgba(15, 159, 143, 0.28)';
+  const otherStroke = '#f27059';
+  const otherFill = 'rgba(242, 112, 89, 0.22)';
+  const gridStroke = 'rgba(15, 159, 143, 0.18)';
+  const axisStroke = 'rgba(15, 159, 143, 0.22)';
   const center = size / 2;
   const radius = (size / 2) * 0.7;
   const levels = 5;
@@ -63,6 +65,12 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
   return (
     <View style={styles.container}>
       <Svg width={size} height={size}>
+        <Circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="rgba(15, 159, 143, 0.06)"
+        />
         {/* Background circles */}
         {Array.from({ length: levels }).map((_, i) => (
           <Circle
@@ -71,7 +79,7 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
             cy={center}
             r={(radius * (i + 1)) / levels}
             fill="none"
-            stroke={colors.border}
+            stroke={gridStroke}
             strokeWidth={1}
             opacity={0.5}
           />
@@ -87,7 +95,7 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
               y1={center}
               x2={endPoint.x}
               y2={endPoint.y}
-              stroke={colors.border}
+              stroke={axisStroke}
               strokeWidth={1}
               opacity={0.5}
             />
@@ -116,7 +124,7 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
             key={`other-${i}`}
             cx={point.x}
             cy={point.y}
-            r={4}
+            r={4.5}
             fill={otherStroke}
           />
         ))}
@@ -127,7 +135,7 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
             key={`my-${i}`}
             cx={point.x}
             cy={point.y}
-            r={4}
+            r={4.5}
             fill={myStroke}
           />
         ))}
@@ -140,7 +148,7 @@ export function RadarChart({ data, size = 250 }: RadarChartProps) {
               key={i}
               x={labelPoint.x}
               y={labelPoint.y}
-              fill={colors.text.primary}
+              fill={colors.text.secondary}
               fontSize={fontSize.xs}
               textAnchor="middle"
               alignmentBaseline="middle">
