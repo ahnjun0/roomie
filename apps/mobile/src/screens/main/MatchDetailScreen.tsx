@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts';
-import { Button, Card, ReviewCard, Header, RadarChart } from '../../components';
+import { Button, Card, ReviewCard, Header, RadarChart, RoomBtiBadge } from '../../components';
 import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
 import { spacing, fontSize, fontWeight, borderRadius, colors as themeColors } from '../../constants/theme';
@@ -159,6 +159,14 @@ export function MatchDetailScreen({ route, navigation }: MatchDetailScreenProps)
               <Text style={[styles.subInfo, { color: colors.text.tertiary }]}>
                 {user.nationality} | {user.gender === 'MALE' ? '남성' : '여성'}
               </Text>
+              {user.roomBtiAnimal && (
+                <RoomBtiBadge
+                  animal={user.roomBtiAnimal}
+                  result={user.roomBtiResult ?? undefined}
+                  size="small"
+                  style={{ marginTop: spacing.xs }}
+                />
+              )}
             </View>
             <View
               style={[

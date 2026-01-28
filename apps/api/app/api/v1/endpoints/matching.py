@@ -127,6 +127,8 @@ async def get_matching_list(
                 keywords=keywords,
                 isSmoker=candidate.lifestyle.isSmoker,
                 sleepStart=candidate.lifestyle.sleepStart,
+                roomBtiAnimal=candidate.roomBtiAnimal,
+                roomBtiResult=candidate.roomBtiResult,
             )
         )
 
@@ -422,6 +424,8 @@ async def get_matching_detail(
         nationality=target_user.nationality,
         studentId=target_user.studentId,
         age=target_user.age,
+        roomBtiAnimal=target_user.roomBtiAnimal,
+        roomBtiResult=target_user.roomBtiResult,
     )
 
     lifestyle_detail = None

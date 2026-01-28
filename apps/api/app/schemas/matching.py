@@ -15,6 +15,8 @@ class MatchingUserResponse(BaseModel):
     keywords: list[str]
     isSmoker: bool
     sleepStart: int
+    roomBtiAnimal: str | None = None
+    roomBtiResult: str | None = None
 
 
 class MatchingListResponse(BaseModel):
@@ -60,6 +62,8 @@ class MatchingUserDetail(BaseModel):
     nationality: Nationality
     studentId: int
     age: int
+    roomBtiAnimal: str | None = None
+    roomBtiResult: str | None = None
 
 
 class MatchingLifestyleDetail(BaseModel):

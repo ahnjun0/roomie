@@ -26,6 +26,8 @@ interface MatchingUser {
   keywords: string[];
   isSmoker: boolean;
   sleepStart: number;
+  roomBtiAnimal: string | null;
+  roomBtiResult: string | null;
 }
 
 interface RoommateInfo {
@@ -185,6 +187,7 @@ export function MatchingDashboardScreen({ navigation }: MatchingDashboardScreenP
       matchRate={item.matchRate}
       keywords={item.keywords}
       dormNames={item.dormNames}
+      roomBtiAnimal={item.roomBtiAnimal}
       onPress={() => navigation.navigate('MatchDetail', { userId: item.id })}
       onChat={() => handleChat(item.id)}
     />
