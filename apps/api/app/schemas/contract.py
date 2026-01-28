@@ -22,6 +22,8 @@ class ContractResponse(BaseModel):
     chatRoomId: str
     userAId: str
     userBId: str
+    nicknameA: str | None = None
+    nicknameB: str | None = None
     status: ContractStatus
     contractData: dict[str, object]
     signatureA: bool
