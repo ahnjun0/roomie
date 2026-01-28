@@ -3,3 +3,4 @@ export * from './matching';
 export * from './chat';
 export * from './user';
 export * from './delivery';
+export * from './notification';

@@ -9,12 +9,16 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 import { useTheme, useAuth } from '../../contexts';
 import { ChatBubble, ChatInput, Header } from '../../components';
 import { api, ApiError } from '../../services/api';
 import { getContractByChatRoom, initContract } from '../../services/contract';
+import { showChatNotification } from '../../services/notification';
 import { ENDPOINTS, WS_BASE_URL } from '../../constants/api';
 import { spacing, colors as themeColors, fontSize } from '../../constants/theme';
 
@@ -41,13 +45,27 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
   const { colors } = useTheme();
   const { user, accessToken } = useAuth();
   const insets = useSafeAreaInsets();
+  const isFocused = useIsFocused();
   const flatListRef = useRef<FlatList>(null);
   const ws = useRef<WebSocket | null>(null);
+  const isFocusedRef = useRef(isFocused);
+  const appStateRef = useRef(AppState.currentState);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  useEffect(() => {
+    isFocusedRef.current = isFocused;
+  }, [isFocused]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      appStateRef.current = nextState;
+    });
+    return () => subscription.remove();
+  }, []);
 
   const fetchMessages = useCallback(async (pageNum: number = 1) => {
     try {
@@ -97,6 +115,18 @@ export function ChatScreen({ route, navigation }: ChatScreenProps) {
             if (prev.some(m => m.id === newMsg.id)) return prev;
             return [newMsg, ...prev];
           });
+
+          // Show notification if message is from others and screen is not focused
+          const isFromOther = String(newMsg.senderId) !== String(user?.id);
+          const shouldNotify = isFromOther && (!isFocusedRef.current || appStateRef.current !== 'active');
+
+          if (shouldNotify) {
+            showChatNotification({
+              title: userName || '새 메시지',
+              body: newMsg.content,
+              data: { chatRoomId, type: 'chat' },
+            });
+          }
         }
       } catch (err) {
         console.error('WS Parse error', err);
