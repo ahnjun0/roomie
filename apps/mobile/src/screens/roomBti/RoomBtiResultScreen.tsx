@@ -24,7 +24,7 @@ const ANIMAL_EMOJIS: Record<string, string> = {
   owl: '🦉',
   cat: '🐱',
   dog: '🐕',
-  capybara: '🦛',
+  tiger: '🐯',
   parrot: '🦜',
   hippo: '🦛',
   squirrel: '🐿️',
