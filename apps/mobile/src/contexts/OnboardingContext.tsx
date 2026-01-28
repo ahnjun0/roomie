@@ -82,7 +82,39 @@ interface OnboardingContextType {
   resetData: () => void;
 }
 
-// ... (initialData definition)
+const initialData: OnboardingData = {
+  // [DEV] 개발 및 UI 테스트를 위해 초기값을 설정합니다.
+  // 이렇게 하면 앱을 새로고침해도 이메일 인증 단계를 건너뛰고 가입/온보딩 화면을 테스트할 수 있습니다.
+  email: 'test@univ.ac.kr',
+  password: 'password123',
+  tempToken: 'mock-temp-token-dev', 
+  nickname: 'RoomieUser',
+
+  gender: null,
+  nationality: null,
+  age: null,
+  studentId: null,
+
+  selectedDormitories: [],
+  selectedDormitoryNames: '',
+  isSmoker: null,
+  sleepHabits: [],
+  noiseLevel: 3,
+  cleanliness: 3,
+  indoorEating: 3,
+  temperature: 3,
+  preferredNationality: 'ANY',
+  preferredStudentYear: 'ANY',
+  prefNoiseLevel: 3,
+  prefCleanliness: 3,
+  prefIndoorEating: 3,
+  prefTemperature: 3,
+  sleepStart: 12, // 오전 12시 기본값
+  sleepEnd: 18, // 오전 6시 기본값
+  homeVisitFrequency: null,
+  sensitivity: 3,
+};
+
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(
   undefined,
