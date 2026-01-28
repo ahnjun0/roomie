@@ -341,20 +341,23 @@ async def get_connections(
                     )
                 )
 
-        # 2. Past roommates: MatchHistory에서 조회
-        histories = await db.matchhistory.find_many(
+        # 2. Past roommates: endSemester가 양쪽 모두 완료된 계약에서 조회
+        past_contracts = await db.roommatecontract.find_many(
             where={
+                "status": "SIGNED",
+                "endSemesterA": True,
+                "endSemesterB": True,
                 "OR": [
                     {"userAId": current_user.id},
                     {"userBId": current_user.id},
-                ]
+                ],
             },
-            order={"matchedAt": "desc"},
+            order={"signedAt": "desc"},
         )
 
         past_roommate_ids = []
-        for h in histories:
-            other_id = h.userBId if h.userAId == current_user.id else h.userAId
+        for c in past_contracts:
+            other_id = c.userBId if c.userAId == current_user.id else c.userAId
             if other_id not in past_roommate_ids:
                 past_roommate_ids.append(other_id)
 
