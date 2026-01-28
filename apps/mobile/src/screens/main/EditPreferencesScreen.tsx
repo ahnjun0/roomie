@@ -30,7 +30,7 @@ interface PreferenceData {
   weightTemp: number;
 }
 
-const TOTAL_BUDGET = 70000;
+const TOTAL_BUDGET = 60000; // 6만원 (온보딩 WeightGameScreen과 동일)
 const UNIT_AMOUNT = 10000;
 
 export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps) {
@@ -45,14 +45,14 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
   const [prefNationality, setPrefNationality] = useState<string | null>(null);
   const [prefStudentId, setPrefStudentId] = useState<string | null>(null);
 
-  // Weight preferences (stored as 0-70 on backend, displayed as 0/1/3 on frontend)
+  // Weight preferences (stored as 0-60 on backend, displayed as 0/1/3 on frontend)
   const [weights, setWeights] = useState<Record<string, number>>({
-    noise: 2,
-    cleanliness: 1,
-    food: 1,
-    habit: 1,
-    time: 1,
-    temp: 1,
+    noise: 0,
+    cleanliness: 0,
+    food: 0,
+    habit: 0,
+    time: 0,
+    temp: 0,
   });
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
       }
       setPrefStudentId(pref.prefStudentId);
 
-      // Convert backend weights (0-70) back to frontend units (0, 1, 3)
+      // Convert backend weights (0-60) back to frontend units (0, 1, 3)
       setWeights({
         noise: pref.weightNoise / 10,
         cleanliness: pref.weightClean / 10,
@@ -112,7 +112,7 @@ export function EditPreferencesScreen({ navigation }: EditPreferencesScreenProps
         prefStudentId,
       });
 
-      // Save weights (convert frontend 0/1/3 to backend 0-70)
+      // Save weights (convert frontend 0/1/3 to backend 0-60)
       await api.put(ENDPOINTS.USERS.PREFERENCE_WEIGHTS, {
         weightNoise: weights.noise * 10,
         weightClean: weights.cleanliness * 10,

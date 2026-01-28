@@ -14,8 +14,8 @@ import {
   RadioGroup,
   CheckboxGroup,
   ScaleSelector,
-  Slider,
   Header,
+  TimeRangeSlider,
 } from '../../components';
 import { api } from '../../services/api';
 import { ENDPOINTS } from '../../constants/api';
@@ -27,11 +27,11 @@ interface EditLifestyleScreenProps {
   navigation: any;
 }
 
+// 온보딩과 동일한 시간 변환 함수 (0-24 -> 시간 문자열)
+// 0 = 오후 4시(16시), 8 = 자정(24/0시), 20 = 정오(12시), 24 = 오후 4시(16시)
 const formatSleepTime = (value: number): string => {
-  const hour = (18 + value) % 24;
-  const period = hour < 12 ? '오전' : '오후';
-  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${period} ${displayHour}시`;
+  const hour = (16 + value) % 24;
+  return `${hour.toString().padStart(2, '0')}:00`;
 };
 
 export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
@@ -143,6 +143,31 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
     }
   };
 
+  // 온보딩 CoreHabitsScreen과 동일한 NONE 토글 로직
+  const handleSleepHabitsChange = (newValues: string[]) => {
+    const wasNoneSelected = sleepHabits.includes('NONE');
+    const isNoneSelected = newValues.includes('NONE');
+
+    if (!wasNoneSelected && isNoneSelected) {
+      // "없음"을 새로 선택한 경우 -> 다른 선택 해제하고 "없음"만 선택
+      setSleepHabits(['NONE']);
+    } else if (wasNoneSelected && isNoneSelected && newValues.length > 1) {
+      // "없음"이 선택된 상태에서 다른 것을 추가 선택한 경우 -> "없음" 해제
+      setSleepHabits(newValues.filter(v => v !== 'NONE'));
+    } else if (wasNoneSelected && !isNoneSelected) {
+      // "없음"을 해제한 경우
+      setSleepHabits(newValues);
+    } else {
+      // 일반적인 변경
+      setSleepHabits(newValues);
+    }
+  };
+
+  const handleTimeChange = (start: number, end: number) => {
+    setSleepStart(start);
+    setSleepEnd(end);
+  };
+
   const handleSave = async () => {
     if (isSmoker === null) {
       Alert.alert('알림', '흡연 여부를 선택해주세요.');
@@ -231,36 +256,30 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
           />
         </View>
 
-        {/* 수면 습관 */}
+        {/* 수면 습관 - 온보딩 CoreHabitsScreen과 동일한 UI */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
             수면 습관
           </Text>
+          <Text style={[styles.sectionSubtitle, { color: colors.text.secondary }]}>
+            해당되는 항목을 모두 선택해주세요
+          </Text>
           <CheckboxGroup
             options={SLEEP_HABITS}
             values={sleepHabits}
-            onChange={setSleepHabits}
+            onChange={handleSleepHabitsChange}
           />
         </View>
 
-        {/* 수면 시간 */}
+        {/* 수면 시간 - 온보딩 SleepPatternsScreen과 동일한 TimeRangeSlider */}
         <View style={styles.section}>
-          <Slider
-            label="취침 시간"
-            value={sleepStart}
-            minimumValue={0}
-            maximumValue={30}
-            onValueChange={setSleepStart}
-            showValue
-            formatValue={formatSleepTime}
-          />
-          <Slider
-            label="기상 시간"
-            value={sleepEnd}
-            minimumValue={0}
-            maximumValue={30}
-            onValueChange={setSleepEnd}
-            showValue
+          <Text style={[styles.label, { color: colors.text.primary }]}>수면 시간</Text>
+          <TimeRangeSlider
+            startValue={sleepStart}
+            endValue={sleepEnd}
+            min={0}
+            max={24}
+            onValuesChange={handleTimeChange}
             formatValue={formatSleepTime}
           />
         </View>
@@ -283,7 +302,7 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
           ))}
         </View>
 
-        {/* 외박 빈도 */}
+        {/* 외박 빈도 - 온보딩 SleepPatternsScreen과 동일한 3개 옵션 */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text.primary }]}>
             외박/귀가 빈도
@@ -291,12 +310,12 @@ export function EditLifestyleScreen({ navigation }: EditLifestyleScreenProps) {
           <RadioGroup
             options={[
               { value: 'RARELY', label: '거의 없음' },
-              { value: 'MONTHLY', label: '월 1회' },
-              { value: 'BI_WEEKLY', label: '2주 1회' },
-              { value: 'WEEKLY', label: '매주' },
+              { value: 'SOMETIMES', label: '가끔' },
+              { value: 'OFTEN', label: '자주' },
             ]}
             value={homeVisit}
             onChange={setHomeVisit}
+            horizontal
           />
         </View>
 
@@ -332,5 +351,14 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
     marginBottom: spacing.md,
+  },
+  sectionSubtitle: {
+    fontSize: fontSize.sm,
+    marginBottom: spacing.md,
+  },
+  label: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+    marginBottom: spacing.xs,
   },
 });

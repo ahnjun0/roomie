@@ -11,6 +11,8 @@ export interface MatchingUser {
   keywords: string[];
   isSmoker: boolean;
   sleepStart: number;
+  roomBtiAnimal: string | null;
+  roomBtiResult: string | null;
 }
 
 export interface MatchingListResponse {
@@ -48,6 +50,8 @@ export interface MatchingUserDetail {
   nationality: string;
   studentId: number;
   age: number;
+  roomBtiAnimal: string | null;
+  roomBtiResult: string | null;
 }
 
 export interface MatchingLifestyleDetail {

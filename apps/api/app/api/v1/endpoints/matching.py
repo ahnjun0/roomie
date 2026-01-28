@@ -1,3 +1,5 @@
+import math
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from prisma import Prisma
 from prisma.models import User
@@ -6,12 +8,15 @@ from app.core.database import get_db
 from app.core.security import get_current_user
 from app.schemas.matching import (
     ComparisonItem,
+    ConnectionUser,
+    ConnectionsResponse,
     EndSemesterResponse,
     MatchingDetailResponse,
     MatchingLifestyleDetail,
     MatchingListResponse,
     MatchingUserDetail,
     MatchingUserResponse,
+    PastRoommateUser,
     RadarChartData,
     ReviewSummary,
     RoommateResponse,
@@ -68,7 +73,7 @@ async def get_matching_list(
             },
             **school_filter,  # 같은 학교 필터 (Hard Filter)
         },
-        include={"lifestyle": True},
+        include={"lifestyle": True, "preference": True},
     )
 
     # 매칭 점수 계산
@@ -105,14 +110,29 @@ async def get_matching_list(
             "studentId": candidate.studentId,
         }
 
-        # 매칭 점수 계산 (current_user 정보 전달하여 학번 비교)
-        match_result = calculate_match_score(
+        # 정방향 매칭 점수: 나 → 상대
+        forward_result = calculate_match_score(
             my_lifestyle_dict,
             my_preference_dict,
             target_lifestyle_dict,
             target_user_dict,
-            current_user_dict,  # 학번/국적 비교용
+            current_user_dict,
         )
+
+        # 역방향 매칭 점수: 상대 → 나
+        target_preference_dict = candidate.preference.model_dump() if candidate.preference else {}
+        reverse_result = calculate_match_score(
+            target_lifestyle_dict,
+            target_preference_dict,
+            my_lifestyle_dict,
+            current_user_dict,
+            target_user_dict,
+        )
+
+        # 기하평균으로 양방향 매칭 점수 산출
+        forward_score = forward_result["total_match_rate"]
+        reverse_score = reverse_result["total_match_rate"]
+        mutual_score = math.sqrt(max(0, forward_score) * max(0, reverse_score))
 
         keywords = generate_keywords(target_lifestyle_dict, target_user_dict)
 
@@ -123,10 +143,12 @@ async def get_matching_list(
                 studentId=candidate.studentId,
                 nationality=candidate.nationality,
                 dormNames=candidate.lifestyle.dormNames,
-                matchRate=round(match_result["total_match_rate"]),
+                matchRate=round(mutual_score),
                 keywords=keywords,
                 isSmoker=candidate.lifestyle.isSmoker,
                 sleepStart=candidate.lifestyle.sleepStart,
+                roomBtiAnimal=candidate.roomBtiAnimal,
+                roomBtiResult=candidate.roomBtiResult,
             )
         )
 
@@ -192,6 +214,7 @@ async def get_roommate(
             detail={"error": "USER_NOT_FOUND", "message": "룸메이트 정보를 찾을 수 없습니다."},
         )
 
+    is_user_a = contract.userAId == current_user.id
     return RoommateResponse(
         userId=target_user.id,
         nickname=target_user.nickname,
@@ -199,6 +222,8 @@ async def get_roommate(
         nationality=target_user.nationality,
         dormNames=target_user.lifestyle.dormNames if target_user.lifestyle else "",
         chatRoomId=contract.chatRoomId,
+        endSemesterMe=contract.endSemesterA if is_user_a else contract.endSemesterB,
+        endSemesterPartner=contract.endSemesterB if is_user_a else contract.endSemesterA,
     )
 
 
@@ -207,7 +232,7 @@ async def end_semester(
     current_user: User = Depends(get_current_user),
     db: Prisma = Depends(get_db),
 ):
-    """학기 끝내기 (룸메이트 연결 해제)"""
+    """학기 끝내기 (서명처럼 양쪽 모두 확인해야 관계 종료)"""
     if current_user.matchingStatus != "MATCHED":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -232,18 +257,125 @@ async def end_semester(
             detail={"error": "CONTRACT_NOT_FOUND", "message": "서명된 계약서를 찾을 수 없습니다."},
         )
 
-    target_user_id = contract.userBId if contract.userAId == current_user.id else contract.userAId
+    is_user_a = contract.userAId == current_user.id
+    target_user_id = contract.userBId if is_user_a else contract.userAId
     target_user = await db.user.find_unique(where={"id": target_user_id})
 
-    # 양쪽 유저의 matchingStatus를 SEARCHING으로 변경
-    await db.user.update_many(
-        where={"id": {"in": [current_user.id, target_user_id]}},
-        data={"matchingStatus": "SEARCHING"},
-    )
+    # 현재 유저의 endSemester 플래그만 설정
+    update_data: dict[str, bool] = {}
+    if is_user_a and not contract.endSemesterA:
+        update_data["endSemesterA"] = True
+    elif not is_user_a and not contract.endSemesterB:
+        update_data["endSemesterB"] = True
+
+    if update_data:
+        contract = await db.roommatecontract.update(
+            where={"id": contract.id},
+            data=update_data,
+        )
+
+    # 양쪽 모두 endSemester이면 관계 종료
+    both_ended = contract.endSemesterA and contract.endSemesterB
+    if both_ended:
+        await db.user.update_many(
+            where={"id": {"in": [current_user.id, target_user_id]}},
+            data={"matchingStatus": "SEARCHING"},
+        )
 
     return EndSemesterResponse(
         targetUserId=target_user_id,
         targetNickname=target_user.nickname if target_user else None,
+        bothEnded=both_ended,
+    )
+
+
+@router.get("/connections", response_model=ConnectionsResponse)
+async def get_connections(
+    current_user: User = Depends(get_current_user),
+    db: Prisma = Depends(get_db),
+):
+    """현재 대화 중인 상대 및 지난 룸메이트 조회"""
+
+    # 1. Active chats: 내가 참여한 채팅방에서 SIGNED 계약이 없는 상대 조회
+    participations = await db.chatparticipant.find_many(
+        where={"userId": current_user.id},
+        include={
+            "chatRoom": {
+                "include": {
+                    "participants": {
+                        "include": {"user": True},
+                    },
+                    "contract": True,
+                    "messages": {
+                        "orderBy": {"createdAt": "desc"},
+                        "take": 1,
+                    },
+                }
+            }
+        },
+    )
+
+    active_chats = []
+    for p in participations:
+        chat_room = p.chatRoom
+        # SIGNED 계약이 있으면 이미 룸메이트이므로 스킵
+        if chat_room.contract and chat_room.contract.status == "SIGNED":
+            continue
+
+        # 상대방 찾기
+        other_user = None
+        for participant in chat_room.participants:
+            if participant.userId != current_user.id:
+                other_user = participant.user
+                break
+
+        if other_user:
+            last_msg = chat_room.messages[0] if chat_room.messages else None
+            active_chats.append(
+                ConnectionUser(
+                    userId=other_user.id,
+                    nickname=other_user.nickname,
+                    chatRoomId=chat_room.id,
+                    lastMessage=last_msg.content if last_msg else None,
+                    lastMessageAt=last_msg.createdAt if last_msg else None,
+                )
+            )
+
+    # 2. Past roommates: MatchHistory에서 조회
+    histories = await db.matchhistory.find_many(
+        where={
+            "OR": [
+                {"userAId": current_user.id},
+                {"userBId": current_user.id},
+            ]
+        },
+        order={"matchedAt": "desc"},
+    )
+
+    past_roommate_ids = []
+    for h in histories:
+        other_id = h.userBId if h.userAId == current_user.id else h.userAId
+        if other_id not in past_roommate_ids:
+            past_roommate_ids.append(other_id)
+
+    past_roommates = []
+    if past_roommate_ids:
+        users = await db.user.find_many(where={"id": {"in": past_roommate_ids}})
+        user_map = {u.id: u for u in users}
+        for uid in past_roommate_ids:
+            u = user_map.get(uid)
+            if u:
+                past_roommates.append(
+                    PastRoommateUser(
+                        userId=u.id,
+                        nickname=u.nickname,
+                        studentId=u.studentId,
+                    )
+                )
+
+    return ConnectionsResponse(
+        activeChats=active_chats,
+        pastRoommates=past_roommates,
     )
 
 
@@ -291,25 +423,46 @@ async def get_matching_detail(
     # 내 정보 조회
     my_lifestyle = await db.userlifestyle.find_unique(where={"userId": current_user.id})
     my_preference = await db.userpreference.find_unique(where={"userId": current_user.id})
+    target_preference = await db.userpreference.find_unique(where={"userId": target_user.id})
 
     # 매칭 점수 계산
     my_lifestyle_dict = my_lifestyle.model_dump() if my_lifestyle else {}
     my_preference_dict = my_preference.model_dump() if my_preference else {}
     target_lifestyle_dict = target_user.lifestyle.model_dump() if target_user.lifestyle else {}
+    target_preference_dict = target_preference.model_dump() if target_preference else {}
 
     # 현재 사용자 정보 (학번/국적 비교용)
     current_user_dict = {
         "nationality": current_user.nationality,
         "studentId": current_user.studentId,
     }
+    target_user_dict = {
+        "nationality": target_user.nationality,
+        "studentId": target_user.studentId,
+    }
 
+    # 정방향: 나 → 상대
     match_result = calculate_match_score(
         my_lifestyle_dict,
         my_preference_dict,
         target_lifestyle_dict,
-        {"nationality": target_user.nationality, "studentId": target_user.studentId},
-        current_user_dict,  # 학번/국적 비교용
+        target_user_dict,
+        current_user_dict,
     )
+
+    # 역방향: 상대 → 나
+    reverse_result = calculate_match_score(
+        target_lifestyle_dict,
+        target_preference_dict,
+        my_lifestyle_dict,
+        current_user_dict,
+        target_user_dict,
+    )
+
+    # 기하평균
+    forward_score = match_result["total_match_rate"]
+    reverse_score = reverse_result["total_match_rate"]
+    mutual_score = math.sqrt(max(0, forward_score) * max(0, reverse_score))
 
     # 비교 데이터 생성 (7개 항목)
     comparison = {}
@@ -402,6 +555,8 @@ async def get_matching_detail(
         nationality=target_user.nationality,
         studentId=target_user.studentId,
         age=target_user.age,
+        roomBtiAnimal=target_user.roomBtiAnimal,
+        roomBtiResult=target_user.roomBtiResult,
     )
 
     lifestyle_detail = None
@@ -422,7 +577,7 @@ async def get_matching_detail(
     return MatchingDetailResponse(
         user=user_detail,
         lifestyle=lifestyle_detail,
-        matchRate=round(match_result["total_match_rate"]),
+        matchRate=round(mutual_score),
         comparison=comparison,
         radarChart=radar_chart,
         scoreBreakdown=score_breakdown,

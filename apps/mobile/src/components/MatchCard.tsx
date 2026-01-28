@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useTheme } from '../contexts';
+import { RoomBtiBadge } from './RoomBtiBadge';
 import { spacing, borderRadius, fontSize, fontWeight, colors as themeColors, shadows } from '../constants/theme';
 
 interface MatchCardProps {
@@ -10,6 +11,7 @@ interface MatchCardProps {
   matchRate: number;
   keywords: string[];
   dormNames: string;
+  roomBtiAnimal?: string | null;
   onPress: () => void;
   onChat: () => void;
 }
@@ -20,6 +22,7 @@ export function MatchCard({
   matchRate,
   keywords = [],
   dormNames,
+  roomBtiAnimal,
   onPress,
   onChat,
 }: MatchCardProps) {
@@ -68,6 +71,12 @@ export function MatchCard({
           </View>
         ))}
       </View>
+
+      {roomBtiAnimal && (
+        <View style={styles.roomBtiContainer}>
+          <RoomBtiBadge animal={roomBtiAnimal} size="small" />
+        </View>
+      )}
 
       <View style={styles.actionsContainer}>
         <TouchableOpacity
@@ -148,6 +157,9 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: fontSize.xs,
     fontWeight: fontWeight.medium,
+  },
+  roomBtiContainer: {
+    marginBottom: spacing.md,
   },
   actionsContainer: {
     flexDirection: 'row',

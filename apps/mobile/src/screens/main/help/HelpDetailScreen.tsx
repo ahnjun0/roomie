@@ -88,7 +88,7 @@ export function HelpDetailScreen({ navigation, route }: HelpDetailScreenProps) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Header title="게시글 상세" showBack />
+      <Header title="게시글 상세" showBack onBack={() => navigation.goBack()} />
       
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>

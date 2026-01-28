@@ -15,6 +15,8 @@ class MatchingUserResponse(BaseModel):
     keywords: list[str]
     isSmoker: bool
     sleepStart: int
+    roomBtiAnimal: str | None = None
+    roomBtiResult: str | None = None
 
 
 class MatchingListResponse(BaseModel):
@@ -60,6 +62,8 @@ class MatchingUserDetail(BaseModel):
     nationality: Nationality
     studentId: int
     age: int
+    roomBtiAnimal: str | None = None
+    roomBtiResult: str | None = None
 
 
 class MatchingLifestyleDetail(BaseModel):
@@ -94,8 +98,33 @@ class RoommateResponse(BaseModel):
     nationality: str
     dormNames: str
     chatRoomId: str
+    endSemesterMe: bool
+    endSemesterPartner: bool
 
 
 class EndSemesterResponse(BaseModel):
     targetUserId: str
     targetNickname: str | None
+    bothEnded: bool
+
+
+# ============== Connections (대화 중 / 지난 룸메이트) ==============
+
+
+class ConnectionUser(BaseModel):
+    userId: str
+    nickname: str | None
+    chatRoomId: str
+    lastMessage: str | None = None
+    lastMessageAt: datetime | None = None
+
+
+class PastRoommateUser(BaseModel):
+    userId: str
+    nickname: str | None
+    studentId: int
+
+
+class ConnectionsResponse(BaseModel):
+    activeChats: list[ConnectionUser]
+    pastRoommates: list[PastRoommateUser]
